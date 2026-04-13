@@ -1,0 +1,11 @@
+requirement_id,program_id,min_gpa,ielts_min,hsk_tocfl_min,documents_required,interview_required,portfolio_required,source_url,last_verified_date
+R001,P001,3.0,6.0,,Diploma; Transcripts; SOP; 2 Recs; Financial Proof,FALSE,FALSE,https://www.ntu.edu.tw/,2026-04-11
+R002,P002,2.44,5.0,,Diploma; Transcripts; Study Plan; 2 Recs; Financial Statement,,FALSE,https://iatp.ntust.edu.tw,2026-04-10
+R003,P003,2.5,5.5,,Verified Diploma; Transcripts; 2 Recs; Financial Statement,FALSE,FALSE,https://oia.ncku.edu.tw,2026-04-10
+R004,P004,,5.5,,Transcript; CV; Passport; Photo,FALSE,FALSE,https://usc.edu.tw,2026-04-10
+R005,P005,,6.0,,HS Diploma; Study Plan; Autobiography; English Proof,,FALSE,https://ic.thu.edu.tw,2026-04-10
+R006,P006,3.0,6.5,,Transcripts; Passport; SAT Scores; Recommendation Letter,FALSE,FALSE,https://bba.acc.chula.ac.th,2026-04-10
+R007,P007,2.75,6.0,,Transcript; HS Certificate; Verification Letter; Photo,FALSE,FALSE,https://muic.mahidol.ac.th,2026-04-10
+R008,P008,2.5,6.0,,HS Certificate; SAT/Gaokao Scores; TOEFL/IELTS Proof,FALSE,FALSE,https://bba.tbs.tu.ac.th,2026-04-10
+R009,P009,2.5,5.0,,Transcript; Portfolio; English Test; Personal Motivation,,TRUE,https://www.sit.kmutt.ac.th/en/bsc/bsc-cs-2/,2026-04-11
+R010,P010,2.0,5.0,,HS Transcript; Diploma; English Proof; Passport; Photo,FALSE,FALSE,https://admissions.au.edu,2026-04-10

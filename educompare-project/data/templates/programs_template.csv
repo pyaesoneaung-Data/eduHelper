@@ -1,0 +1,11 @@
+program_id,university_id,major_name,degree_level,instruction_language,duration_years,intake,application_deadline,source_url,last_verified_date
+P001,U001,International Bachelor Program in Agribusiness (IBA),Bachelor,English,4,September,2026-01-15,https://www.ntu.edu.tw/,2026-04-11
+P002,U002,International Advanced Technology Program (IATP),Bachelor,English,4,September,2026-03-11,https://iatp.ntust.edu.tw,2026-04-10
+P003,U003,International Bachelor Degree Program on Energy (IBDPE),Bachelor,English,4,September,2026-03-15,https://ibdpe.ncku.edu.tw,2026-04-10
+P004,U004,English-taught Program in International Business,Bachelor,English,4,September,2026-04-30,https://usc.edu.tw,2026-04-10
+P005,U005,International Business Administration (IBA),Bachelor,English,4,September,2026-05-27,https://ic.thu.edu.tw,2026-04-10
+P006,U006,Bachelor of Business Administration (BBA),Bachelor,English,4,August,2026-03-31,https://bba.acc.chula.ac.th,2026-04-10
+P007,U007,Bachelor of Business Administration (BBA),Bachelor,English,4,September,2026-04-30,https://muic.mahidol.ac.th,2026-04-10
+P008,U008,BBA International Program,Bachelor,English,4,August,2026-03-31,https://bba.tbs.tu.ac.th,2026-04-10
+P009,U009,Computer Science (English Program),Bachelor,English,4,August,2026-03-30,https://www.sit.kmutt.ac.th/en/bsc/bsc-cs-2/,2026-04-11
+P010,U010,Bachelor of Business Administration (BBA),Bachelor,English,4,June,2026-04-17,https://admissions.au.edu,2026-04-10

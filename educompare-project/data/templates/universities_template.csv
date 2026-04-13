@@ -1,0 +1,11 @@
+university_id,university_name,country_id,city,university_type,world_rank,official_website,contact_email,teaching_style_score,source_url,last_verified_date
+U001,National Taiwan University,C001,Taipei,Public,,https://www.ntu.edu.tw,registry@ntu.edu.tw,,https://www.ntu.edu.tw,2026-04-10
+U002,National Taiwan University Of Science And Technology,C001,Taipei,Public,,https://www.ntust.edu.tw,undergraduate@mail.ntust.edu.tw,,https://www.ntust.edu.tw,2026-04-10
+U003,National Cheng Kung University,C001,Tainan,Public,,https://www.ncku.edu.tw,em50120@mail.ncku.edu.tw,,https://www.ncku.edu.tw,2026-04-10
+U004,Shih Chien University,C001,Taipei,Private,,https://www.usc.edu.tw,oia@g2.usc.edu.tw,,https://www.usc.edu.tw,2026-04-10
+U005,Tunghai University,C001,Taichung,Private,,https://ic.thu.edu.tw/,,,https://ic.thu.edu.tw/,2026-04-11
+U006,Chulalongkorn University,C002,Bangkok,Public,,https://www.chula.ac.th,webreg@chula.ac.th,,https://www.chula.ac.th,2026-04-10
+U007,Mahidol University,C002,Nakhon Pathom,Public,,https://www.mahidol.ac.th,icru@mahidol.ac.th,,https://www.mahidol.ac.th,2026-04-10
+U008,Thammasat University,C002,Bangkok,Public,,https://www.tu.ac.th,register@reg.tu.ac.th,,https://www.tu.ac.th,2026-04-10
+U009,King Mongkut's University of Technology Thonburi,C002,Bangkok,Public,,https://www.kmutt.ac.th,regist@kmutt.ac.th,,https://www.kmutt.ac.th,2026-04-10
+U010,Assumption University of Thailand,C002,Bangkok,Private,,https://www.au.edu,registrar@au.edu,,https://www.au.edu,2026-04-10

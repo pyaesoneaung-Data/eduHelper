@@ -1,0 +1,11 @@
+cost_id,program_id,tuition_fee_per_semester,application_fee,insurance_fee,avg_monthly_living_cost,currency,source_url,last_verified_date
+CF001,P001,58520,2000,4956,15000,TWD,https://dph.ntu.edu.tw/web/admissions/admissions.jsp?cp_no=CP1521520833190&lang=en,2026-04-10
+CF002,P002,55180,1000,5336,12000,TWD,https://iatp.ntust.edu.tw/p/406-1041-68774,2026-04-10
+CF003,P003,53583,2000,4956,10000,TWD,https://oia.ncku.edu.tw/var/file/32/1032/img/4904/456348038.pdf,2026-04-10
+CF004,P004,74900,2000,4956,15000,TWD,https://acc.usc.edu.tw/var/file/50/1050/img/69/585883054.pdf,2026-04-10
+CF005,P005,69020,500,4956,10000,TWD,https://ic.thu.edu.tw/web/admissions/page.php?lang=en&scid=4&sid=6,2026-04-10
+CF006,P006,105000,1500,2000,20000,THB,https://www.sis.sc.chula.ac.th/current-students/tuition-and-fees/,2026-04-10
+CF007,P007,135135,1500,1500,15000,THB,https://muic.mahidol.ac.th/en/study-at-muic/tuition-fees/undergraduate-tuition-fees/,2026-04-10
+CF008,P008,129600,1000,1500,14000,THB,https://bba.tbs.tu.ac.th/admissions.php?menus=Semester%20and%20Tuition%20and%20Fee&OnlineStatus=Y,2026-04-10
+CF009,P009,57000,350,1000,14000,THB,https://www.sit.kmutt.ac.th/en/bsc/bsc-cs-2/,2026-04-10
+CF010,P010,80000,500,3000,28000,THB,https://admissions.au.edu/wp-content/uploads/2026/01/tuition-fee-non-thai-update.pdf,2026-04-10
