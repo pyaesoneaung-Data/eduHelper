@@ -151,3 +151,59 @@ def cost_summary(program_id: str, db: Session = Depends(get_db)):
         "yearly_living_cost": yearly_living,
         "estimated_total_yearly_cost": total_yearly_cost
     }
+
+@app.get("/recommend/programs")
+def recommend_programs(
+    country_id: str | None = None,
+    degree_level: str | None = None,
+    instruction_language: str | None = None,
+    max_budget: float | None = None,
+    db: Session = Depends(get_db)
+):
+    programs = db.query(Program).all()
+    recommendations = []
+
+    for program in programs:
+        university = db.query(University).filter(
+            University.university_id == program.university_id
+        ).first()
+
+        cost = db.query(CostAndFinance).filter(
+            CostAndFinance.program_id == program.program_id
+        ).first()
+
+        if not university or not cost:
+            continue
+
+        yearly_tuition = float(cost.tuition_fee_per_semester) * 2
+        yearly_living = float(cost.avg_monthly_living_cost) * 12
+        yearly_total = yearly_tuition + yearly_living
+
+        score = 0
+
+        if country_id and university.country_id == country_id:
+            score += 30
+
+        if degree_level and program.degree_level.lower() == degree_level.lower():
+            score += 25
+
+        if instruction_language and program.instruction_language.lower() == instruction_language.lower():
+            score += 20
+
+        if max_budget is not None and yearly_total <= max_budget:
+            score += 25
+
+        recommendations.append({
+            "program_id": program.program_id,
+            "major_name": program.major_name,
+            "university_name": university.university_name,
+            "country_id": university.country_id,
+            "degree_level": program.degree_level,
+            "instruction_language": program.instruction_language,
+            "currency": cost.currency,
+            "estimated_yearly_cost": yearly_total,
+            "score": score
+        })
+
+    recommendations.sort(key=lambda x: x["score"], reverse=True)
+    return recommendations
