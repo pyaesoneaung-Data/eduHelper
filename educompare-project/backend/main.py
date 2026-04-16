@@ -158,8 +158,15 @@ def recommend_programs(
     degree_level: str | None = None,
     instruction_language: str | None = None,
     max_budget: float | None = None,
+    limit: int = 10,
+    offset: int = 0,
     db: Session = Depends(get_db)
 ):
+    if not any([country_id, degree_level, instruction_language, max_budget is not None]):
+        return {
+            "detail": "Please provide at least one recommendation criterion."
+        }
+    
     programs = db.query(Program).all()
     recommendations = []
 
@@ -181,17 +188,36 @@ def recommend_programs(
 
         score = 0
 
+        score_breakdown = {
+            "country_match": 0,
+            "degree_match": 0,
+            "language_match": 0,
+            "budget_fit": 0
+        }
+
+        # Country
         if country_id and university.country_id == country_id:
             score += 30
+            score_breakdown["country_match"] = 30
 
+        # Degree (case-insensitive)
         if degree_level and program.degree_level.lower() == degree_level.lower():
             score += 25
+            score_breakdown["degree_match"] = 25
 
+        # Language (case-insensitive)
         if instruction_language and program.instruction_language.lower() == instruction_language.lower():
             score += 20
+            score_breakdown["language_match"] = 20
 
+        # Budget
         if max_budget is not None and yearly_total <= max_budget:
             score += 25
+            score_breakdown["budget_fit"] = 25
+
+        # ❗ Remove useless results
+        if score == 0:
+            continue
 
         recommendations.append({
             "program_id": program.program_id,
@@ -202,8 +228,12 @@ def recommend_programs(
             "instruction_language": program.instruction_language,
             "currency": cost.currency,
             "estimated_yearly_cost": yearly_total,
-            "score": score
+            "score": score,
+            "score_breakdown": score_breakdown
         })
 
+    # Sort by score
     recommendations.sort(key=lambda x: x["score"], reverse=True)
-    return recommendations
+
+    # Pagination
+    return recommendations[offset: offset + limit]
