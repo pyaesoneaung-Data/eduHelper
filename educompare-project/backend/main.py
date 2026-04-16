@@ -69,3 +69,85 @@ def get_costs(currency: str = None, program_id: str = None, db: Session = Depend
         query = query.filter(CostAndFinance.program_id == program_id)
 
     return query.all()
+
+@app.get("/programs/{program_id}")
+def get_program_detail(program_id: str, db: Session = Depends(get_db)):
+    
+    program = db.query(Program).filter(Program.program_id == program_id).first()
+    
+    if not program:
+        raise HTTPException(status_code=404, detail="Program not found")
+
+    university = db.query(University).filter(
+        University.university_id == program.university_id
+    ).first()
+
+    requirements = db.query(Requirement).filter(
+        Requirement.program_id == program_id
+    ).all()
+
+    cost = db.query(CostAndFinance).filter(
+        CostAndFinance.program_id == program_id
+    ).first()
+
+    return {
+        "program": program,
+        "university": university,
+        "requirements": requirements,
+        "cost": cost
+    }
+
+@app.get("/compare/programs")
+def compare_programs(program_ids: str, db: Session = Depends(get_db)):
+    
+    ids = program_ids.split(",")
+
+    programs = db.query(Program).filter(Program.program_id.in_(ids)).all()
+
+    result = []
+
+    for program in programs:
+        university = db.query(University).filter(
+            University.university_id == program.university_id
+        ).first()
+
+        cost = db.query(CostAndFinance).filter(
+            CostAndFinance.program_id == program.program_id
+        ).first()
+
+        result.append({
+            "program_id": program.program_id,
+            "major_name": program.major_name,
+            "university": university.university_name if university else None,
+            "degree_level": program.degree_level,
+            "tuition_fee": cost.tuition_fee_per_semester if cost else None,
+            "currency": cost.currency if cost else None,
+            "living_cost": cost.avg_monthly_living_cost if cost else None
+        })
+
+    return result
+
+@app.get("/cost-summary")
+def cost_summary(program_id: str, db: Session = Depends(get_db)):
+    
+    cost = db.query(CostAndFinance).filter(
+        CostAndFinance.program_id == program_id
+    ).first()
+
+    if not cost:
+        raise HTTPException(status_code=404, detail="Cost not found")
+
+    yearly_tuition = cost.tuition_fee_per_semester * 2
+    yearly_living = cost.avg_monthly_living_cost * 12
+
+    total_yearly_cost = yearly_tuition + yearly_living
+
+    return {
+        "program_id": program_id,
+        "currency": cost.currency,
+        "tuition_per_semester": cost.tuition_fee_per_semester,
+        "yearly_tuition": yearly_tuition,
+        "monthly_living_cost": cost.avg_monthly_living_cost,
+        "yearly_living_cost": yearly_living,
+        "estimated_total_yearly_cost": total_yearly_cost
+    }
