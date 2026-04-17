@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import date
 
 
@@ -13,8 +13,7 @@ class UniversitySchema(BaseModel):
     source_url: str
     last_verified_date: date
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProgramSchema(BaseModel):
@@ -29,8 +28,7 @@ class ProgramSchema(BaseModel):
     source_url: str
     last_verified_date: date
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RequirementSchema(BaseModel):
@@ -45,8 +43,7 @@ class RequirementSchema(BaseModel):
     source_url: str
     last_verified_date: date
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CountryRuleSchema(BaseModel):
@@ -63,8 +60,7 @@ class CountryRuleSchema(BaseModel):
     source_url: str
     last_verified_date: date
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CostAndFinanceSchema(BaseModel):
@@ -78,5 +74,4 @@ class CostAndFinanceSchema(BaseModel):
     source_url: str
     last_verified_date: date
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

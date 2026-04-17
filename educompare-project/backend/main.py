@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from database import get_db
+from datetime import date
 from models import University, Program, Requirement, CountryRule, CostAndFinance
 from schemas import (
     UniversitySchema,
@@ -9,6 +10,7 @@ from schemas import (
     CountryRuleSchema,
     CostAndFinanceSchema,
 )
+
 
 app = FastAPI(title="EduCompare API")
 
@@ -158,17 +160,32 @@ def recommend_programs(
     degree_level: str | None = None,
     instruction_language: str | None = None,
     max_budget: float | None = None,
+    user_gpa: float | None = None,
+    user_ielts: float | None = None,
+    preferred_deadline_before: str | None = None,
     limit: int = 10,
     offset: int = 0,
     db: Session = Depends(get_db)
 ):
-    if not any([country_id, degree_level, instruction_language, max_budget is not None]):
+    if not any([
+        country_id,
+        degree_level,
+        instruction_language,
+        max_budget is not None,
+        user_gpa is not None,
+        user_ielts is not None,
+        preferred_deadline_before
+    ]):
         return {
             "detail": "Please provide at least one recommendation criterion."
         }
-    
+
     programs = db.query(Program).all()
     recommendations = []
+
+    deadline_limit = None
+    if preferred_deadline_before:
+        deadline_limit = date.fromisoformat(preferred_deadline_before)
 
     for program in programs:
         university = db.query(University).filter(
@@ -177,6 +194,10 @@ def recommend_programs(
 
         cost = db.query(CostAndFinance).filter(
             CostAndFinance.program_id == program.program_id
+        ).first()
+
+        requirement = db.query(Requirement).filter(
+            Requirement.program_id == program.program_id
         ).first()
 
         if not university or not cost:
@@ -192,7 +213,10 @@ def recommend_programs(
             "country_match": 0,
             "degree_match": 0,
             "language_match": 0,
-            "budget_fit": 0
+            "budget_fit": 0,
+            "gpa_fit": 0,
+            "ielts_fit": 0,
+            "deadline_fit": 0
         }
 
         # Country
@@ -200,12 +224,12 @@ def recommend_programs(
             score += 30
             score_breakdown["country_match"] = 30
 
-        # Degree (case-insensitive)
+        # Degree
         if degree_level and program.degree_level.lower() == degree_level.lower():
             score += 25
             score_breakdown["degree_match"] = 25
 
-        # Language (case-insensitive)
+        # Language
         if instruction_language and program.instruction_language.lower() == instruction_language.lower():
             score += 20
             score_breakdown["language_match"] = 20
@@ -215,7 +239,24 @@ def recommend_programs(
             score += 25
             score_breakdown["budget_fit"] = 25
 
-        # ❗ Remove useless results
+        # GPA fit
+        if requirement and user_gpa is not None and requirement.min_gpa is not None:
+            if user_gpa >= float(requirement.min_gpa):
+                score += 20
+                score_breakdown["gpa_fit"] = 20
+
+        # IELTS fit
+        if requirement and user_ielts is not None and requirement.ielts_min is not None:
+            if user_ielts >= float(requirement.ielts_min):
+                score += 20
+                score_breakdown["ielts_fit"] = 20
+
+        # Deadline fit
+        if deadline_limit and program.application_deadline is not None:
+            if program.application_deadline <= deadline_limit:
+                score += 10
+                score_breakdown["deadline_fit"] = 10
+
         if score == 0:
             continue
 
@@ -228,12 +269,12 @@ def recommend_programs(
             "instruction_language": program.instruction_language,
             "currency": cost.currency,
             "estimated_yearly_cost": yearly_total,
+            "required_min_gpa": float(requirement.min_gpa) if requirement and requirement.min_gpa is not None else None,
+            "required_ielts": float(requirement.ielts_min) if requirement and requirement.ielts_min is not None else None,
+            "application_deadline": program.application_deadline,
             "score": score,
             "score_breakdown": score_breakdown
         })
 
-    # Sort by score
     recommendations.sort(key=lambda x: x["score"], reverse=True)
-
-    # Pagination
     return recommendations[offset: offset + limit]
