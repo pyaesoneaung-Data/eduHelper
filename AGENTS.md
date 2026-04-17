@@ -405,3 +405,15 @@ NOT:
 * animations
 * complex UI
 * visual effects
+
+## Responsive Layout Rule
+
+The frontend must work cleanly on desktop, tablet, and mobile.
+
+Requirements:
+
+* avoid overly narrow centered layouts on large screens
+* use responsive grids for cards
+* allow analytics/sidebar layouts to collapse on smaller screens
+* make tables horizontally scrollable on small screens
+* prioritize usable responsive behavior over pixel-perfect design

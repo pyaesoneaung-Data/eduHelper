@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getAdmissionAnalytics } from '../api/api'
 import InfoCard from '../components/InfoCard'
-import PageHeader from '../components/PageHeader'
 
 function formatRequirementValue(value) {
   if (value === null || value === undefined) {
@@ -176,11 +175,13 @@ function AdmissionAnalyticsPage() {
 
   return (
     <div className="page-stack">
-      <PageHeader
-        eyebrow="Admission Analytics"
-        title="Compare admission difficulty between Taiwan and Thailand using real requirement data."
-        description="This dashboard summarizes GPA and IELTS thresholds from the current dataset so students can spot lower-barrier and higher-barrier options more clearly."
-      />
+      <div className="section-heading">
+        <h2>Admission Overview</h2>
+        <p>
+          Compare GPA and IELTS thresholds between Taiwan and Thailand using the
+          current admission requirement records.
+        </p>
+      </div>
 
       {error ? <p className="error-text">{error}</p> : null}
 

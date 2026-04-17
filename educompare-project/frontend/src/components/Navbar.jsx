@@ -6,7 +6,6 @@ const navItems = [
   { to: '/compare', label: 'Compare' },
   { to: '/cost-calculator', label: 'Cost Calculator' },
   { to: '/analytics', label: 'Analytics' },
-  { to: '/analytics/admission', label: 'Admission Analytics' },
   { to: '/legal', label: 'Legal Info' },
   { to: '/red-flags', label: 'Red Flag Guide' },
   { to: '/admin/login', label: 'Admin' },

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getCostOverviewAnalytics } from '../api/api'
 import InfoCard from '../components/InfoCard'
-import PageHeader from '../components/PageHeader'
 
 function formatValue(value, currency) {
   if (value === null || value === undefined) {
@@ -117,11 +116,13 @@ function AnalyticsPage() {
 
   return (
     <div className="page-stack">
-      <PageHeader
-        eyebrow="Cost Analytics"
-        title="Compare real average costs between Taiwan and Thailand."
-        description="This dashboard summarizes tuition and living-cost data into simple country-level comparisons so students can see real affordability differences before trusting marketing claims."
-      />
+      <div className="section-heading">
+        <h2>Cost Overview</h2>
+        <p>
+          Compare real average costs between Taiwan and Thailand using the current
+          tuition and living-cost records.
+        </p>
+      </div>
 
       {error ? <p className="error-text">{error}</p> : null}
 
