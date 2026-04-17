@@ -244,6 +244,93 @@ frontend/
 * No over-design
 * No fake/mock data
 
+# Analytics Extension (Portfolio Priority)
+
+This project is also intended to support **Data Analyst portfolio positioning**, not only full-stack/backend positioning.
+
+The product should include an analytics/dashboard layer that helps users compare Thailand and Taiwan using real summarized insights.
+
+## Analytics Goals
+
+The analytics layer should answer questions like:
+
+* Which country is more affordable overall?
+* What is the average yearly cost in Taiwan vs Thailand?
+* Which programs are the cheapest?
+* Which programs have lower GPA / IELTS barriers?
+* Which deadlines are approaching soon?
+* Which country offers more affordable English-taught bachelor options?
+
+## Analytics Principles
+
+* Do NOT add random charts just for appearance
+* Every chart must answer a real user decision question
+* Prioritize clarity and insight over visual complexity
+* Use real backend data only
+* Do NOT invent metrics that are not supported by current data
+
+## Analytics Features to Prioritize
+
+1. Cost comparison dashboard
+2. Admission requirement comparison
+3. Deadline insights
+4. Recommendation insight breakdown
+5. Ranking comparison ONLY if ranking data is standardized from one source
+
+## Cost Dashboard Requirements
+
+The app should support analytics showing:
+
+* average yearly cost by country
+* average tuition by country
+* average monthly living cost by country
+* cheapest programs in each country
+* total cost comparisons for Taiwan vs Thailand
+
+## Admission Analytics Requirements
+
+The app should support:
+
+* GPA requirement comparison
+* IELTS requirement comparison
+* lowest-barrier programs
+* highest-barrier programs
+
+## Deadline Analytics Requirements
+
+The app should support:
+
+* upcoming deadlines
+* programs closing soon
+* deadline month comparisons
+
+## Ranking Data Warning
+
+Do NOT create ranking charts unless ranking data is standardized from a single source.
+Mixed rankings must not be visualized as if they are directly comparable.
+
+## Architecture Rule for Analytics
+
+Prefer backend summary endpoints for analytics rather than doing all analytics calculations only in the frontend.
+
+Recommended pattern:
+
+* backend summary/analytics endpoints
+* frontend dashboard page consuming those endpoints
+
+## UI Rule for Analytics
+
+Analytics UI should remain low-fidelity, clean, and trustworthy.
+Use:
+
+* KPI cards
+* simple bar charts
+* summary tables
+* clear labels
+
+Do NOT use overly decorative dashboards.
+
+
 Must include pages:
 
 * Home
