@@ -2,6 +2,8 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminLoginPage from './pages/AdminLoginPage'
+import AdmissionAnalyticsPage from './pages/AdmissionAnalyticsPage'
+import AnalyticsPage from './pages/AnalyticsPage'
 import CompareProgramsPage from './pages/CompareProgramsPage'
 import CostCalculatorPage from './pages/CostCalculatorPage'
 import HomePage from './pages/HomePage'
@@ -20,6 +22,8 @@ function App() {
         <Route path="/programs/:programId" element={<ProgramDetailPage />} />
         <Route path="/compare" element={<CompareProgramsPage />} />
         <Route path="/cost-calculator" element={<CostCalculatorPage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/analytics/admission" element={<AdmissionAnalyticsPage />} />
         <Route path="/legal" element={<LegalGuardrailPage />} />
         <Route path="/red-flags" element={<RedFlagGuidePage />} />
         <Route path="/admin" element={<Navigate to="/admin/login" replace />} />

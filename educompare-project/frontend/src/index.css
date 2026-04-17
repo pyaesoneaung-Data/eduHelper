@@ -349,6 +349,64 @@ select {
   background: #14191e;
 }
 
+.kpi-value {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.comparison-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.comparison-row {
+  display: grid;
+  gap: 12px;
+}
+
+.comparison-label {
+  font-weight: 600;
+}
+
+.comparison-bars {
+  display: grid;
+  gap: 14px;
+}
+
+.comparison-country {
+  display: grid;
+  gap: 8px;
+}
+
+.comparison-country-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+}
+
+.comparison-track {
+  height: 14px;
+  background: var(--panel-soft);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.comparison-fill {
+  height: 100%;
+}
+
+.comparison-fill-taiwan {
+  background: #d1d5db;
+}
+
+.comparison-fill-thailand {
+  background: #7c8792;
+}
+
 @media (max-width: 700px) {
   .site-header,
   .page-shell {

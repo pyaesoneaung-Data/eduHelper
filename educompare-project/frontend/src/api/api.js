@@ -48,4 +48,14 @@ export async function getRecommendations(params) {
   return response.data
 }
 
+export async function getCostOverviewAnalytics() {
+  const response = await api.get('/analytics/cost-overview')
+  return response.data
+}
+
+export async function getAdmissionAnalytics() {
+  const response = await api.get('/analytics/admission-overview')
+  return response.data
+}
+
 export default api
