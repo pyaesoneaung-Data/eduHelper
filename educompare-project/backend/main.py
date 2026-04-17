@@ -215,6 +215,16 @@ def recommend_programs(
         if not university or not cost:
             continue
 
+        # ✅ STRICT FILTERS
+        if country_id and university.country_id != country_id:
+            continue
+
+        if degree_level and program.degree_level.lower() != degree_level.lower():
+            continue
+
+        if instruction_language and program.instruction_language.lower() != instruction_language.lower():
+            continue
+
         yearly_tuition = float(cost.tuition_fee_per_semester) * 2
         yearly_living = float(cost.avg_monthly_living_cost) * 12
         yearly_total = yearly_tuition + yearly_living
@@ -222,55 +232,34 @@ def recommend_programs(
         score = 0
 
         score_breakdown = {
-            "country_match": 0,
-            "degree_match": 0,
-            "language_match": 0,
             "budget_fit": 0,
             "gpa_fit": 0,
             "ielts_fit": 0,
             "deadline_fit": 0
         }
 
-        # Country
-        if country_id and university.country_id == country_id:
-            score += 30
-            score_breakdown["country_match"] = 30
-
-        # Degree
-        if degree_level and program.degree_level.lower() == degree_level.lower():
-            score += 25
-            score_breakdown["degree_match"] = 25
-
-        # Language
-        if instruction_language and program.instruction_language.lower() == instruction_language.lower():
-            score += 20
-            score_breakdown["language_match"] = 20
-
-        # Budget
+        # Budget scoring
         if max_budget is not None and yearly_total <= max_budget:
             score += 25
             score_breakdown["budget_fit"] = 25
 
-        # GPA fit
+        # GPA scoring
         if requirement and user_gpa is not None and requirement.min_gpa is not None:
             if user_gpa >= float(requirement.min_gpa):
                 score += 20
                 score_breakdown["gpa_fit"] = 20
 
-        # IELTS fit
+        # IELTS scoring
         if requirement and user_ielts is not None and requirement.ielts_min is not None:
             if user_ielts >= float(requirement.ielts_min):
                 score += 20
                 score_breakdown["ielts_fit"] = 20
 
-        # Deadline fit
+        # Deadline scoring
         if deadline_limit and program.application_deadline is not None:
             if program.application_deadline <= deadline_limit:
                 score += 10
                 score_breakdown["deadline_fit"] = 10
-
-        if score == 0:
-            continue
 
         recommendations.append({
             "program_id": program.program_id,
