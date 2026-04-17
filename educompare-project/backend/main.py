@@ -1,3 +1,7 @@
+#frontend
+from fastapi.middleware.cors import CORSMiddleware
+
+#backend
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from database import get_db
@@ -13,6 +17,14 @@ from schemas import (
 
 
 app = FastAPI(title="EduCompare API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
