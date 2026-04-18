@@ -417,3 +417,126 @@ Requirements:
 * allow analytics/sidebar layouts to collapse on smaller screens
 * make tables horizontally scrollable on small screens
 * prioritize usable responsive behavior over pixel-perfect design
+
+## Backend Protection Rules
+
+The backend is considered stable and must not be modified during frontend refactors unless explicitly requested.
+
+Do NOT:
+
+* Change recommendation scoring logic
+* Move scoring logic into frontend
+* Modify existing endpoints without clear reason
+* Duplicate backend logic in frontend
+
+Frontend must always:
+
+* Consume API responses as source of truth
+* Respect strict filtering rules from backend
+* Use backend-provided scores directly
+
+## Frontend Layout Architecture
+
+The application follows a dashboard-style layout.
+
+Global structure:
+
+* Fixed left sidebar navigation
+* Responsive main content area
+
+Sidebar sections:
+
+* Home
+* Decision Hub
+* Analytics
+* Legal Info
+* Red Flag Guide
+* Settings
+* Logout
+
+Decision Hub:
+
+* Groups Recommendation, Compare, and Cost Calculator
+* Uses sticky sub-navigation
+
+Analytics:
+
+* Contains:
+
+  * Cost Overview
+  * Admission Overview
+  * Deadline Insights (placeholder)
+  * Ranking Insights (placeholder)
+* Uses sticky internal navigation
+
+All navigation should:
+
+* Be persistent
+* Reduce user navigation complexity
+* Avoid full page reloads where possible
+
+## Analytics Integrity Rules
+
+Analytics must reflect real dataset logic.
+
+Do NOT:
+
+* Fake rankings without reliable data
+* Mix currencies without clear explanation
+* Create misleading comparisons
+
+Always:
+
+* Display currency clearly (TWD vs THB)
+* Use backend-calculated averages
+* Label placeholder data clearly
+
+Analytics is part of the data analyst portfolio and must remain trustworthy.
+
+## UI Philosophy
+
+The current stage is low-fidelity structure alignment.
+
+Focus:
+
+* Layout correctness
+* Navigation clarity
+* Data readability
+
+Do NOT:
+
+* Add heavy animations
+* Introduce complex UI libraries
+* Redesign visual style prematurely
+
+High-fidelity design will be handled later.
+
+## Future Features (Planned)
+
+The system will later include:
+
+* Admin panel with authentication
+
+  * Admin can update datasets (universities, programs, requirements, costs)
+
+* Multi-language support:
+
+  * English (default)
+  * Thai
+  * Chinese
+
+* Dark/Light mode
+
+Frontend refactors should:
+
+* Avoid hardcoding text
+* Keep structure flexible for translation
+* Keep layout adaptable for future admin pages
+
+## Asset Usage Rules
+
+* Use SVG icons from /src/assets/icons/
+* Do NOT use PNG for UI icons
+* Icons must support dynamic styling (dark mode, hover states)
+
+Keep assets reusable and lightweight.
