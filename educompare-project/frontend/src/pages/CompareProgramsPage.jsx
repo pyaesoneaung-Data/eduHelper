@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { getComparePrograms, getProgramDetail, getPrograms, getRequirements } from '../api/api'
 import CompareTable from '../components/CompareTable'
 import FormSection from '../components/FormSection'
-import PageHeader from '../components/PageHeader'
 
 function CompareProgramsPage() {
   const [programs, setPrograms] = useState([])
@@ -72,16 +71,15 @@ function CompareProgramsPage() {
 
   return (
     <div className="page-stack">
-      <PageHeader
-        eyebrow="Compare Programs"
-        title="Check two programs side by side before making a decision."
-        description="Use the existing comparison endpoint, then enrich the result with requirement and language details from the current API."
-      />
+      <div className="section-heading">
+        <h2>Compare</h2>
+        <p>Use the current compare endpoint, then enrich the table with existing requirement and detail endpoints.</p>
+      </div>
 
-      <form onSubmit={handleSubmit}>
+      <form className="page-stack" onSubmit={handleSubmit}>
         <FormSection
           title="Comparison inputs"
-          description="Select two program IDs from the live dataset. This view focuses on costs, requirements, deadlines, and instruction language."
+          description="Select two live program records and compare tuition, living cost, GPA, IELTS, and deadlines side by side."
         >
           <label>
             First program
@@ -114,9 +112,11 @@ function CompareProgramsPage() {
           </label>
         </FormSection>
 
-        <button className="primary-button" type="submit" disabled={loading}>
-          {loading ? 'Loading comparison...' : 'Compare programs'}
-        </button>
+        <div className="action-row">
+          <button className="primary-button" type="submit" disabled={loading}>
+            {loading ? 'Loading comparison...' : 'Compare programs'}
+          </button>
+        </div>
       </form>
 
       {error ? <p className="error-text">{error}</p> : null}

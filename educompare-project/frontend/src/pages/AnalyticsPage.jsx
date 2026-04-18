@@ -118,10 +118,7 @@ function AnalyticsPage() {
     <div className="page-stack">
       <div className="section-heading">
         <h2>Cost Overview</h2>
-        <p>
-          Compare real average costs between Taiwan and Thailand using the current
-          tuition and living-cost records.
-        </p>
+        <p>Compare average yearly costs, tuition, and lowest-cost programs using backend-provided country summaries.</p>
       </div>
 
       {error ? <p className="error-text">{error}</p> : null}
@@ -145,8 +142,8 @@ function AnalyticsPage() {
 
           <InfoCard title="Country comparison">
             <p className="muted-text">
-              Costs are shown in each country&apos;s native currency. This dashboard compares
-              the dataset as stored and does not convert currencies.
+              Values remain in each country&apos;s native currency. This dashboard does not convert
+              TWD and THB into a single figure because that would create a misleading comparison.
             </p>
             <div className="comparison-stack">
               <ComparisonRow

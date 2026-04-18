@@ -5,7 +5,7 @@ function ResultCard({ item }) {
     <article className="result-card">
       <div className="result-card-header">
         <div>
-          <p className="result-meta">{item.country_id} • {item.degree_level}</p>
+          <p className="result-meta">{`${item.country_id} • ${item.degree_level}`}</p>
           <h3>{item.major_name}</h3>
           <p className="muted-text">{item.university_name}</p>
         </div>
@@ -19,7 +19,7 @@ function ResultCard({ item }) {
         </div>
         <div>
           <dt>Estimated yearly cost</dt>
-          <dd>{item.estimated_yearly_cost} {item.currency}</dd>
+          <dd>{`${item.estimated_yearly_cost ?? 'Not available'} ${item.currency ?? ''}`.trim()}</dd>
         </div>
         <div>
           <dt>Minimum GPA</dt>

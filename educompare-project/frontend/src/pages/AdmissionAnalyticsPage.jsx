@@ -177,10 +177,7 @@ function AdmissionAnalyticsPage() {
     <div className="page-stack">
       <div className="section-heading">
         <h2>Admission Overview</h2>
-        <p>
-          Compare GPA and IELTS thresholds between Taiwan and Thailand using the
-          current admission requirement records.
-        </p>
+        <p>Compare GPA and IELTS thresholds using the backend admission analytics summary.</p>
       </div>
 
       {error ? <p className="error-text">{error}</p> : null}
@@ -220,8 +217,8 @@ function AdmissionAnalyticsPage() {
           </InfoCard>
 
           <div className="two-column-grid">
-            <ProgramsTable title="Easiest Programs" programs={easiestPrograms} />
-            <ProgramsTable title="Hardest Programs" programs={hardestPrograms} />
+            <ProgramsTable title="Lowest-barrier programs" programs={easiestPrograms} />
+            <ProgramsTable title="Highest-barrier programs" programs={hardestPrograms} />
           </div>
 
           <InfoCard title="Insights">

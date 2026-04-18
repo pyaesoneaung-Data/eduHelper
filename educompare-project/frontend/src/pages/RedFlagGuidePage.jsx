@@ -6,8 +6,8 @@ function RedFlagGuidePage() {
     <div className="page-stack">
       <PageHeader
         eyebrow="Red Flag Guide"
-        title="Use these checks before paying an agent or accepting a claim."
-        description="This is a static warning page designed to help students spot common manipulation tactics in study-abroad marketing."
+        title="Keep warning signs visible before any payment or agent promise is accepted."
+        description="This is a static educational panel designed to reinforce careful verification and realistic financial planning."
       />
 
       <div className="card-grid">

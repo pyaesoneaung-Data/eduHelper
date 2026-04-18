@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getCountryRules, getPrograms, getRecommendations } from '../api/api'
 import FormSection from '../components/FormSection'
-import PageHeader from '../components/PageHeader'
 import ResultCard from '../components/ResultCard'
 
 function RecommendationPage() {
@@ -85,16 +84,18 @@ function RecommendationPage() {
 
   return (
     <div className="page-stack">
-      <PageHeader
-        eyebrow="Recommendation System"
-        title="Filter strictly by country, degree, and language, then review scored results."
-        description="The backend keeps strict filters and separate scoring logic. This form sends your inputs directly without recreating recommendation rules on the frontend."
-      />
+      <div className="section-heading">
+        <h2>Recommendation</h2>
+        <p>
+          Country, degree level, and instruction language remain strict backend filters.
+          Budget, GPA, and IELTS are sent as scoring inputs only.
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit}>
+      <form className="page-stack" onSubmit={handleSubmit}>
         <FormSection
           title="Student profile"
-          description="Country, degree level, and instruction language are strict filters. Budget, GPA, and IELTS influence the score."
+          description="Use the live dataset and existing recommendation endpoint without recreating backend logic in the frontend."
         >
           <label>
             Country
@@ -168,9 +169,11 @@ function RecommendationPage() {
           </label>
         </FormSection>
 
-        <button className="primary-button" type="submit" disabled={loading}>
-          {loading ? 'Loading recommendations...' : 'Get recommendations'}
-        </button>
+        <div className="action-row">
+          <button className="primary-button" type="submit" disabled={loading}>
+            {loading ? 'Loading recommendations...' : 'Get recommendations'}
+          </button>
+        </div>
       </form>
 
       {error ? <p className="error-text">{error}</p> : null}

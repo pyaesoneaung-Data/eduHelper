@@ -1,11 +1,29 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
+import SectionNav from '../components/SectionNav'
 
 const analyticsNavItems = [
-  { to: '/analytics', label: 'Cost Overview', end: true },
-  { to: '/analytics/admission', label: 'Admission Overview' },
-  { to: '/analytics/deadlines', label: 'Deadline Insights' },
-  { to: '/analytics/ranking', label: 'Ranking Insights' },
+  {
+    to: '/analytics',
+    label: 'Cost Overview',
+    description: 'Country-level yearly and living cost summaries.',
+    end: true,
+  },
+  {
+    to: '/analytics/admission',
+    label: 'Admission Overview',
+    description: 'GPA and IELTS thresholds from the backend dataset.',
+  },
+  {
+    to: '/analytics/deadlines',
+    label: 'Deadline Insights',
+    description: 'Placeholder for upcoming deadline summaries.',
+  },
+  {
+    to: '/analytics/ranking',
+    label: 'Ranking Insights',
+    description: 'Placeholder until ranking data is standardized.',
+  },
 ]
 
 function AnalyticsLayoutPage() {
@@ -13,27 +31,13 @@ function AnalyticsLayoutPage() {
     <div className="page-stack">
       <PageHeader
         eyebrow="Analytics"
-        title="Compare study-abroad decisions through clear, verified summaries."
-        description="Use analytics views to inspect cost and admission patterns without leaving the main application flow."
+        title="Use backend summaries to compare affordability and admission barriers."
+        description="Analytics stays focused on real student questions: costs, requirement barriers, and future deadline insights."
       />
 
-      <section className="analytics-shell">
-        <nav className="analytics-nav" aria-label="Analytics sections">
-          {analyticsNavItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                isActive ? 'analytics-nav-link analytics-nav-link-active' : 'analytics-nav-link'
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="analytics-content">
+      <section className="section-shell">
+        <SectionNav items={analyticsNavItems} label="Analytics sections" />
+        <div className="section-content">
           <Outlet />
         </div>
       </section>

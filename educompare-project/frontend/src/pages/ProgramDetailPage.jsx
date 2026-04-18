@@ -27,7 +27,7 @@ function ProgramDetailPage() {
       <PageHeader
         eyebrow="Program Detail"
         title={`Program overview for ${programId}`}
-        description="This page combines program, university, requirement, and cost information from the existing detail endpoint."
+        description="This page keeps the existing detail endpoint as the source of truth for program, university, requirement, and cost information."
       />
 
       {error ? <p className="error-text">{error}</p> : null}
@@ -50,15 +50,15 @@ function ProgramDetailPage() {
               </div>
               <div>
                 <dt>Duration</dt>
-                <dd>{data.program?.duration_years} years</dd>
+                <dd>{data.program?.duration_years ? `${data.program.duration_years} years` : 'Not listed'}</dd>
               </div>
               <div>
                 <dt>Intake</dt>
-                <dd>{data.program?.intake}</dd>
+                <dd>{data.program?.intake ?? 'Not listed'}</dd>
               </div>
               <div>
                 <dt>Deadline</dt>
-                <dd>{data.program?.application_deadline}</dd>
+                <dd>{data.program?.application_deadline ?? 'Not listed'}</dd>
               </div>
             </dl>
           </InfoCard>
@@ -75,11 +75,11 @@ function ProgramDetailPage() {
               </div>
               <div>
                 <dt>City</dt>
-                <dd>{data.university?.city}</dd>
+                <dd>{data.university?.city ?? 'Not listed'}</dd>
               </div>
               <div>
                 <dt>Type</dt>
-                <dd>{data.university?.university_type}</dd>
+                <dd>{data.university?.university_type ?? 'Not listed'}</dd>
               </div>
               <div>
                 <dt>Website</dt>
@@ -128,14 +128,14 @@ function ProgramDetailPage() {
                   <dt>Monthly living cost</dt>
                   <dd>{data.cost.avg_monthly_living_cost} {data.cost.currency}</dd>
                 </div>
-                <div>
-                  <dt>Application fee</dt>
-                  <dd>{data.cost.application_fee ?? 'Not listed'} {data.cost.currency}</dd>
-                </div>
-                <div>
-                  <dt>Insurance fee</dt>
-                  <dd>{data.cost.insurance_fee ?? 'Not listed'} {data.cost.currency}</dd>
-                </div>
+              <div>
+                <dt>Application fee</dt>
+                <dd>{data.cost.application_fee ? `${data.cost.application_fee} ${data.cost.currency}` : 'Not listed'}</dd>
+              </div>
+              <div>
+                <dt>Insurance fee</dt>
+                <dd>{data.cost.insurance_fee ? `${data.cost.insurance_fee} ${data.cost.currency}` : 'Not listed'}</dd>
+              </div>
               </dl>
             ) : (
               <p className="muted-text">No cost record was returned for this program.</p>

@@ -1,6 +1,6 @@
 function CompareTable({ rows }) {
   if (!rows.length) {
-    return <p className="empty-state">Select two program IDs to compare them side by side.</p>
+    return <p className="empty-state">Select two programs to compare them side by side.</p>
   }
 
   const [left, right] = rows
@@ -11,9 +11,8 @@ function CompareTable({ rows }) {
     ['University', left.university, right.university],
     ['Degree', left.degree_level, right.degree_level],
     ['Language', left.instruction_language, right.instruction_language],
-    ['Tuition / semester', left.tuition_fee, right.tuition_fee],
-    ['Monthly living cost', left.living_cost, right.living_cost],
-    ['Currency', left.currency, right.currency],
+    ['Tuition / semester', `${left.tuition_fee ?? 'Not available'} ${left.currency ?? ''}`.trim(), `${right.tuition_fee ?? 'Not available'} ${right.currency ?? ''}`.trim()],
+    ['Monthly living cost', `${left.living_cost ?? 'Not available'} ${left.currency ?? ''}`.trim(), `${right.living_cost ?? 'Not available'} ${right.currency ?? ''}`.trim()],
     ['Minimum GPA', left.min_gpa, right.min_gpa],
     ['Minimum IELTS', left.ielts_min, right.ielts_min],
     ['Deadline', left.application_deadline, right.application_deadline],

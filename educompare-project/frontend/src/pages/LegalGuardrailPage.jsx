@@ -23,9 +23,9 @@ function LegalGuardrailPage() {
   return (
     <div className="page-stack">
       <PageHeader
-        eyebrow="Legal Guardrail"
-        title="Check legal study and work rules before trusting income promises."
-        description="This page focuses on verified visa notes, work hour limits, permit requirements, and post-study visa information."
+        eyebrow="Legal Info"
+        title="Legal work and visa rules should be visible before any financial promise is trusted."
+        description="This section keeps country rules in an information-panel format so students can review work rights, permit requirements, and visa notes alongside other decision data."
       />
 
       {error ? <p className="error-text">{error}</p> : null}

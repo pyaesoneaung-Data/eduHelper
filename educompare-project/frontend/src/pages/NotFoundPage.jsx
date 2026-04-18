@@ -7,7 +7,7 @@ function NotFoundPage() {
       <PageHeader
         eyebrow="Not Found"
         title="That page is not available."
-        description="Return to the main tools to continue comparing verified program information."
+        description="Return to the dashboard and continue reviewing verified program, cost, and legal information."
       >
         <Link className="primary-button" to="/">
           Return home

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { getCostSummary, getPrograms } from '../api/api'
 import FormSection from '../components/FormSection'
 import InfoCard from '../components/InfoCard'
-import PageHeader from '../components/PageHeader'
 
 function CostCalculatorPage() {
   const [programs, setPrograms] = useState([])
@@ -48,16 +47,15 @@ function CostCalculatorPage() {
 
   return (
     <div className="page-stack">
-      <PageHeader
-        eyebrow="Real-Cost Calculator"
-        title="Estimate the yearly financial burden, not just the tuition figure."
-        description="This calculator uses the backend cost summary endpoint to expose hidden living expenses that are often left out of agent claims."
-      />
+      <div className="section-heading">
+        <h2>Cost Calculator</h2>
+        <p>Use the existing cost summary endpoint to review yearly burden, not just tuition alone.</p>
+      </div>
 
-      <form onSubmit={handleSubmit}>
+      <form className="page-stack" onSubmit={handleSubmit}>
         <FormSection
           title="Program selection"
-          description="Choose a program ID to calculate semester tuition, yearly tuition, monthly living costs, and estimated total yearly cost."
+          description="Choose a live program and return the backend-calculated tuition, living cost, and total yearly estimate."
         >
           <label>
             Program
@@ -72,9 +70,11 @@ function CostCalculatorPage() {
           </label>
         </FormSection>
 
-        <button className="primary-button" type="submit" disabled={loading}>
-          {loading ? 'Calculating...' : 'Calculate yearly cost'}
-        </button>
+        <div className="action-row">
+          <button className="primary-button" type="submit" disabled={loading}>
+            {loading ? 'Calculating...' : 'Calculate yearly cost'}
+          </button>
+        </div>
       </form>
 
       {error ? <p className="error-text">{error}</p> : null}
@@ -100,14 +100,25 @@ function CostCalculatorPage() {
                 <dd>{summary.yearly_living_cost} {summary.currency}</dd>
               </div>
               <div>
-                <dt>Estimated total yearly cost</dt>
+                <dt>Total yearly cost</dt>
                 <dd>{summary.estimated_total_yearly_cost} {summary.currency}</dd>
+              </div>
+              <div>
+                <dt>Application fee</dt>
+                <dd>{summary.application_fee ? `${summary.application_fee} ${summary.currency}` : 'Not listed'}</dd>
+              </div>
+              <div>
+                <dt>Insurance fee</dt>
+                <dd>{summary.insurance_fee ? `${summary.insurance_fee} ${summary.currency}` : 'Not listed'}</dd>
               </div>
             </dl>
           </InfoCard>
 
-          <InfoCard title="Important note" tone="muted">
-            <p>This is an estimate. Actual costs may vary.</p>
+          <InfoCard title="Interpretation note" tone="muted">
+            <p>
+              This view is meant to expose real yearly burden. Students should still verify deposits,
+              travel, and one-time setup costs from official sources.
+            </p>
           </InfoCard>
         </div>
       ) : null}
