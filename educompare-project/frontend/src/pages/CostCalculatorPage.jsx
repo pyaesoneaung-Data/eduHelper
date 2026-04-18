@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { getCostSummary, getPrograms } from '../api/api'
+import { getCostSummary, getPrograms, getUniversities } from '../api/api'
 import FormSection from '../components/FormSection'
 import InfoCard from '../components/InfoCard'
 
 function CostCalculatorPage() {
   const [programs, setPrograms] = useState([])
+  const [universities, setUniversities] = useState([])
   const [programId, setProgramId] = useState('')
   const [summary, setSummary] = useState(null)
   const [error, setError] = useState('')
@@ -13,8 +14,9 @@ function CostCalculatorPage() {
   useEffect(() => {
     async function loadPrograms() {
       try {
-        const data = await getPrograms()
-        setPrograms(data)
+        const [programData, universityData] = await Promise.all([getPrograms(), getUniversities()])
+        setPrograms(programData)
+        setUniversities(universityData)
       } catch {
         setError('Unable to load programs for the calculator.')
       }
@@ -22,6 +24,11 @@ function CostCalculatorPage() {
 
     loadPrograms()
   }, [])
+
+  const universityMap = universities.reduce((map, university) => {
+    map[university.university_id] = university.university_name
+    return map
+  }, {})
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -63,7 +70,7 @@ function CostCalculatorPage() {
               <option value="">Select program</option>
               {programs.map((program) => (
                 <option key={program.program_id} value={program.program_id}>
-                  {program.program_id} - {program.major_name}
+                  {`${universityMap[program.university_id] ?? 'Unknown university'} - ${program.major_name} (${program.program_id})`}
                 </option>
               ))}
             </select>

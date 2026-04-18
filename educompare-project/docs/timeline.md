@@ -33,5 +33,3 @@ Testing + fixing + polishing
 Day 20
 
 Presentation + documentation + screenshots
-
-hi

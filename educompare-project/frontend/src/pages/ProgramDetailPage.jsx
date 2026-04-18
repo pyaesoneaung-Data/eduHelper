@@ -84,9 +84,13 @@ function ProgramDetailPage() {
               <div>
                 <dt>Website</dt>
                 <dd>
-                  <a className="text-link" href={data.university?.official_website} target="_blank" rel="noreferrer">
-                    Official website
-                  </a>
+                  {data.university?.official_website ? (
+                    <a className="text-link" href={data.university.official_website} target="_blank" rel="noreferrer">
+                      Official website
+                    </a>
+                  ) : (
+                    'Not listed'
+                  )}
                 </dd>
               </div>
             </dl>

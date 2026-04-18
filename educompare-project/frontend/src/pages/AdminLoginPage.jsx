@@ -5,9 +5,9 @@ function AdminLoginPage() {
   return (
     <div className="page-stack">
       <PageHeader
-        eyebrow="Admin Placeholder"
+        eyebrow="Planned Admin"
         title="Admin login route is reserved for future access control."
-        description="This placeholder keeps the app structure ready for a later role-based admin flow without creating a separate frontend."
+        description="This route remains in place so the future admin workflow can be added without restructuring the public dashboard."
       />
 
       <InfoCard title="Why this page exists">

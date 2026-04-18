@@ -5,7 +5,7 @@ function AdminDashboardPage() {
   return (
     <div className="page-stack">
       <PageHeader
-        eyebrow="Admin Placeholder"
+        eyebrow="Planned Admin"
         title="Admin dashboard will be added after the public MVP is stable."
         description="This route is reserved for future data update tools, source verification workflows, and content maintenance."
       />

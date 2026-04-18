@@ -9,6 +9,11 @@ export async function getPrograms(params) {
   return response.data
 }
 
+export async function getUniversities(params) {
+  const response = await api.get('/universities', { params })
+  return response.data
+}
+
 export async function getProgramDetail(programId) {
   const response = await api.get(`/programs/${programId}`)
   return response.data

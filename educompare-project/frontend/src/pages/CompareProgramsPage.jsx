@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { getComparePrograms, getProgramDetail, getPrograms, getRequirements } from '../api/api'
+import { getComparePrograms, getProgramDetail, getPrograms, getRequirements, getUniversities } from '../api/api'
 import CompareTable from '../components/CompareTable'
 import FormSection from '../components/FormSection'
 
 function CompareProgramsPage() {
   const [programs, setPrograms] = useState([])
+  const [universities, setUniversities] = useState([])
   const [programIds, setProgramIds] = useState({ first: '', second: '' })
   const [rows, setRows] = useState([])
   const [error, setError] = useState('')
@@ -13,8 +14,9 @@ function CompareProgramsPage() {
   useEffect(() => {
     async function loadPrograms() {
       try {
-        const data = await getPrograms()
-        setPrograms(data)
+        const [programData, universityData] = await Promise.all([getPrograms(), getUniversities()])
+        setPrograms(programData)
+        setUniversities(universityData)
       } catch {
         setError('Unable to load programs for comparison.')
       }
@@ -22,6 +24,11 @@ function CompareProgramsPage() {
 
     loadPrograms()
   }, [])
+
+  const universityMap = universities.reduce((map, university) => {
+    map[university.university_id] = university.university_name
+    return map
+  }, {})
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -90,7 +97,7 @@ function CompareProgramsPage() {
               <option value="">Select program</option>
               {programs.map((program) => (
                 <option key={program.program_id} value={program.program_id}>
-                  {program.program_id} - {program.major_name}
+                  {`${universityMap[program.university_id] ?? 'Unknown university'} - ${program.major_name} (${program.program_id})`}
                 </option>
               ))}
             </select>
@@ -105,7 +112,7 @@ function CompareProgramsPage() {
               <option value="">Select program</option>
               {programs.map((program) => (
                 <option key={program.program_id} value={program.program_id}>
-                  {program.program_id} - {program.major_name}
+                  {`${universityMap[program.university_id] ?? 'Unknown university'} - ${program.major_name} (${program.program_id})`}
                 </option>
               ))}
             </select>

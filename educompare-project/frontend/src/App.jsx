@@ -44,8 +44,8 @@ function App() {
             path="deadlines"
             element={
               <AnalyticsPlaceholderPage
-                title="Deadline insights will be added in a later iteration."
-                description="This placeholder keeps the analytics section ready for upcoming deadline analysis without adding unfinished logic."
+                title="Deadline insights are reserved for a later backend summary."
+                description="The analytics layout keeps this slot ready for deadline monitoring once a dedicated summary endpoint is added."
               />
             }
           />
@@ -53,8 +53,8 @@ function App() {
             path="ranking"
             element={
               <AnalyticsPlaceholderPage
-                title="Ranking insights are reserved for standardized ranking data."
-                description="This placeholder avoids misleading comparisons until ranking sources are standardized and directly comparable."
+                title="Ranking insights are withheld until ranking data is standardized."
+                description="No ranking chart is shown here because mixed or incomplete ranking sources would create a misleading comparison."
               />
             }
           />

@@ -6,23 +6,19 @@ const analyticsNavItems = [
   {
     to: '/analytics',
     label: 'Cost Overview',
-    description: 'Country-level yearly and living cost summaries.',
     end: true,
   },
   {
     to: '/analytics/admission',
     label: 'Admission Overview',
-    description: 'GPA and IELTS thresholds from the backend dataset.',
   },
   {
     to: '/analytics/deadlines',
     label: 'Deadline Insights',
-    description: 'Placeholder for upcoming deadline summaries.',
   },
   {
     to: '/analytics/ranking',
     label: 'Ranking Insights',
-    description: 'Placeholder until ranking data is standardized.',
   },
 ]
 
@@ -31,8 +27,8 @@ function AnalyticsLayoutPage() {
     <div className="page-stack">
       <PageHeader
         eyebrow="Analytics"
-        title="Use backend summaries to compare affordability and admission barriers."
-        description="Analytics stays focused on real student questions: costs, requirement barriers, and future deadline insights."
+        title="Compare study-abroad decisions through clear, verified summaries."
+        description="Use analytics views to inspect cost and admission patterns without leaving the main application flow."
       />
 
       <section className="section-shell">
