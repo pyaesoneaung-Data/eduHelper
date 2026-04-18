@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Backend local environment
+educompare-project/backend/.env
+
+# Frontend
+educompare-project/frontend/node_modules/
+educompare-project/frontend/dist/
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
