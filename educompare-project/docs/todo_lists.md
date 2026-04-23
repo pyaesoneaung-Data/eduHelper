@@ -7,7 +7,7 @@ Kino Part
 0- country filter in cost overview
 0- update cost overview analytics
 0- Add about page
-0- Add App logo in explore background(check in figma)
+0- Add App logo in explore background(check in figma )
 
 
 Dot Part
