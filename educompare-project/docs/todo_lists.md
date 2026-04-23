@@ -8,6 +8,7 @@ Kino Part
 0- update cost overview analytics
 0- Add about page
 0- Add App logo in explore background(check in figma )
+0- add flash page
 
 
 Dot Part
@@ -20,3 +21,4 @@ Dot Part
 
 0- find universities' logo
 0- define unimatch logo
+0- flash page slogan define
