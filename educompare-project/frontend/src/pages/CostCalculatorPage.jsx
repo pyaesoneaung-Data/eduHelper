@@ -1,9 +1,20 @@
 import { useEffect, useState } from 'react'
 import { getCostSummary, getPrograms, getUniversities } from '../api/api'
+import { useAppShell } from '../context/AppShellContext'
+import { convertCurrency } from '../utils/currency'
 import FormSection from '../components/FormSection'
 import InfoCard from '../components/InfoCard'
 
+function formatCost(value, nativeCurrency, displayCurrency) {
+  if (value === null || value === undefined) return 'Not listed'
+  const isUSD = displayCurrency === 'USD'
+  const amount = isUSD ? convertCurrency(Number(value), nativeCurrency, 'USD') : Number(value)
+  const label = isUSD ? 'USD' : (nativeCurrency ?? '')
+  return `${Math.round(amount).toLocaleString()} ${label}`.trim()
+}
+
 function CostCalculatorPage() {
+  const { currency: displayCurrency, toggleCurrency } = useAppShell()
   const [programs, setPrograms] = useState([])
   const [universities, setUniversities] = useState([])
   const [programId, setProgramId] = useState('')
@@ -56,13 +67,13 @@ function CostCalculatorPage() {
     <div className="page-stack">
       <div className="section-heading">
         <h2>Cost Calculator</h2>
-        <p>Use the existing cost summary endpoint to review yearly burden, not just tuition alone.</p>
+        <p>See the full yearly cost picture — tuition, living costs, fees — not just the headline tuition figure agents usually show.</p>
       </div>
 
       <form className="page-stack" onSubmit={handleSubmit}>
         <FormSection
           title="Program selection"
-          description="Choose a live program and return the backend-calculated tuition, living cost, and total yearly estimate."
+          description="Select a program to see the full yearly cost breakdown — tuition, living costs, application fee, and insurance."
         >
           <label>
             Program
@@ -70,7 +81,7 @@ function CostCalculatorPage() {
               <option value="">Select program</option>
               {programs.map((program) => (
                 <option key={program.program_id} value={program.program_id}>
-                  {`${universityMap[program.university_id] ?? 'Unknown university'} - ${program.major_name} (${program.program_id})`}
+                  {`${universityMap[program.university_id] ?? 'Unknown university'} — ${program.major_name}`}
                 </option>
               ))}
             </select>
@@ -89,34 +100,40 @@ function CostCalculatorPage() {
       {summary ? (
         <div className="two-column-grid">
           <InfoCard title="Cost summary">
+            <p className="muted-text" style={{ marginBottom: '12px' }}>
+              {displayCurrency === 'USD' ? 'Costs converted to USD. ' : `Costs shown in ${summary.currency}. `}
+              <button type="button" className="text-button" onClick={toggleCurrency}>
+                {displayCurrency === 'USD' ? 'Switch to native →' : 'Switch to USD →'}
+              </button>
+            </p>
             <dl className="detail-grid">
               <div>
                 <dt>Tuition per semester</dt>
-                <dd>{summary.tuition_per_semester} {summary.currency}</dd>
+                <dd>{formatCost(summary.tuition_per_semester, summary.currency, displayCurrency)}</dd>
               </div>
               <div>
                 <dt>Yearly tuition</dt>
-                <dd>{summary.yearly_tuition} {summary.currency}</dd>
+                <dd>{formatCost(summary.yearly_tuition, summary.currency, displayCurrency)}</dd>
               </div>
               <div>
                 <dt>Monthly living cost</dt>
-                <dd>{summary.monthly_living_cost} {summary.currency}</dd>
+                <dd>{formatCost(summary.monthly_living_cost, summary.currency, displayCurrency)}</dd>
               </div>
               <div>
                 <dt>Yearly living cost</dt>
-                <dd>{summary.yearly_living_cost} {summary.currency}</dd>
+                <dd>{formatCost(summary.yearly_living_cost, summary.currency, displayCurrency)}</dd>
               </div>
               <div>
                 <dt>Total yearly cost</dt>
-                <dd>{summary.estimated_total_yearly_cost} {summary.currency}</dd>
+                <dd>{formatCost(summary.estimated_total_yearly_cost, summary.currency, displayCurrency)}</dd>
               </div>
               <div>
                 <dt>Application fee</dt>
-                <dd>{summary.application_fee ? `${summary.application_fee} ${summary.currency}` : 'Not listed'}</dd>
+                <dd>{formatCost(summary.application_fee, summary.currency, displayCurrency)}</dd>
               </div>
               <div>
                 <dt>Insurance fee</dt>
-                <dd>{summary.insurance_fee ? `${summary.insurance_fee} ${summary.currency}` : 'Not listed'}</dd>
+                <dd>{formatCost(summary.insurance_fee, summary.currency, displayCurrency)}</dd>
               </div>
             </dl>
           </InfoCard>

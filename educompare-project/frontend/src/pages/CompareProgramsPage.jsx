@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getComparePrograms, getProgramDetail, getPrograms, getRequirements, getUniversities } from '../api/api'
+import { getProgramDetail, getPrograms, getUniversities } from '../api/api'
 import CompareTable from '../components/CompareTable'
 import FormSection from '../components/FormSection'
 
@@ -47,29 +47,31 @@ function CompareProgramsPage() {
     setError('')
 
     try {
-      const compareData = await getComparePrograms([programIds.first, programIds.second])
-      const enriched = await Promise.all(
-        compareData.map(async (item) => {
-          const [detail, requirements] = await Promise.all([
-            getProgramDetail(item.program_id),
-            getRequirements({ program_id: item.program_id }),
-          ])
+      const [firstDetail, secondDetail] = await Promise.all([
+        getProgramDetail(programIds.first),
+        getProgramDetail(programIds.second),
+      ])
 
-          const requirement = requirements[0]
+      function toRow(detail) {
+        const req = detail.requirements?.[0]
+        return {
+          program_id: detail.program.program_id,
+          major_name: detail.program.major_name,
+          university: detail.university?.university_name ?? 'Not available',
+          degree_level: detail.program.degree_level,
+          instruction_language: detail.program.instruction_language ?? 'Not available',
+          tuition_fee: detail.cost?.tuition_fee_per_semester ?? null,
+          currency: detail.cost?.currency ?? null,
+          living_cost: detail.cost?.avg_monthly_living_cost ?? null,
+          min_gpa: req?.min_gpa ?? null,
+          ielts_min: req?.ielts_min ?? null,
+          application_deadline: detail.program.application_deadline ?? null,
+        }
+      }
 
-          return {
-            ...item,
-            instruction_language: detail.program?.instruction_language ?? 'Not available',
-            application_deadline: detail.program?.application_deadline ?? 'Not available',
-            min_gpa: requirement?.min_gpa ?? 'Not listed',
-            ielts_min: requirement?.ielts_min ?? 'Not listed',
-          }
-        }),
-      )
-
-      setRows(enriched)
+      setRows([toRow(firstDetail), toRow(secondDetail)])
     } catch {
-      setError('Comparison data could not be loaded. Check the selected IDs and backend service.')
+      setError('Comparison data could not be loaded.')
       setRows([])
     } finally {
       setLoading(false)
@@ -79,14 +81,14 @@ function CompareProgramsPage() {
   return (
     <div className="page-stack">
       <div className="section-heading">
-        <h2>Compare</h2>
-        <p>Use the current compare endpoint, then enrich the table with existing requirement and detail endpoints.</p>
+        <h2>Compare Programs</h2>
+        <p>Select two programs to compare tuition, living costs, GPA and IELTS requirements, and deadlines side by side.</p>
       </div>
 
       <form className="page-stack" onSubmit={handleSubmit}>
         <FormSection
           title="Comparison inputs"
-          description="Select two live program records and compare tuition, living cost, GPA, IELTS, and deadlines side by side."
+          description="Choose any two programs from the list. All costs, requirements, and deadlines are pulled from the live database."
         >
           <label>
             First program
@@ -97,7 +99,7 @@ function CompareProgramsPage() {
               <option value="">Select program</option>
               {programs.map((program) => (
                 <option key={program.program_id} value={program.program_id}>
-                  {`${universityMap[program.university_id] ?? 'Unknown university'} - ${program.major_name} (${program.program_id})`}
+                  {`${universityMap[program.university_id] ?? 'Unknown university'} — ${program.major_name}`}
                 </option>
               ))}
             </select>
@@ -112,7 +114,7 @@ function CompareProgramsPage() {
               <option value="">Select program</option>
               {programs.map((program) => (
                 <option key={program.program_id} value={program.program_id}>
-                  {`${universityMap[program.university_id] ?? 'Unknown university'} - ${program.major_name} (${program.program_id})`}
+                  {`${universityMap[program.university_id] ?? 'Unknown university'} — ${program.major_name}`}
                 </option>
               ))}
             </select>

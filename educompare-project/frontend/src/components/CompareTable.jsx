@@ -1,44 +1,80 @@
+import { useAppShell } from '../context/AppShellContext'
+import { convertCurrency } from '../utils/currency'
+import { isDeadlinePassed } from '../utils/date'
+
+function formatCost(value, nativeCurrency, displayCurrency) {
+  if (value === null || value === undefined) return 'Not available'
+  const isUSD = displayCurrency === 'USD'
+  const amount = isUSD ? convertCurrency(Number(value), nativeCurrency, 'USD') : Number(value)
+  const label = isUSD ? 'USD' : (nativeCurrency ?? '')
+  return `${Math.round(amount).toLocaleString()} ${label}`.trim()
+}
+
 function CompareTable({ rows }) {
+  const { currency: displayCurrency, toggleCurrency } = useAppShell()
   if (!rows.length) {
     return <p className="empty-state">Select two programs to compare them side by side.</p>
   }
 
   const [left, right] = rows
+  const hasMixedCurrencies = left.currency !== right.currency && displayCurrency === 'native'
+
+  const leftDeadlinePassed = isDeadlinePassed(left.application_deadline)
+  const rightDeadlinePassed = isDeadlinePassed(right.application_deadline)
 
   const dataRows = [
-    ['Program ID', left.program_id, right.program_id],
-    ['Program', left.major_name, right.major_name],
-    ['University', left.university, right.university],
-    ['Degree', left.degree_level, right.degree_level],
-    ['Language', left.instruction_language, right.instruction_language],
-    ['Tuition / semester', `${left.tuition_fee ?? 'Not available'} ${left.currency ?? ''}`.trim(), `${right.tuition_fee ?? 'Not available'} ${right.currency ?? ''}`.trim()],
-    ['Monthly living cost', `${left.living_cost ?? 'Not available'} ${left.currency ?? ''}`.trim(), `${right.living_cost ?? 'Not available'} ${right.currency ?? ''}`.trim()],
-    ['Minimum GPA', left.min_gpa, right.min_gpa],
-    ['Minimum IELTS', left.ielts_min, right.ielts_min],
-    ['Deadline', left.application_deadline, right.application_deadline],
+    { label: 'Program',            left: left.major_name,                             right: right.major_name },
+    { label: 'University',         left: left.university,                             right: right.university },
+    { label: 'Degree',             left: left.degree_level,                           right: right.degree_level },
+    { label: 'Language',           left: left.instruction_language,                   right: right.instruction_language },
+    { label: 'Tuition / semester',  left: formatCost(left.tuition_fee, left.currency, displayCurrency),  right: formatCost(right.tuition_fee, right.currency, displayCurrency) },
+    { label: 'Monthly living cost', left: formatCost(left.living_cost, left.currency, displayCurrency),  right: formatCost(right.living_cost, right.currency, displayCurrency) },
+    { label: 'Minimum GPA',        left: left.min_gpa ?? 'Not listed',                right: right.min_gpa ?? 'Not listed' },
+    { label: 'Minimum IELTS',      left: left.ielts_min ?? 'Not listed',              right: right.ielts_min ?? 'Not listed' },
   ]
 
   return (
+    <>
+    {hasMixedCurrencies ? (
+      <p className="muted-text">
+        These programs use different currencies ({left.currency} / {right.currency}) — cost figures are not directly comparable.{' '}
+        <button type="button" className="text-button" onClick={toggleCurrency}>Switch to USD for a fair comparison →</button>
+      </p>
+    ) : null}
     <div className="table-shell">
       <table className="compare-table">
         <thead>
           <tr>
             <th>Field</th>
-            <th>{left.program_id}</th>
-            <th>{right.program_id}</th>
+            <th>{left.university}</th>
+            <th>{right.university}</th>
           </tr>
         </thead>
         <tbody>
-          {dataRows.map(([label, leftValue, rightValue]) => (
-            <tr key={label}>
-              <th>{label}</th>
-              <td>{leftValue ?? 'Not available'}</td>
-              <td>{rightValue ?? 'Not available'}</td>
+          {dataRows.map((row) => (
+            <tr key={row.label}>
+              <th>{row.label}</th>
+              <td>{row.left ?? 'Not available'}</td>
+              <td>{row.right ?? 'Not available'}</td>
             </tr>
           ))}
+
+          {/* Deadline row — rendered separately to support per-cell styling */}
+          <tr>
+            <th>Deadline</th>
+            <td className={leftDeadlinePassed ? 'deadline-passed' : ''}>
+              {left.application_deadline ?? 'Not listed'}
+              {leftDeadlinePassed ? ' — Deadline passed' : ''}
+            </td>
+            <td className={rightDeadlinePassed ? 'deadline-passed' : ''}>
+              {right.application_deadline ?? 'Not listed'}
+              {rightDeadlinePassed ? ' — Deadline passed' : ''}
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
+    </>
   )
 }
 
