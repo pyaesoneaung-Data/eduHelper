@@ -20,6 +20,6 @@ Dot Part
     2. adminssion overview
     3. deadline insights
 
-0- find universities' logo
+1- find universities' logo
 1- define unimatch logo
 1- flash page slogan define
