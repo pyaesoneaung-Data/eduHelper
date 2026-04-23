@@ -2,6 +2,18 @@ import { useEffect, useMemo, useState } from 'react'
 import { getAdmissionAnalytics } from '../api/api'
 import InfoCard from '../components/InfoCard'
 
+const COUNTRY_LABEL = {
+  taiwan: 'Taiwan',
+  thailand: 'Thailand',
+  singapore: 'Singapore',
+}
+
+const COUNTRY_FILL_CLASS = {
+  taiwan: 'comparison-fill-taiwan',
+  thailand: 'comparison-fill-thailand',
+  singapore: 'comparison-fill-singapore',
+}
+
 function formatRequirementValue(value) {
   if (value === null || value === undefined) {
     return 'Not available'
@@ -10,32 +22,29 @@ function formatRequirementValue(value) {
   return Number(value).toFixed(2)
 }
 
-function ComparisonRow({ label, taiwanValue, thailandValue, maxValue }) {
-  const taiwanWidth = maxValue > 0 ? `${(taiwanValue / maxValue) * 100}%` : '0%'
-  const thailandWidth = maxValue > 0 ? `${(thailandValue / maxValue) * 100}%` : '0%'
-
+function ComparisonRow({ label, entries, maxValue }) {
+  // entries: [{ key, value }]
   return (
     <div className="comparison-row">
       <div className="comparison-label">{label}</div>
       <div className="comparison-bars">
-        <div className="comparison-country">
-          <div className="comparison-country-head">
-            <span>Taiwan</span>
-            <strong>{formatRequirementValue(taiwanValue)}</strong>
-          </div>
-          <div className="comparison-track">
-            <div className="comparison-fill comparison-fill-taiwan" style={{ width: taiwanWidth }} />
-          </div>
-        </div>
-        <div className="comparison-country">
-          <div className="comparison-country-head">
-            <span>Thailand</span>
-            <strong>{formatRequirementValue(thailandValue)}</strong>
-          </div>
-          <div className="comparison-track">
-            <div className="comparison-fill comparison-fill-thailand" style={{ width: thailandWidth }} />
-          </div>
-        </div>
+        {entries.map(({ key, value }) => {
+          const width = maxValue > 0 ? `${(value / maxValue) * 100}%` : '0%'
+          return (
+            <div key={key} className="comparison-country">
+              <div className="comparison-country-head">
+                <span>{COUNTRY_LABEL[key] ?? key}</span>
+                <strong>{formatRequirementValue(value)}</strong>
+              </div>
+              <div className="comparison-track">
+                <div
+                  className={`comparison-fill ${COUNTRY_FILL_CLASS[key] ?? 'comparison-fill-taiwan'}`}
+                  style={{ width }}
+                />
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
@@ -74,47 +83,52 @@ function ProgramsTable({ title, programs }) {
   )
 }
 
-function buildInsights(taiwan, thailand) {
+function buildInsights(countryData) {
+  const keys = Object.keys(countryData)
   const insights = []
 
-  if (
-    taiwan?.average_min_gpa !== null &&
-    taiwan?.average_min_gpa !== undefined &&
-    thailand?.average_min_gpa !== null &&
-    thailand?.average_min_gpa !== undefined
-  ) {
-    if (taiwan.average_min_gpa < thailand.average_min_gpa) {
-      insights.push('Taiwan has lower GPA requirements on average in the current dataset.')
-    } else if (thailand.average_min_gpa < taiwan.average_min_gpa) {
-      insights.push('Thailand has lower GPA requirements on average in the current dataset.')
+  // GPA insight — find lowest and highest
+  const gpaEntries = keys
+    .map((k) => ({ key: k, value: countryData[k]?.average_min_gpa }))
+    .filter((e) => e.value !== null && e.value !== undefined)
+
+  if (gpaEntries.length >= 2) {
+    const sorted = [...gpaEntries].sort((a, b) => a.value - b.value)
+    const lowest = COUNTRY_LABEL[sorted[0].key] ?? sorted[0].key
+    const highest = COUNTRY_LABEL[sorted[sorted.length - 1].key] ?? sorted[sorted.length - 1].key
+    if (sorted[0].value !== sorted[sorted.length - 1].value) {
+      insights.push(`${lowest} has the lowest average GPA requirement in the current dataset; ${highest} has the highest.`)
     } else {
-      insights.push('Taiwan and Thailand show the same average GPA requirement in the current dataset.')
+      insights.push('All countries show the same average GPA requirement in the current dataset.')
     }
   }
 
-  if (
-    taiwan?.average_ielts !== null &&
-    taiwan?.average_ielts !== undefined &&
-    thailand?.average_ielts !== null &&
-    thailand?.average_ielts !== undefined
-  ) {
-    if (taiwan.average_ielts < thailand.average_ielts) {
-      insights.push('Taiwan shows a lower average IELTS threshold than Thailand.')
-    } else if (thailand.average_ielts < taiwan.average_ielts) {
-      insights.push('Thailand shows a lower average IELTS threshold than Taiwan.')
+  // IELTS insight — find lowest and highest
+  const ieltsEntries = keys
+    .map((k) => ({ key: k, value: countryData[k]?.average_ielts }))
+    .filter((e) => e.value !== null && e.value !== undefined)
+
+  if (ieltsEntries.length >= 2) {
+    const sorted = [...ieltsEntries].sort((a, b) => a.value - b.value)
+    const lowest = COUNTRY_LABEL[sorted[0].key] ?? sorted[0].key
+    const highest = COUNTRY_LABEL[sorted[sorted.length - 1].key] ?? sorted[sorted.length - 1].key
+    if (sorted[0].value !== sorted[sorted.length - 1].value) {
+      insights.push(`${lowest} shows the lowest average IELTS threshold; ${highest} shows the highest.`)
     } else {
-      insights.push('Average IELTS thresholds are the same across both countries in the current dataset.')
+      insights.push('Average IELTS thresholds are the same across all countries in the current dataset.')
     }
   }
 
   return insights.slice(0, 2)
 }
 
-function mergeRankedPrograms(taiwanPrograms = [], thailandPrograms = [], direction = 'asc') {
-  const merged = [...taiwanPrograms, ...thailandPrograms]
+function mergeRankedPrograms(countryData, direction = 'asc') {
+  const allPrograms = Object.values(countryData).flatMap(
+    (c) => (direction === 'asc' ? c?.easiest_programs : c?.hardest_programs) ?? [],
+  )
   const sortFactor = direction === 'asc' ? 1 : -1
 
-  return merged
+  return allPrograms
     .slice()
     .sort((left, right) => {
       if (left.min_gpa !== right.min_gpa) {
@@ -147,31 +161,28 @@ function AdmissionAnalyticsPage() {
     loadAnalytics()
   }, [])
 
-  const taiwan = data?.countries?.taiwan
-  const thailand = data?.countries?.thailand
+  const countryData = data?.countries ?? {}
+  const countryKeys = Object.keys(countryData)
 
   const comparisonMax = useMemo(() => {
-    if (!data) {
-      return { gpa: 0, ielts: 0 }
-    }
-
+    if (!countryKeys.length) return { gpa: 0, ielts: 0 }
     return {
-      gpa: Math.max(taiwan.average_min_gpa ?? 0, thailand.average_min_gpa ?? 0),
-      ielts: Math.max(taiwan.average_ielts ?? 0, thailand.average_ielts ?? 0),
+      gpa: Math.max(...countryKeys.map((k) => countryData[k]?.average_min_gpa ?? 0), 0),
+      ielts: Math.max(...countryKeys.map((k) => countryData[k]?.average_ielts ?? 0), 0),
     }
-  }, [data, taiwan, thailand])
+  }, [countryData, countryKeys])
 
   const easiestPrograms = useMemo(
-    () => mergeRankedPrograms(taiwan?.easiest_programs, thailand?.easiest_programs, 'asc'),
-    [taiwan, thailand],
+    () => mergeRankedPrograms(countryData, 'asc'),
+    [countryData],
   )
 
   const hardestPrograms = useMemo(
-    () => mergeRankedPrograms(taiwan?.hardest_programs, thailand?.hardest_programs, 'desc'),
-    [taiwan, thailand],
+    () => mergeRankedPrograms(countryData, 'desc'),
+    [countryData],
   )
 
-  const insights = useMemo(() => buildInsights(taiwan, thailand), [taiwan, thailand])
+  const insights = useMemo(() => buildInsights(countryData), [countryData])
 
   return (
     <div className="page-stack">
@@ -182,35 +193,39 @@ function AdmissionAnalyticsPage() {
 
       {error ? <p className="error-text">{error}</p> : null}
 
+      {!data && !error ? <p className="muted-text">Loading admission data...</p> : null}
+
       {data ? (
         <>
           <div className="card-grid">
-            <InfoCard title="Avg GPA: Taiwan">
-              <p className="kpi-value">{formatRequirementValue(taiwan.average_min_gpa)}</p>
-            </InfoCard>
-            <InfoCard title="Avg GPA: Thailand">
-              <p className="kpi-value">{formatRequirementValue(thailand.average_min_gpa)}</p>
-            </InfoCard>
-            <InfoCard title="Avg IELTS: Taiwan">
-              <p className="kpi-value">{formatRequirementValue(taiwan.average_ielts)}</p>
-            </InfoCard>
-            <InfoCard title="Avg IELTS: Thailand">
-              <p className="kpi-value">{formatRequirementValue(thailand.average_ielts)}</p>
-            </InfoCard>
+            {countryKeys.map((key) => (
+              <InfoCard key={`gpa-${key}`} title={`Avg GPA: ${COUNTRY_LABEL[key] ?? key}`}>
+                <p className="kpi-value">{formatRequirementValue(countryData[key]?.average_min_gpa)}</p>
+              </InfoCard>
+            ))}
+            {countryKeys.map((key) => (
+              <InfoCard key={`ielts-${key}`} title={`Avg IELTS: ${COUNTRY_LABEL[key] ?? key}`}>
+                <p className="kpi-value">{formatRequirementValue(countryData[key]?.average_ielts)}</p>
+              </InfoCard>
+            ))}
           </div>
 
           <InfoCard title="Admission requirement comparison">
             <div className="comparison-stack">
               <ComparisonRow
                 label="Average GPA requirement"
-                taiwanValue={taiwan.average_min_gpa ?? 0}
-                thailandValue={thailand.average_min_gpa ?? 0}
+                entries={countryKeys.map((key) => ({
+                  key,
+                  value: countryData[key]?.average_min_gpa ?? 0,
+                }))}
                 maxValue={comparisonMax.gpa}
               />
               <ComparisonRow
                 label="Average IELTS requirement"
-                taiwanValue={taiwan.average_ielts ?? 0}
-                thailandValue={thailand.average_ielts ?? 0}
+                entries={countryKeys.map((key) => ({
+                  key,
+                  value: countryData[key]?.average_ielts ?? 0,
+                }))}
                 maxValue={comparisonMax.ielts}
               />
             </div>

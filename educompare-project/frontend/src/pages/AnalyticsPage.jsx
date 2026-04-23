@@ -1,80 +1,119 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { getCostOverviewAnalytics } from '../api/api'
+import { useAppShell } from '../context/AppShellContext'
 import InfoCard from '../components/InfoCard'
+import {
+  convertCurrency,
+  FROM_USD,
+  EXCHANGE_RATE_DATE,
+} from '../utils/currency'
 
-function formatValue(value, currency) {
-  if (value === null || value === undefined) {
-    return 'Not available'
-  }
-
-  return `${Number(value).toLocaleString()} ${currency ?? ''}`.trim()
+// Native currency for each country key returned by the backend
+const COUNTRY_CURRENCY = {
+  taiwan: 'TWD',
+  thailand: 'THB',
+  singapore: 'SGD',
 }
 
-function ComparisonRow({ label, taiwanValue, thailandValue, taiwanCurrency, thailandCurrency, maxValue }) {
-  const taiwanWidth = maxValue > 0 ? `${(taiwanValue / maxValue) * 100}%` : '0%'
-  const thailandWidth = maxValue > 0 ? `${(thailandValue / maxValue) * 100}%` : '0%'
+const COUNTRY_LABEL = {
+  taiwan: 'Taiwan',
+  thailand: 'Thailand',
+  singapore: 'Singapore',
+}
 
+// Bar fill class per country
+const COUNTRY_FILL_CLASS = {
+  taiwan: 'comparison-fill-taiwan',
+  thailand: 'comparison-fill-thailand',
+  singapore: 'comparison-fill-singapore',
+}
+
+function formatValue(value, currency) {
+  if (value === null || value === undefined) return 'Not available'
+  return `${Math.round(Number(value)).toLocaleString()} ${currency ?? ''}`.trim()
+}
+
+function ExchangeRateCard({ displayCurrency }) {
+  if (displayCurrency === 'USD') {
+    return (
+      <InfoCard title="USD reference rates" eyebrow={`As of ${EXCHANGE_RATE_DATE} · Source: XE.com`}>
+        <div className="exchange-rate-grid">
+          <div className="exchange-rate-pair">
+            <span className="exchange-rate-value">1 USD</span>
+            <span className="exchange-rate-arrow">→</span>
+            <span className="exchange-rate-value">{FROM_USD.TWD.toFixed(4)} TWD</span>
+          </div>
+          <div className="exchange-rate-pair">
+            <span className="exchange-rate-value">1 USD</span>
+            <span className="exchange-rate-arrow">→</span>
+            <span className="exchange-rate-value">{FROM_USD.THB.toFixed(4)} THB</span>
+          </div>
+          <div className="exchange-rate-pair">
+            <span className="exchange-rate-value">1 USD</span>
+            <span className="exchange-rate-arrow">→</span>
+            <span className="exchange-rate-value">{FROM_USD.SGD.toFixed(4)} SGD</span>
+          </div>
+        </div>
+        <p className="muted-text" style={{ marginTop: '12px' }}>
+          All costs on this page are converted to USD using these rates. Verify current rates at{' '}
+          <a className="text-link" href="https://www.xe.com" target="_blank" rel="noreferrer">
+            XE.com
+          </a>{' '}
+          before making financial decisions.
+        </p>
+      </InfoCard>
+    )
+  }
+
+  return (
+    <InfoCard title="Exchange rate reference" eyebrow={`As of ${EXCHANGE_RATE_DATE} · Source: XE.com`}>
+      <p className="muted-text">
+        Costs are shown in each country&apos;s own currency — Taiwan in TWD, Thailand in THB, Singapore in SGD.
+        Switch to USD mode for a direct cross-country comparison. Verify current rates at{' '}
+        <a
+          className="text-link"
+          href="https://www.xe.com"
+          target="_blank"
+          rel="noreferrer"
+        >
+          XE.com
+        </a>{' '}
+        before making financial decisions.
+      </p>
+    </InfoCard>
+  )
+}
+
+function ComparisonRow({ label, entries, maxValue }) {
+  // entries: [{ key, value, currency }]
   return (
     <div className="comparison-row">
       <div className="comparison-label">{label}</div>
       <div className="comparison-bars">
-        <div className="comparison-country">
-          <div className="comparison-country-head">
-            <span>Taiwan</span>
-            <strong>{formatValue(taiwanValue, taiwanCurrency)}</strong>
-          </div>
-          <div className="comparison-track">
-            <div className="comparison-fill comparison-fill-taiwan" style={{ width: taiwanWidth }} />
-          </div>
-        </div>
-        <div className="comparison-country">
-          <div className="comparison-country-head">
-            <span>Thailand</span>
-            <strong>{formatValue(thailandValue, thailandCurrency)}</strong>
-          </div>
-          <div className="comparison-track">
-            <div className="comparison-fill comparison-fill-thailand" style={{ width: thailandWidth }} />
-          </div>
-        </div>
+        {entries.map(({ key, value, currency }) => {
+          const width = maxValue > 0 ? `${(value / maxValue) * 100}%` : '0%'
+          return (
+            <div key={key} className="comparison-country">
+              <div className="comparison-country-head">
+                <span>{COUNTRY_LABEL[key] ?? key}</span>
+                <strong>{formatValue(value, currency)}</strong>
+              </div>
+              <div className="comparison-track">
+                <div
+                  className={`comparison-fill ${COUNTRY_FILL_CLASS[key] ?? 'comparison-fill-taiwan'}`}
+                  style={{ width }}
+                />
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
 }
 
-function CheapestProgramsTable({ title, programs }) {
-  return (
-    <InfoCard title={title}>
-      {programs.length ? (
-        <div className="table-shell">
-          <table className="compare-table">
-            <thead>
-              <tr>
-                <th>Program</th>
-                <th>University</th>
-                <th>Yearly cost</th>
-                <th>Currency</th>
-              </tr>
-            </thead>
-            <tbody>
-              {programs.map((program) => (
-                <tr key={program.program_id}>
-                  <td>{program.major_name}</td>
-                  <td>{program.university_name}</td>
-                  <td>{Number(program.yearly_cost).toLocaleString()}</td>
-                  <td>{program.currency}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p className="muted-text">No programs were available for this country.</p>
-      )}
-    </InfoCard>
-  )
-}
-
 function AnalyticsPage() {
+  const { currency: displayCurrency, toggleCurrency } = useAppShell()
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
 
@@ -91,90 +130,117 @@ function AnalyticsPage() {
     loadAnalytics()
   }, [])
 
-  const comparisonMax = useMemo(() => {
-    if (!data) {
-      return {
-        yearlyCost: 0,
-        yearlyTuition: 0,
-      }
-    }
+  const isUSD = displayCurrency === 'USD'
+  const countryData = data?.countries ?? {}
+  const countryKeys = Object.keys(countryData)
 
-    return {
-      yearlyCost: Math.max(
-        data.countries.taiwan.average_yearly_cost,
-        data.countries.thailand.average_yearly_cost,
-      ),
-      yearlyTuition: Math.max(
-        data.countries.taiwan.average_yearly_tuition,
-        data.countries.thailand.average_yearly_tuition,
-      ),
-    }
-  }, [data])
+  function toDisplay(amount, nativeCurrency) {
+    if (amount === null || amount === undefined) return null
+    if (!isUSD) return Number(amount)
+    return convertCurrency(Number(amount), nativeCurrency, 'USD')
+  }
 
-  const taiwan = data?.countries?.taiwan
-  const thailand = data?.countries?.thailand
+  function displayCurrencyFor(key) {
+    return isUSD ? 'USD' : (COUNTRY_CURRENCY[key] ?? 'USD')
+  }
+
+  const yearlyCostMax = Math.max(
+    ...countryKeys.map((key) => {
+      const native = COUNTRY_CURRENCY[key]
+      return toDisplay(countryData[key]?.average_yearly_cost, native) ?? 0
+    }),
+    0,
+  )
+
+  const yearlyTuitionMax = Math.max(
+    ...countryKeys.map((key) => {
+      const native = COUNTRY_CURRENCY[key]
+      return toDisplay(countryData[key]?.average_yearly_tuition, native) ?? 0
+    }),
+    0,
+  )
 
   return (
     <div className="page-stack">
       <div className="section-heading">
         <h2>Cost Overview</h2>
-        <p>Compare average yearly costs, tuition, and lowest-cost programs using backend-provided country summaries.</p>
+        <p>Compare average yearly costs and tuition using backend-provided country summaries.</p>
       </div>
 
       {error ? <p className="error-text">{error}</p> : null}
 
+      {!data && !error ? <p className="muted-text">Loading cost data...</p> : null}
+
       {data ? (
         <>
+          <p className="muted-text">
+            {isUSD ? 'Costs converted to USD. ' : 'Costs shown in local currencies. '}
+            <button type="button" className="text-button" onClick={toggleCurrency}>
+              {isUSD ? 'Switch to local →' : 'Switch to USD →'}
+            </button>
+          </p>
+
           <div className="card-grid">
-            <InfoCard title="Avg yearly cost: Taiwan">
-              <p className="kpi-value">{formatValue(taiwan.average_yearly_cost, taiwan.currency)}</p>
-            </InfoCard>
-            <InfoCard title="Avg yearly cost: Thailand">
-              <p className="kpi-value">{formatValue(thailand.average_yearly_cost, thailand.currency)}</p>
-            </InfoCard>
-            <InfoCard title="Avg monthly living cost: Taiwan">
-              <p className="kpi-value">{formatValue(taiwan.average_monthly_living_cost, taiwan.currency)}</p>
-            </InfoCard>
-            <InfoCard title="Avg monthly living cost: Thailand">
-              <p className="kpi-value">{formatValue(thailand.average_monthly_living_cost, thailand.currency)}</p>
-            </InfoCard>
+            {countryKeys.map((key) => {
+              const native = COUNTRY_CURRENCY[key]
+              const label = COUNTRY_LABEL[key] ?? key
+              const curr = displayCurrencyFor(key)
+              return (
+                <InfoCard key={key} title={`Avg yearly cost: ${label}`}>
+                  <p className="kpi-value">
+                    {formatValue(toDisplay(countryData[key]?.average_yearly_cost, native), curr)}
+                  </p>
+                </InfoCard>
+              )
+            })}
+            {countryKeys.map((key) => {
+              const native = COUNTRY_CURRENCY[key]
+              const label = COUNTRY_LABEL[key] ?? key
+              const curr = displayCurrencyFor(key)
+              return (
+                <InfoCard key={`living-${key}`} title={`Avg monthly living: ${label}`}>
+                  <p className="kpi-value">
+                    {formatValue(toDisplay(countryData[key]?.average_monthly_living_cost, native), curr)}
+                  </p>
+                </InfoCard>
+              )
+            })}
           </div>
 
+          <ExchangeRateCard displayCurrency={displayCurrency} />
+
           <InfoCard title="Country comparison">
-            <p className="muted-text">
-              Values remain in each country&apos;s native currency. This dashboard does not convert
-              TWD and THB into a single figure because that would create a misleading comparison.
-            </p>
+            {isUSD ? (
+              <p className="muted-text">
+                All values converted to USD — bar widths are directly comparable.
+              </p>
+            ) : (
+              <p className="muted-text">
+                Each bar reflects values in that country&apos;s own currency.
+                Bar widths are <strong>not exchange-rate adjusted</strong> — use USD mode for a fair comparison.
+              </p>
+            )}
             <div className="comparison-stack">
               <ComparisonRow
                 label="Average yearly cost"
-                taiwanValue={taiwan.average_yearly_cost}
-                thailandValue={thailand.average_yearly_cost}
-                taiwanCurrency={taiwan.currency}
-                thailandCurrency={thailand.currency}
-                maxValue={comparisonMax.yearlyCost}
+                entries={countryKeys.map((key) => ({
+                  key,
+                  value: toDisplay(countryData[key]?.average_yearly_cost, COUNTRY_CURRENCY[key]) ?? 0,
+                  currency: displayCurrencyFor(key),
+                }))}
+                maxValue={yearlyCostMax}
               />
               <ComparisonRow
                 label="Average yearly tuition"
-                taiwanValue={taiwan.average_yearly_tuition}
-                thailandValue={thailand.average_yearly_tuition}
-                taiwanCurrency={taiwan.currency}
-                thailandCurrency={thailand.currency}
-                maxValue={comparisonMax.yearlyTuition}
+                entries={countryKeys.map((key) => ({
+                  key,
+                  value: toDisplay(countryData[key]?.average_yearly_tuition, COUNTRY_CURRENCY[key]) ?? 0,
+                  currency: displayCurrencyFor(key),
+                }))}
+                maxValue={yearlyTuitionMax}
               />
             </div>
           </InfoCard>
-
-          <div className="two-column-grid">
-            <CheapestProgramsTable
-              title="Cheapest programs in Taiwan"
-              programs={taiwan.cheapest_programs}
-            />
-            <CheapestProgramsTable
-              title="Cheapest programs in Thailand"
-              programs={thailand.cheapest_programs}
-            />
-          </div>
         </>
       ) : null}
     </div>

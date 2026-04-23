@@ -7,6 +7,7 @@ import AnalyticsPage from './pages/AnalyticsPage'
 import AnalyticsPlaceholderPage from './pages/AnalyticsPlaceholderPage'
 import AdmissionAnalyticsPage from './pages/AdmissionAnalyticsPage'
 import CompareProgramsPage from './pages/CompareProgramsPage'
+import DeadlineInsightsPage from './pages/DeadlineInsightsPage'
 import CostCalculatorPage from './pages/CostCalculatorPage'
 import DecisionHubLayoutPage from './pages/DecisionHubLayoutPage'
 import HomePage from './pages/HomePage'
@@ -40,15 +41,7 @@ function App() {
         <Route path="/analytics" element={<AnalyticsLayoutPage />}>
           <Route index element={<AnalyticsPage />} />
           <Route path="admission" element={<AdmissionAnalyticsPage />} />
-          <Route
-            path="deadlines"
-            element={
-              <AnalyticsPlaceholderPage
-                title="Deadline insights are reserved for a later backend summary."
-                description="The analytics layout keeps this slot ready for deadline monitoring once a dedicated summary endpoint is added."
-              />
-            }
-          />
+          <Route path="deadlines" element={<DeadlineInsightsPage />} />
           <Route
             path="ranking"
             element={

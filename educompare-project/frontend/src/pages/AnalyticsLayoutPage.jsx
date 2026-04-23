@@ -30,6 +30,10 @@ function AnalyticsLayoutPage() {
         title="Compare study-abroad decisions through clear, verified summaries."
         description="Use analytics views to inspect cost and admission patterns without leaving the main application flow."
       />
+      <p className="data-freshness-note">
+        Dataset verified April 2026 — sourced from official university and government websites.
+        Figures reflect the intake cycle recorded at that time.
+      </p>
 
       <section className="section-shell">
         <SectionNav items={analyticsNavItems} label="Analytics sections" />
