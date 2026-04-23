@@ -2,7 +2,7 @@
 from fastapi.middleware.cors import CORSMiddleware
 
 #backend
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from database import get_db
 from datetime import date
@@ -20,7 +20,7 @@ app = FastAPI(title="EduCompare API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origin_regex=r"http://localhost:\d+",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -113,21 +113,30 @@ def get_program_detail(program_id: str, db: Session = Depends(get_db)):
 
 @app.get("/compare/programs")
 def compare_programs(program_ids: str, db: Session = Depends(get_db)):
-    
-    ids = program_ids.split(",")
+
+    ids = [pid.strip() for pid in program_ids.split(",") if pid.strip()]
+
+    if not (2 <= len(ids) <= 4):
+        raise HTTPException(
+            status_code=422,
+            detail="program_ids must contain 2 to 4 comma-separated program IDs."
+        )
 
     programs = db.query(Program).filter(Program.program_id.in_(ids)).all()
+
+    # Pre-load universities and costs for only the requested programs (3 queries total)
+    university_ids = [p.university_id for p in programs]
+    universities = db.query(University).filter(University.university_id.in_(university_ids)).all()
+    university_map = {u.university_id: u for u in universities}
+
+    costs = db.query(CostAndFinance).filter(CostAndFinance.program_id.in_(ids)).all()
+    cost_map = {c.program_id: c for c in costs}
 
     result = []
 
     for program in programs:
-        university = db.query(University).filter(
-            University.university_id == program.university_id
-        ).first()
-
-        cost = db.query(CostAndFinance).filter(
-            CostAndFinance.program_id == program.program_id
-        ).first()
+        university = university_map.get(program.university_id)
+        cost = cost_map.get(program.program_id)
 
         result.append({
             "program_id": program.program_id,
@@ -163,7 +172,9 @@ def cost_summary(program_id: str, db: Session = Depends(get_db)):
         "yearly_tuition": yearly_tuition,
         "monthly_living_cost": cost.avg_monthly_living_cost,
         "yearly_living_cost": yearly_living,
-        "estimated_total_yearly_cost": total_yearly_cost
+        "estimated_total_yearly_cost": total_yearly_cost,
+        "application_fee": cost.application_fee,
+        "insurance_fee": cost.insurance_fee,
     }
 
 @app.get("/recommend/programs")
@@ -171,12 +182,12 @@ def recommend_programs(
     country_id: str | None = None,
     degree_level: str | None = None,
     instruction_language: str | None = None,
-    max_budget: float | None = None,
-    user_gpa: float | None = None,
-    user_ielts: float | None = None,
+    max_budget: float | None = Query(default=None, ge=0, description="Maximum yearly budget in native currency (TWD or THB)"),
+    user_gpa: float | None = Query(default=None, ge=0.0, le=4.0, description="Student GPA on a 0.0–4.0 scale"),
+    user_ielts: float | None = Query(default=None, ge=0.0, le=9.0, description="Student IELTS band score (0.0–9.0)"),
     preferred_deadline_before: str | None = None,
-    limit: int = 10,
-    offset: int = 0,
+    limit: int = Query(default=10, ge=1, le=50, description="Number of results to return (1–50)"),
+    offset: int = Query(default=0, ge=0, description="Pagination offset"),
     db: Session = Depends(get_db)
 ):
     if not any([
@@ -192,25 +203,34 @@ def recommend_programs(
             "detail": "Please provide at least one recommendation criterion."
         }
 
+    # Pre-load all data into maps — avoids N+1 (was 3N+1 queries, now 4 total)
     programs = db.query(Program).all()
+
+    all_universities = db.query(University).all()
+    university_map = {u.university_id: u for u in all_universities}
+
+    all_costs = db.query(CostAndFinance).all()
+    cost_map = {c.program_id: c for c in all_costs}
+
+    all_requirements = db.query(Requirement).all()
+    req_map = {r.program_id: r for r in all_requirements}
+
     recommendations = []
 
     deadline_limit = None
     if preferred_deadline_before:
-        deadline_limit = date.fromisoformat(preferred_deadline_before)
+        try:
+            deadline_limit = date.fromisoformat(preferred_deadline_before)
+        except ValueError:
+            raise HTTPException(
+                status_code=422,
+                detail="preferred_deadline_before must be a valid ISO date in YYYY-MM-DD format."
+            )
 
     for program in programs:
-        university = db.query(University).filter(
-            University.university_id == program.university_id
-        ).first()
-
-        cost = db.query(CostAndFinance).filter(
-            CostAndFinance.program_id == program.program_id
-        ).first()
-
-        requirement = db.query(Requirement).filter(
-            Requirement.program_id == program.program_id
-        ).first()
+        university = university_map.get(program.university_id)
+        cost = cost_map.get(program.program_id)
+        requirement = req_map.get(program.program_id)
 
         if not university or not cost:
             continue
@@ -283,6 +303,16 @@ def recommend_programs(
 
 @app.get("/analytics/cost-overview")
 def analytics_cost_overview(db: Session = Depends(get_db)):
+    country_rules = db.query(CountryRule).all()
+    country_name_map = {
+        rule.country_id: (rule.country_name or "").strip().lower() for rule in country_rules
+    }
+    fallback_country_names = {
+        "C001": "taiwan",
+        "C002": "thailand",
+        "C003": "singapore",
+    }
+
     records = (
         db.query(Program, University, CostAndFinance)
         .join(University, University.university_id == Program.university_id)
@@ -291,42 +321,10 @@ def analytics_cost_overview(db: Session = Depends(get_db)):
     )
 
     if not records:
-        return {
-            "countries": {
-                "taiwan": {
-                    "country_id": None,
-                    "country_name": "Taiwan",
-                    "currency": None,
-                    "average_yearly_cost": 0,
-                    "average_yearly_tuition": 0,
-                    "average_monthly_living_cost": 0,
-                    "cheapest_programs": [],
-                },
-                "thailand": {
-                    "country_id": None,
-                    "country_name": "Thailand",
-                    "currency": None,
-                    "average_yearly_cost": 0,
-                    "average_yearly_tuition": 0,
-                    "average_monthly_living_cost": 0,
-                    "cheapest_programs": [],
-                },
-            }
-        }
+        return {"countries": {}}
 
-    country_rules = db.query(CountryRule).all()
-    country_name_map = {
-        rule.country_id: (rule.country_name or "").strip().lower() for rule in country_rules
-    }
-    fallback_country_names = {
-        "C001": "taiwan",
-        "C002": "thailand",
-    }
-
-    country_groups = {
-        "taiwan": [],
-        "thailand": [],
-    }
+    # Build groups dynamically — adding a new country requires no code change
+    country_groups = {name: [] for name in country_name_map.values() if name}
 
     for program, university, cost in records:
         normalized_name = country_name_map.get(university.country_id, "").lower()
@@ -334,10 +332,8 @@ def analytics_cost_overview(db: Session = Depends(get_db)):
         if not normalized_name:
             normalized_name = fallback_country_names.get(university.country_id, "")
 
-        if normalized_name == "taiwan":
-            country_groups["taiwan"].append((program, university, cost))
-        elif normalized_name == "thailand":
-            country_groups["thailand"].append((program, university, cost))
+        if normalized_name in country_groups:
+            country_groups[normalized_name].append((program, university, cost))
 
     def summarize_country(label: str, entries: list[tuple[Program, University, CostAndFinance]]):
         if not entries:
@@ -396,10 +392,45 @@ def analytics_cost_overview(db: Session = Depends(get_db)):
 
     return {
         "countries": {
-            "taiwan": summarize_country("taiwan", country_groups["taiwan"]),
-            "thailand": summarize_country("thailand", country_groups["thailand"]),
+            name: summarize_country(name, entries)
+            for name, entries in country_groups.items()
         }
     }
+
+
+@app.get("/analytics/best-value-programs")
+def best_value_programs(db: Session = Depends(get_db)):
+    # Single JOIN for programs + universities + costs (no duplicates)
+    records = (
+        db.query(Program, University, CostAndFinance)
+        .join(University, University.university_id == Program.university_id)
+        .join(CostAndFinance, CostAndFinance.program_id == Program.program_id)
+        .all()
+    )
+
+    # Fetch all requirements once and build a lookup map (avoids N+1)
+    all_requirements = db.query(Requirement).all()
+    req_map = {}
+    for req in all_requirements:
+        if req.program_id not in req_map:
+            req_map[req.program_id] = req
+
+    result = []
+    for program, university, cost in records:
+        req = req_map.get(program.program_id)
+        yearly_cost = float(cost.tuition_fee_per_semester) * 2 + float(cost.avg_monthly_living_cost) * 12
+        result.append({
+            "program_id": program.program_id,
+            "university_id": university.university_id,
+            "university_name": university.university_name,
+            "country_id": university.country_id,
+            "yearly_cost": round(yearly_cost, 2),
+            "currency": cost.currency,
+            "min_gpa": float(req.min_gpa) if req and req.min_gpa is not None else None,
+            "ielts_min": float(req.ielts_min) if req and req.ielts_min is not None else None,
+        })
+
+    return result
 
 
 @app.get("/analytics/admission-overview")
@@ -418,12 +449,11 @@ def analytics_admission_overview(db: Session = Depends(get_db)):
     fallback_country_names = {
         "C001": "taiwan",
         "C002": "thailand",
+        "C003": "singapore",
     }
 
-    country_groups = {
-        "taiwan": [],
-        "thailand": [],
-    }
+    # Build groups dynamically — adding a new country requires no code change
+    country_groups = {name: [] for name in country_name_map.values() if name}
 
     for requirement, program, university in records:
         normalized_name = country_name_map.get(university.country_id, "").lower()
@@ -487,7 +517,7 @@ def analytics_admission_overview(db: Session = Depends(get_db)):
 
     return {
         "countries": {
-            "taiwan": summarize_country("taiwan", country_groups["taiwan"]),
-            "thailand": summarize_country("thailand", country_groups["thailand"]),
+            name: summarize_country(name, entries)
+            for name, entries in country_groups.items()
         }
     }

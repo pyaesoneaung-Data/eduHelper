@@ -9,3 +9,8 @@ R007,P007,2.75,6.0,,Transcript; HS Certificate; Verification Letter; Photo,FALSE
 R008,P008,2.5,6.0,,HS Certificate; SAT/Gaokao Scores; TOEFL/IELTS Proof,FALSE,FALSE,https://bba.tbs.tu.ac.th,2026-04-10
 R009,P009,2.5,5.0,,Transcript; Portfolio; English Test; Personal Motivation,,TRUE,https://www.sit.kmutt.ac.th/en/bsc/bsc-cs-2/,2026-04-11
 R010,P010,2.0,5.0,,HS Transcript; Diploma; English Proof; Passport; Photo,FALSE,FALSE,https://admissions.au.edu,2026-04-10
+R011,P011,,,,Passport; transcripts; test scores if applicable,,,https://www.nus.edu.sg/oam/admissions/international-qualifications-for-foreigners/admission-requirements,2026-04-21
+R012,P012,,,,Passport; transcripts; English test if required,TRUE,,https://www.ntu.edu.sg/admissions/undergraduate/admission-guide/international-qualifications,2026-04-21
+R013,P013,,,,Passport; transcripts; test scores,,,https://admissions.smu.edu.sg/admissions-requirements/international-and-other-qualifications,2026-04-21
+R014,P014,,,,Passport; transcripts; English proof,,,https://www.sutd.edu.sg/admissions/undergraduate/admission-requirements/international-qualifications/,2026-04-21
+R015,P015,,6.5,,Passport; transcripts; test scores,,,https://www.suss.edu.sg/admissions/application-process/eligibility/full-time-undergraduate-admission-criteria,2026-04-21

@@ -1,3 +1,5 @@
 country_id,country_name,visa_type,part_time_allowed,work_hour_limit,work_permit_required,min_hourly_wage,currency,post_study_work_visa,visa_notes,source_url,last_verified_date
 C001,Taiwan,Resident Visa (ARC),TRUE,20,TRUE,196,NT$,2 Years (Job Seeking),"Work permit required. During academic terms, international students may work up to 20 hours per week; the cap does not apply during summer/winter breaks.",https://isss.ntu.edu.tw/work/work-permit/,2026-04-10
-C002,Thailand,Non-Immigrant ED / ED Plus,FALSE,,TRUE,,,1 Year (ED Plus only),"No general student part-time work allowance was confirmed from the official sources reviewed. Foreigners working in Thailand generally need a work permit; verify with official immigration/labor guidance before production use.",https://image.mfa.go.th/mfa/0/xJ3BrCz2xe/Non-ED_Plus_Infographic.pdf,2026-04-10
+C002,Thailand,Non-Immigrant ED / ED Plus,FALSE,,TRUE,,,1 Year (ED Plus only),No general student part-time work allowance was confirmed from the official sources reviewed. Foreigners working in Thailand generally need a work permit; verify with official immigration/labor guidance before production use.,https://image.mfa.go.th/mfa/0/xJ3BrCz2xe/Non-ED_Plus_Infographic.pdf,2026-04-10
+C003,Singapore,Student's Pass,TRUE,16,FALSE,10,,,"Can work 16h/week during term
+",https://www.ica.gov.sg/reside/STP/apply,2026-04-21
