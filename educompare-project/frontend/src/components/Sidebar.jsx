@@ -4,7 +4,6 @@ import analyticsIcon from '../assets/icons/analytics.svg'
 import decisionHubIcon from '../assets/icons/decision_hub.svg'
 import homeIcon from '../assets/icons/home.svg'
 import legalIcon from '../assets/icons/legal.svg'
-import logoutIcon from '../assets/icons/logout.svg'
 import settingsIcon from '../assets/icons/setting.svg'
 import warningIcon from '../assets/icons/warning.svg'
 import logoIcon from '../assets/logo/logo.svg'
@@ -25,11 +24,10 @@ const navItems = [
 
 const footerItems = [
   { to: '/settings', labelKey: 'nav.settings', fallback: 'Settings', icon: settingsIcon },
-  { to: '/logout', labelKey: 'nav.logout', fallback: 'Logout', icon: logoutIcon },
 ]
 
 function Sidebar() {
-  const { t, closeSidebar } = useAppShell()
+  const { t, closeSidebar, isSidebarCollapsed, toggleSidebarCollapsed } = useAppShell()
   const location = useLocation()
 
   function getLinkClassName(item) {
@@ -64,7 +62,7 @@ function Sidebar() {
         ))}
       </nav>
 
-      <nav className="sidebar-footer" aria-label="Sidebar utilities">
+      <div className="sidebar-footer">
         {footerItems.map((item) => (
           <NavLink
             key={item.to}
@@ -78,7 +76,19 @@ function Sidebar() {
             <span className="sidebar-link-label">{t(item.labelKey, item.fallback)}</span>
           </NavLink>
         ))}
-      </nav>
+        <button
+          type="button"
+          className="sidebar-collapse-btn"
+          onClick={toggleSidebarCollapsed}
+          aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <span className="sidebar-collapse-icon" aria-hidden="true">
+            {isSidebarCollapsed ? '›' : '‹'}
+          </span>
+          <span className="sidebar-link-label">Collapse</span>
+        </button>
+      </div>
     </div>
   )
 }

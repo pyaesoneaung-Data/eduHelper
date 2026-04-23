@@ -18,16 +18,17 @@ function getSectionLabel(pathname) {
 
 function LayoutFrame() {
   const location = useLocation()
-  const { closeSidebar, isSidebarOpen, language, theme, cycleLanguage, toggleTheme, toggleSidebar, t } =
+  const { closeSidebar, isSidebarOpen, isSidebarCollapsed, language, theme, currency, cycleLanguage, toggleTheme, toggleCurrency, toggleSidebar, t } =
     useAppShell()
   const sectionLabel = getSectionLabel(location.pathname)
+  const isSettingsPage = location.pathname.startsWith('/settings')
 
   useEffect(() => {
     closeSidebar()
   }, [location.pathname, closeSidebar])
 
   return (
-    <div className="dashboard-shell">
+    <div className={isSidebarCollapsed ? 'dashboard-shell sidebar-collapsed' : 'dashboard-shell'}>
       <aside className={isSidebarOpen ? 'dashboard-sidebar dashboard-sidebar-open' : 'dashboard-sidebar'}>
         <Sidebar />
       </aside>
@@ -50,7 +51,20 @@ function LayoutFrame() {
             <span className="topbar-section-label">{sectionLabel}</span>
           </div>
 
-          <div className="topbar-actions">
+          {!isSettingsPage ? <div className="topbar-actions">
+            <div className="topbar-utility-copy">
+              <span className="topbar-utility-label">Currency</span>
+              <span className="topbar-utility-value">{currency === 'USD' ? 'USD' : 'Local'}</span>
+            </div>
+            <button
+              className="topbar-icon-button"
+              type="button"
+              onClick={toggleCurrency}
+              aria-label={currency === 'USD' ? 'Switch to local currencies' : 'Switch to USD'}
+              title={currency === 'USD' ? 'Switch to local currencies' : 'Switch to USD'}
+            >
+              <span className="topbar-currency-symbol" aria-hidden="true">$</span>
+            </button>
             <div className="topbar-utility-copy">
               <span className="topbar-utility-label">{t('ui.language', 'Language')}</span>
               <span className="topbar-utility-value">{language.toUpperCase()}</span>
@@ -65,7 +79,7 @@ function LayoutFrame() {
               <IconImage src={languageIcon} className="topbar-icon" alt="" />
             </button>
             <div className="topbar-utility-copy">
-              <span className="topbar-utility-label">Mode</span>
+              <span className="topbar-utility-label">Theme</span>
               <span className="topbar-utility-value">
                 {theme === 'light' ? t('ui.darkMode', 'Dark mode') : t('ui.lightMode', 'Light mode')}
               </span>
@@ -79,7 +93,7 @@ function LayoutFrame() {
             >
               <IconImage src={moonIcon} className="topbar-icon" alt="" />
             </button>
-          </div>
+          </div> : null}
         </header>
 
         <main className="page-shell">

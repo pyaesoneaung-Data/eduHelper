@@ -23,44 +23,11 @@ export const translations = {
     },
     language: {
       english: 'English',
-      thai: 'Thai',
       chinese: 'Chinese',
     },
     settings: {
       title: 'Settings',
       description: 'Control theme and language foundations for the future multi-language dashboard.',
-    },
-  },
-  th: {
-    app: {
-      name: 'UniMatch / EduCompare',
-      tagline: 'แพลตฟอร์มตัดสินใจเรียนต่อต่างประเทศจากข้อมูลที่ตรวจสอบได้',
-    },
-    nav: {
-      home: 'หน้าแรก',
-      decisionHub: 'ศูนย์ตัดสินใจ',
-      analytics: 'วิเคราะห์ข้อมูล',
-      legal: 'ข้อมูลกฎหมาย',
-      redFlags: 'คู่มือสัญญาณเตือน',
-      settings: 'ตั้งค่า',
-      logout: 'ออกจากระบบ',
-    },
-    ui: {
-      menu: 'เมนู',
-      close: 'ปิด',
-      theme: 'ธีม',
-      language: 'ภาษา',
-      lightMode: 'โหมดสว่าง',
-      darkMode: 'โหมดมืด',
-    },
-    language: {
-      english: 'อังกฤษ',
-      thai: 'ไทย',
-      chinese: 'จีน',
-    },
-    settings: {
-      title: 'ตั้งค่า',
-      description: 'เตรียมโครงสร้างธีมและภาษาไว้สำหรับแดชบอร์ดหลายภาษาในอนาคต',
     },
   },
   zh: {
@@ -87,7 +54,6 @@ export const translations = {
     },
     language: {
       english: '英语',
-      thai: '泰语',
       chinese: '中文',
     },
     settings: {

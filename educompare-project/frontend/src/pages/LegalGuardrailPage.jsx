@@ -3,12 +3,21 @@ import { getCountryRules } from '../api/api'
 import InfoCard from '../components/InfoCard'
 import PageHeader from '../components/PageHeader'
 
-function findCountryRule(rules, keyword) {
-  return rules.find((rule) => rule.country_name?.toLowerCase().includes(keyword))
+function formatPartTime(rule) {
+  if (rule.part_time_allowed === true) return `Yes — up to ${rule.work_hour_limit} hrs/week`
+  if (rule.part_time_allowed === false) return 'No'
+  return 'Not listed'
+}
+
+function formatWorkHourLimit(rule) {
+  if (rule.work_hour_limit != null) return `${rule.work_hour_limit} hrs/week`
+  if (rule.part_time_allowed === false) return 'Not applicable'
+  return 'Not listed'
 }
 
 function LegalGuardrailPage() {
   const [rules, setRules] = useState([])
+  const [selectedCountry, setSelectedCountry] = useState(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -24,83 +33,109 @@ function LegalGuardrailPage() {
     loadRules()
   }, [])
 
-  const taiwanRule = findCountryRule(rules, 'taiwan')
-  const thailandRule = findCountryRule(rules, 'thailand')
+  function toggleCountry(countryId) {
+    setSelectedCountry((prev) => (prev === countryId ? null : countryId))
+  }
 
   return (
     <div className="page-stack">
       <PageHeader
         eyebrow="Legal Info"
-        title="Legal work and visa rules should be checked before tuition promises or part-time income claims are trusted."
-        description="This workspace keeps work rights, permit requirements, and visa notes in a readable dashboard format so students can compare country constraints before deciding."
+        title="Work and visa rules by country"
+        description="Check part-time work rights, permit requirements, and post-study visa options before trusting any income claims from agents or sales materials."
       />
 
       {error ? <p className="error-text">{error}</p> : null}
 
-      <div className="card-grid">
-        <InfoCard title="Countries covered" eyebrow="Overview">
-          <p className="kpi-value">{rules.length}</p>
-          <p className="muted-text">Current legal rule records loaded from the backend.</p>
-        </InfoCard>
-        <InfoCard title="Taiwan check" eyebrow="Work rights">
-          <p>{taiwanRule ? `${taiwanRule.work_hour_limit ?? 'Not listed'} hrs/week with permit review` : 'Taiwan rule record is not available yet.'}</p>
-        </InfoCard>
-        <InfoCard title="Thailand check" eyebrow="Work rights">
-          <p>{thailandRule ? `${thailandRule.part_time_allowed ? 'Part-time rights listed with restrictions' : 'Very limited or restricted work rights listed'}` : 'Thailand rule record is not available yet.'}</p>
-        </InfoCard>
-        <InfoCard title="Guardrail" eyebrow="Decision note" tone="muted">
-          <p>Any agent claim about easy income should be checked against permit rules and official visa notes first.</p>
-        </InfoCard>
-      </div>
+      <InfoCard title="Important reminder" eyebrow="Before you decide" tone="muted">
+        <p>Any agent claim about easy part-time income should be verified against the official permit rules and visa conditions for that country before you commit to anything.</p>
+      </InfoCard>
 
-      <div className="card-grid">
-        {rules.map((rule) => (
-          <InfoCard key={rule.country_id} title={rule.country_name} eyebrow="Country rule">
-            <dl className="detail-grid">
-              <div>
-                <dt>Country</dt>
-                <dd>{rule.country_name}</dd>
-              </div>
-              <div>
-                <dt>Visa type</dt>
-                <dd>{rule.visa_type}</dd>
-              </div>
-              <div>
-                <dt>Part-time allowed</dt>
-                <dd>{rule.part_time_allowed ? 'Yes' : 'No or restricted'}</dd>
-              </div>
-              <div>
-                <dt>Work hour limit</dt>
-                <dd>{rule.work_hour_limit ?? 'Not listed'}</dd>
-              </div>
-              <div>
-                <dt>Work permit required</dt>
-                <dd>{rule.work_permit_required ? 'Yes' : 'No'}</dd>
-              </div>
-              <div>
-                <dt>Visa notes</dt>
-                <dd>{rule.visa_notes ?? 'Not listed'}</dd>
-              </div>
-              <div>
-                <dt>Post-study work visa</dt>
-                <dd>{rule.post_study_work_visa ?? 'Not listed'}</dd>
-              </div>
-              <div>
-                <dt>Source</dt>
-                <dd>
-                  {rule.source_url ? (
-                    <a className="text-link" href={rule.source_url} target="_blank" rel="noreferrer">
-                      Official source
-                    </a>
-                  ) : (
-                    'Not listed'
-                  )}
-                </dd>
-              </div>
-            </dl>
-          </InfoCard>
-        ))}
-      </div>
+      <InfoCard title="Compare countries" eyebrow="Planned feature">
+        <p>
+          A dedicated <strong>Compare Countries</strong> tool is planned for the Decision Hub —
+          letting you pick any two countries from a dropdown and see a live side-by-side of visa type, work rights, and post-study options.
+          For now, use the country list below to open and read each country's rules individually.
+        </p>
+      </InfoCard>
+
+      {!rules.length && !error ? <p className="muted-text">Loading country rules...</p> : null}
+
+      {rules.length ? (
+        <div className="panel">
+          <div className="panel-heading">
+            <h2>Country rules</h2>
+            <p>Select a country to read its full visa and work rules.</p>
+          </div>
+
+          <div className="legal-country-list">
+            {rules.map((rule) => {
+              const isOpen = selectedCountry === rule.country_id
+
+              return (
+                <div key={rule.country_id} className={`legal-country-item${isOpen ? ' legal-country-item--open' : ''}`}>
+                  <button
+                    className="legal-country-toggle"
+                    onClick={() => toggleCountry(rule.country_id)}
+                    type="button"
+                    aria-expanded={isOpen}
+                  >
+                    <span className="legal-country-toggle-name">{rule.country_name}</span>
+                    <span className="legal-country-toggle-hint">
+                      {isOpen ? 'Close' : 'View rules'}
+                    </span>
+                    <span className="legal-country-toggle-arrow" aria-hidden="true">
+                      {isOpen ? '↑' : '↓'}
+                    </span>
+                  </button>
+
+                  {isOpen ? (
+                    <div className="legal-country-detail">
+                      <dl className="detail-grid compact">
+                        <div>
+                          <dt>Visa type</dt>
+                          <dd>{rule.visa_type ?? 'Not listed'}</dd>
+                        </div>
+                        <div>
+                          <dt>Part-time allowed</dt>
+                          <dd>{formatPartTime(rule)}</dd>
+                        </div>
+                        <div>
+                          <dt>Work hour limit</dt>
+                          <dd>{formatWorkHourLimit(rule)}</dd>
+                        </div>
+                        <div>
+                          <dt>Work permit required</dt>
+                          <dd>{rule.work_permit_required ? 'Yes' : 'No'}</dd>
+                        </div>
+                        <div>
+                          <dt>Post-study work visa</dt>
+                          <dd>{rule.post_study_work_visa ?? 'Not listed'}</dd>
+                        </div>
+                      </dl>
+
+                      {rule.visa_notes ? (
+                        <div className="legal-visa-notes">
+                          <p className="home-mini-label">Visa notes</p>
+                          <p>{rule.visa_notes}</p>
+                        </div>
+                      ) : null}
+
+                      {rule.source_url ? (
+                        <div className="legal-source">
+                          <a className="text-link" href={rule.source_url} target="_blank" rel="noreferrer">
+                            Official source ↗
+                          </a>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

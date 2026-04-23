@@ -1,9 +1,10 @@
+import { Link } from 'react-router-dom'
 import { useAppShell } from '../context/AppShellContext'
 import InfoCard from '../components/InfoCard'
 import PageHeader from '../components/PageHeader'
 
 function SettingsPage() {
-  const { language, setLanguage, theme, setTheme, t } = useAppShell()
+  const { language, setLanguage, theme, setTheme, currency, setCurrency, t } = useAppShell()
 
   return (
     <div className="page-stack">
@@ -12,7 +13,7 @@ function SettingsPage() {
         title={t('settings.title', 'Settings')}
         description={t(
           'settings.description',
-          'Control theme and language foundations for the future multi-language dashboard.',
+          'Adjust how the platform looks and displays information for you.',
         )}
       />
 
@@ -46,13 +47,6 @@ function SettingsPage() {
               {t('language.english', 'English')}
             </button>
             <button
-              className={language === 'th' ? 'option-button option-button-active' : 'option-button'}
-              type="button"
-              onClick={() => setLanguage('th')}
-            >
-              {t('language.thai', 'Thai')}
-            </button>
-            <button
               className={language === 'zh' ? 'option-button option-button-active' : 'option-button'}
               type="button"
               onClick={() => setLanguage('zh')}
@@ -65,6 +59,33 @@ function SettingsPage() {
           </p>
         </InfoCard>
       </div>
+
+      <InfoCard title="Display currency">
+        <div className="option-group">
+          <button
+            className={currency === 'native' ? 'option-button option-button-active' : 'option-button'}
+            type="button"
+            onClick={() => setCurrency('native')}
+          >
+            Local
+          </button>
+          <button
+            className={currency === 'USD' ? 'option-button option-button-active' : 'option-button'}
+            type="button"
+            onClick={() => setCurrency('USD')}
+          >
+            USD
+          </button>
+        </div>
+        <p className="muted-text">
+          Local shows each country's costs in its own currency — Taiwan in TWD, Thailand in THB, Singapore in SGD. USD converts all costs to US dollars, useful if you want to compare across countries or prefer thinking in a global currency.
+        </p>
+      </InfoCard>
+
+      <InfoCard title="Account">
+        <p className="muted-text">You are signed in. Sign out when you're done using the platform.</p>
+        <Link to="/logout" className="danger-text-button">Sign out</Link>
+      </InfoCard>
     </div>
   )
 }

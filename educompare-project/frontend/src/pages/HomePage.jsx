@@ -1,57 +1,108 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getPrograms, getUniversities } from '../api/api'
+import { getBestValuePrograms, getPrograms, getUniversities } from '../api/api'
+import { useAppShell } from '../context/AppShellContext'
+import { convertCurrency } from '../utils/currency'
 import logoIcon from '../assets/logo/logo.svg'
 import IconImage from '../components/IconImage'
 
-function buildUniversitySummaries(programs) {
-  const grouped = new Map()
+const COUNTRY_NAMES = {
+  C001: 'Taiwan',
+  C002: 'Thailand',
+  C003: 'Singapore',
+}
 
-  programs.forEach((program) => {
-    const key = `${program.university_name ?? 'Unknown university'}::${program.country_id ?? 'Unknown'}`
+function formatLeaderboardCost(yearlyValue, nativeCurrency, displayCurrency) {
+  if (yearlyValue == null) return 'Not listed'
+  const isUSD = displayCurrency === 'USD'
+  const amount = isUSD ? convertCurrency(yearlyValue, nativeCurrency, 'USD') : yearlyValue
+  const label = isUSD ? 'USD' : nativeCurrency
+  return `${Math.round(amount).toLocaleString()} ${label}/yr`
+}
 
-    if (!grouped.has(key)) {
-      grouped.set(key, {
-        university_name: program.university_name ?? 'Unknown university',
-        country_id: program.country_id ?? 'Not listed',
-        program_count: 0,
-        first_program_id: program.program_id,
-        first_major_name: program.major_name ?? 'Program record',
-      })
+// value_score = normalised(low cost) + normalised(low GPA) + normalised(low IELTS), averaged to 0–100
+// null GPA / IELTS treated as 0 — no requirement = most accessible
+function buildValueLeaderboard(rawPrograms) {
+  if (!rawPrograms.length) return []
+
+  const programs = rawPrograms.map((p) => ({
+    ...p,
+    min_gpa: p.min_gpa ?? 0,
+    ielts_min: p.ielts_min ?? 0,
+  }))
+
+  // Convert all costs to USD so cross-currency comparison is fair
+  const costsUSD = programs.map((p) => convertCurrency(p.yearly_cost, p.currency, 'USD'))
+  const gpas = programs.map((p) => p.min_gpa)
+  const ieltss = programs.map((p) => p.ielts_min)
+
+  const minCost = Math.min(...costsUSD)
+  const maxCost = Math.max(...costsUSD)
+  const minGpa = Math.min(...gpas)
+  const maxGpa = Math.max(...gpas)
+  const minIelts = Math.min(...ieltss)
+  const maxIelts = Math.max(...ieltss)
+
+  const scored = programs.map((p, i) => {
+    const costScore = maxCost !== minCost ? ((maxCost - costsUSD[i]) / (maxCost - minCost)) * 100 : 100
+    const gpaScore = maxGpa !== minGpa ? ((maxGpa - gpas[i]) / (maxGpa - minGpa)) * 100 : 100
+    const ieltsScore = maxIelts !== minIelts ? ((maxIelts - ieltss[i]) / (maxIelts - minIelts)) * 100 : 100
+    return {
+      ...p,
+      value_score: Math.round((costScore + gpaScore + ieltsScore) / 3),
     }
-
-    grouped.get(key).program_count += 1
   })
 
-  return [...grouped.values()]
-    .sort((left, right) => {
-      if (left.program_count !== right.program_count) {
-        return right.program_count - left.program_count
-      }
+  // Per university: keep the program with the highest value score
+  const byUniversity = new Map()
+  scored.forEach((p) => {
+    if (!byUniversity.has(p.university_id) || p.value_score > byUniversity.get(p.university_id).value_score) {
+      byUniversity.set(p.university_id, p)
+    }
+  })
 
-      return left.university_name.localeCompare(right.university_name)
-    })
+  return [...byUniversity.values()]
+    .sort((a, b) => b.value_score - a.value_score)
     .slice(0, 6)
 }
 
+const RECENT_SEARCHES_KEY = 'educompare_recent_searches'
+const MAX_RECENT = 5
+
+function loadRecentSearches() {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) ?? '[]')
+  } catch {
+    return []
+  }
+}
+
 function HomePage() {
+  const { currency: displayCurrency } = useAppShell()
   const [programs, setPrograms] = useState([])
   const [universities, setUniversities] = useState([])
+  const [rawValueData, setRawValueData] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [recentSearches, setRecentSearches] = useState(loadRecentSearches)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    async function loadPrograms() {
+    async function loadData() {
       try {
-        const [programData, universityData] = await Promise.all([getPrograms(), getUniversities()])
+        const [programData, universityData, valueData] = await Promise.all([
+          getPrograms(),
+          getUniversities(),
+          getBestValuePrograms(),
+        ])
         setPrograms(programData)
         setUniversities(universityData)
+        setRawValueData(valueData)
       } catch {
-        setError('Program search data could not be loaded from the backend.')
+        setError('Program data could not be loaded from the backend.')
       }
     }
 
-    loadPrograms()
+    loadData()
   }, [])
 
   const universityMap = useMemo(
@@ -74,9 +125,7 @@ function HomePage() {
   )
 
   const searchResults = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return enrichedPrograms.slice(0, 5)
-    }
+    if (!searchTerm.trim()) return []
 
     const normalized = searchTerm.trim().toLowerCase()
 
@@ -89,6 +138,18 @@ function HomePage() {
       .slice(0, 5)
   }, [enrichedPrograms, searchTerm])
 
+  function saveSearch(term) {
+    const trimmed = term.trim()
+    if (!trimmed) return
+
+    setRecentSearches((prev) => {
+      const filtered = prev.filter((s) => s !== trimmed)
+      const next = [trimmed, ...filtered].slice(0, MAX_RECENT)
+      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(next))
+      return next
+    })
+  }
+
   const countryCounts = useMemo(
     () =>
       enrichedPrograms.reduce((counts, program) => {
@@ -98,42 +159,43 @@ function HomePage() {
     [enrichedPrograms],
   )
 
-  const featuredProgram = searchResults[0] ?? enrichedPrograms[0] ?? null
-  const universitySummaries = useMemo(() => buildUniversitySummaries(enrichedPrograms), [enrichedPrograms])
-  const spotlightUniversities = universitySummaries.slice(0, 3)
-  const remainingUniversities = universitySummaries.slice(3)
+  const valueLeaderboard = useMemo(() => buildValueLeaderboard(rawValueData), [rawValueData])
 
   return (
     <div className="page-stack">
       <section className="home-trust-strip">
-        <p>UniMatch / EduCompare turns current program records into a safer starting point for Thailand and Taiwan decisions.</p>
+        <p>UniMatch / EduCompare turns current program records into a safer starting point for Thailand, Taiwan, and Singapore decisions.</p>
       </section>
 
       <section className="home-figma-grid">
         <article className="panel home-welcome-panel">
           <div className="home-welcome-copy">
-            <h2>Welcome Back</h2>
+            <h2>Make an informed decision</h2>
             <p>
               Review verified programs, realistic yearly costs, and legal work rules from one dashboard before trusting any external sales pitch.
             </p>
           </div>
 
           <div className="home-welcome-side">
-            <p className="home-mini-label">Featured program</p>
-            <strong>{featuredProgram?.university_name ?? 'University explorer is loading'}</strong>
-            <p className="muted-text">{featuredProgram?.major_name ?? 'Live records will appear here once the program list loads.'}</p>
-            {featuredProgram ? (
-              <Link className="secondary-button home-compare-button" to={`/programs/${featuredProgram.program_id}`}>
-                View program detail
+            <p className="home-mini-label">Where to start</p>
+            <nav className="home-quick-actions">
+              <Link className="home-action-link" to="/decision-hub/recommendation">
+                <span className="home-action-arrow">→</span> Get a recommendation
               </Link>
-            ) : null}
+              <Link className="home-action-link" to="/decision-hub/compare">
+                <span className="home-action-arrow">→</span> Compare programs
+              </Link>
+              <Link className="home-action-link" to="/decision-hub/cost-calculator">
+                <span className="home-action-arrow">→</span> Check costs
+              </Link>
+            </nav>
           </div>
         </article>
 
         <section className="panel home-search-panel">
           <div className="panel-heading">
             <h2>University Explorer</h2>
-            <p>Search current program records and open detail pages directly. This replaces any fake campus-media block until richer media support exists.</p>
+            <p>Search by university name or major to explore programs across Taiwan, Thailand, and Singapore.</p>
           </div>
 
           <div className="home-search-bar">
@@ -147,30 +209,53 @@ function HomePage() {
               placeholder="Search university or major"
               aria-label="Search university or major"
             />
-            {featuredProgram ? (
-              <Link className="home-search-action" to={`/programs/${featuredProgram.program_id}`}>
-                View detail
-              </Link>
-            ) : (
-              <span className="home-search-helper">Loading</span>
-            )}
           </div>
 
           {error ? <p className="error-text">{error}</p> : null}
 
-          {searchResults.length ? (
+          {!searchTerm.trim() ? (
+            <>
+              {recentSearches.length ? (
+                <div className="recent-searches">
+                  <p className="home-mini-label">Recent searches</p>
+                  <div className="recent-search-chips">
+                    {recentSearches.map((term) => (
+                      <button
+                        key={term}
+                        className="recent-search-chip"
+                        onClick={() => setSearchTerm(term)}
+                        type="button"
+                      >
+                        {term}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+              <p className="empty-state">
+                {programs.length
+                  ? `${programs.length} programs loaded — type a university or major name to search.`
+                  : 'Loading program data…'}
+              </p>
+            </>
+          ) : searchResults.length ? (
             <div className="search-results">
               {searchResults.map((program) => (
-                <Link key={program.program_id} className="search-result-card" to={`/programs/${program.program_id}`}>
+                <Link
+                  key={program.program_id}
+                  className="search-result-card"
+                  to={`/programs/${program.program_id}`}
+                  onClick={() => saveSearch(searchTerm)}
+                >
                   <strong>{program.university_name}</strong>
                   <span>{program.major_name}</span>
-                  <span>{`${program.degree_level} • ${program.instruction_language} • ${program.country_id}`}</span>
+                  <span>{`${program.degree_level} • ${program.instruction_language} • ${COUNTRY_NAMES[program.country_id] ?? program.country_id}`}</span>
                 </Link>
               ))}
             </div>
           ) : (
             <p className="empty-state">
-              No current records match that search. The explorer uses live program data and updates as you type.
+              No programs match &ldquo;{searchTerm.trim()}&rdquo; — try a different university or major name.
             </p>
           )}
         </section>
@@ -188,11 +273,15 @@ function HomePage() {
             </div>
             <div>
               <dt>Taiwan records</dt>
-              <dd>{countryCounts.C001 ?? countryCounts.TW ?? 0}</dd>
+              <dd>{countryCounts.C001 ?? 0}</dd>
             </div>
             <div>
               <dt>Thailand records</dt>
-              <dd>{countryCounts.C002 ?? countryCounts.TH ?? 0}</dd>
+              <dd>{countryCounts.C002 ?? 0}</dd>
+            </div>
+            <div>
+              <dt>Singapore records</dt>
+              <dd>{countryCounts.C003 ?? 0}</dd>
             </div>
           </dl>
 
@@ -205,47 +294,32 @@ function HomePage() {
 
         <aside className="panel home-leaderboard-panel">
           <div className="panel-heading">
-            <h2>Leaderboard Area</h2>
-            <p>Current cards use dataset visibility only: universities with the most program records in this app. This is not a prestige ranking.</p>
+            <h2>Best Value Universities</h2>
+            <p>Ranked by cost, GPA, and IELTS accessibility. Lower on all three = higher score.</p>
           </div>
 
-          {spotlightUniversities.length === 3 ? (
-            <div className="leaderboard-podium">
-              <div className="podium-item">
-                <div className="podium-circle" />
-                <span className="podium-name">{spotlightUniversities[1].university_name}</span>
-                <div className="podium-bar podium-bar-second">{spotlightUniversities[1].program_count}</div>
-              </div>
-              <div className="podium-item">
-                <div className="podium-circle podium-circle-main" />
-                <span className="podium-name">{spotlightUniversities[0].university_name}</span>
-                <div className="podium-bar podium-bar-main">{spotlightUniversities[0].program_count}</div>
-              </div>
-              <div className="podium-item">
-                <div className="podium-circle" />
-                <span className="podium-name">{spotlightUniversities[2].university_name}</span>
-                <div className="podium-bar podium-bar-third">{spotlightUniversities[2].program_count}</div>
-              </div>
+          {valueLeaderboard.length ? (
+            <div className="value-leaderboard">
+              {valueLeaderboard.map((item, index) => (
+                <div key={item.university_id} className="value-leaderboard-row">
+                  <span className="value-leaderboard-rank">{index + 1}</span>
+                  <div className="value-leaderboard-info">
+                    <span className="value-leaderboard-name">{item.university_name}</span>
+                    <span className="value-leaderboard-meta">
+                      {formatLeaderboardCost(item.yearly_cost, item.currency, displayCurrency)}
+                      {' · GPA '}
+                      {item.min_gpa === 0 ? '—' : item.min_gpa}
+                      {' · IELTS '}
+                      {item.ielts_min === 0 ? '—' : item.ielts_min}
+                    </span>
+                  </div>
+                  <span className="value-leaderboard-score">{item.value_score}</span>
+                </div>
+              ))}
             </div>
           ) : (
-            <p className="empty-state">University visibility data will appear here after the program list loads.</p>
+            <p className="empty-state">Value ranking will appear after data loads.</p>
           )}
-
-          <div className="leaderboard-list">
-            {remainingUniversities.length ? (
-              remainingUniversities.map((university) => (
-                <div key={`${university.university_name}-${university.country_id}`} className="leaderboard-row">
-                  <div>
-                    <span className="leaderboard-name">{university.university_name}</span>
-                    <p className="leaderboard-subtext">{university.first_major_name}</p>
-                  </div>
-                  <span className="leaderboard-country">{`${university.program_count} programs`}</span>
-                </div>
-              ))
-            ) : (
-              <p className="muted-text">Additional university records will appear below the spotlight cards.</p>
-            )}
-          </div>
         </aside>
       </section>
     </div>
