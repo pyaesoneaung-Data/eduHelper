@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { BarChart2, ChevronLeft, ChevronRight, Compass, House, Info, Scale, Settings, ShieldAlert } from 'lucide-react'
 import { useAppShell } from '../context/AppShellContext'
-import logoIcon from '../assets/logo/logo.svg'
+import logoLight from '../assets/logo/logo_light_without_text.svg'
+import logoDark from '../assets/logo/logo_dark_without_text.svg'
 import IconImage from './IconImage'
 
 const navConfig = [
@@ -63,7 +64,8 @@ const footerLinks = [
 ]
 
 function Sidebar() {
-  const { closeSidebar, isSidebarCollapsed, toggleSidebarCollapsed } = useAppShell()
+  const { closeSidebar, isSidebarCollapsed, toggleSidebarCollapsed, theme } = useAppShell()
+  const logoSrc = theme === 'dark' ? logoDark : logoLight
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -122,7 +124,8 @@ function Sidebar() {
   return (
     <div className="sidebar-panel">
       <div className="sidebar-brand">
-        <IconImage src={logoIcon} className="sidebar-logo" alt="UniMatch logo" />
+        <IconImage src={logoSrc} className="sidebar-logo" alt="UniMatch logo" />
+        <span className="sidebar-brand-name">UniMatch</span>
       </div>
 
       <nav className="sidebar-nav" aria-label="Primary navigation">

@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { getBestValuePrograms, getPrograms, getUniversities } from '../api/api'
 import { useAppShell } from '../context/AppShellContext'
 import { convertCurrency } from '../utils/currency'
-import logoIcon from '../assets/logo/logo.svg'
+import logoLight from '../assets/logo/logo_light_without_text.svg'
+import logoDark from '../assets/logo/logo_dark_without_text.svg'
 import IconImage from '../components/IconImage'
 
 const COUNTRY_NAMES = {
@@ -78,7 +79,8 @@ function loadRecentSearches() {
 }
 
 function HomePage() {
-  const { currency: displayCurrency } = useAppShell()
+  const { currency: displayCurrency, theme } = useAppShell()
+  const logoSrc = theme === 'dark' ? logoDark : logoLight
   const [programs, setPrograms] = useState([])
   const [universities, setUniversities] = useState([])
   const [rawValueData, setRawValueData] = useState([])
@@ -168,39 +170,15 @@ function HomePage() {
       </section>
 
       <section className="home-figma-grid">
-        <article className="panel home-welcome-panel">
-          <div className="home-welcome-copy">
-            <h2>Make an informed decision</h2>
-            <p>
-              Review verified programs, realistic yearly costs, and legal work rules from one dashboard before trusting any external sales pitch.
-            </p>
-          </div>
-
-          <div className="home-welcome-side">
-            <p className="home-mini-label">Where to start</p>
-            <nav className="home-quick-actions">
-              <Link className="home-action-link" to="/decision-hub/recommendation">
-                <span className="home-action-arrow">→</span> Get a recommendation
-              </Link>
-              <Link className="home-action-link" to="/decision-hub/compare">
-                <span className="home-action-arrow">→</span> Compare programs
-              </Link>
-              <Link className="home-action-link" to="/decision-hub/cost-calculator">
-                <span className="home-action-arrow">→</span> Check costs
-              </Link>
-            </nav>
-          </div>
-        </article>
-
         <section className="panel home-search-panel">
           <div className="panel-heading">
             <h2>University Explorer</h2>
-            <p>Search by university name or major to explore programs across Taiwan, Thailand, and Singapore.</p>
+            <p>Search by university name or major across Taiwan, Thailand, and Singapore.</p>
           </div>
 
           <div className="home-search-bar">
             <div className="home-search-badge">
-              <IconImage src={logoIcon} className="home-search-logo" alt="" />
+              <IconImage src={logoSrc} className="home-search-logo" alt="" />
             </div>
             <input
               type="search"
@@ -232,9 +210,9 @@ function HomePage() {
                   </div>
                 </div>
               ) : null}
-              <p className="empty-state">
+              <p className="muted-text">
                 {programs.length
-                  ? `${programs.length} programs loaded — type a university or major name to search.`
+                  ? `${programs.length} programs loaded — type a university or major to search.`
                   : 'Loading program data…'}
               </p>
             </>
@@ -260,36 +238,26 @@ function HomePage() {
           )}
         </section>
 
-        <section className="panel home-about-panel">
+        <section className="panel home-actions-panel">
           <div className="panel-heading">
-            <h2>Platform Summary</h2>
-            <p>Use the dashboard as a decision workspace, not a marketing page. Each section is tied to current backend data or an honest planned-state note.</p>
+            <h2>Where to start</h2>
+            <p>Not sure which university fits? Let the tools guide you.</p>
           </div>
 
-          <dl className="detail-grid compact">
-            <div>
-              <dt>Programs loaded</dt>
-              <dd>{programs.length}</dd>
-            </div>
-            <div>
-              <dt>Taiwan records</dt>
-              <dd>{countryCounts.C001 ?? 0}</dd>
-            </div>
-            <div>
-              <dt>Thailand records</dt>
-              <dd>{countryCounts.C002 ?? 0}</dd>
-            </div>
-            <div>
-              <dt>Singapore records</dt>
-              <dd>{countryCounts.C003 ?? 0}</dd>
-            </div>
-          </dl>
-
-          <ul className="content-list">
-            <li>Decision Hub groups recommendation, compare, and cost tools in one workspace.</li>
-            <li>Analytics keeps cost and admission summaries inside one section with internal navigation.</li>
-            <li>Legal info and red flag guidance stay in the sidebar as persistent destinations.</li>
-          </ul>
+          <nav className="home-action-cards">
+            <Link className="home-action-card" to="/decision-hub/recommendation">
+              <span className="home-action-card-title">Get a recommendation</span>
+              <span className="home-action-card-desc">Answer a few questions and get matched to programs that fit your budget and grades.</span>
+            </Link>
+            <Link className="home-action-card" to="/decision-hub/compare">
+              <span className="home-action-card-title">Compare programs</span>
+              <span className="home-action-card-desc">Side-by-side view of costs, entry requirements, and language of instruction.</span>
+            </Link>
+            <Link className="home-action-card" to="/decision-hub/cost-calculator">
+              <span className="home-action-card-title">Check costs</span>
+              <span className="home-action-card-desc">Calculate realistic yearly expenses including tuition, living, and insurance.</span>
+            </Link>
+          </nav>
         </section>
 
         <aside className="panel home-leaderboard-panel">
@@ -321,6 +289,31 @@ function HomePage() {
             <p className="empty-state">Value ranking will appear after data loads.</p>
           )}
         </aside>
+
+        <section className="panel home-snapshot-panel">
+          <div className="panel-heading">
+            <h2>What's in the database</h2>
+            <p>Verified program records across three countries — updated directly from source data.</p>
+          </div>
+
+          <div className="home-country-grid">
+            <div className="home-country-card">
+              <span className="home-country-name">Taiwan</span>
+              <span className="home-country-count">{countryCounts.C001 ?? 0}</span>
+              <span className="home-country-label">programs</span>
+            </div>
+            <div className="home-country-card">
+              <span className="home-country-name">Thailand</span>
+              <span className="home-country-count">{countryCounts.C002 ?? 0}</span>
+              <span className="home-country-label">programs</span>
+            </div>
+            <div className="home-country-card">
+              <span className="home-country-name">Singapore</span>
+              <span className="home-country-count">{countryCounts.C003 ?? 0}</span>
+              <span className="home-country-label">programs</span>
+            </div>
+          </div>
+        </section>
       </section>
     </div>
   )

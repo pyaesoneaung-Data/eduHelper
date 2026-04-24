@@ -4,6 +4,59 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 45. Logo — Theme-Aware SVGs + "UniMatch" Brand Name in Sidebar
+
+**Reason:** Old `logo.svg` had hardcoded black fill, breaking in dark mode. Two new theme-specific files provided: `logo_light_without_text.svg` (black fill, for light mode) and `logo_dark_without_text.svg` (#F0F0F0 fill, for dark mode). Sidebar expanded state also had blank space next to the logo with no brand identity.
+
+**Changes:**
+- `Sidebar.jsx`: removed `logoIcon` import; imports `logoLight` and `logoDark`; reads `theme` from `useAppShell()`; computes `logoSrc = theme === 'dark' ? logoDark : logoLight`; added `<span className="sidebar-brand-name">UniMatch</span>` next to logo — hidden via visually-hidden CSS when collapsed, visible when expanded
+- `HomePage.jsx`: same logo import + theme switch for the search bar badge
+- `index.css`: added `align-items: center; gap: 10px` to `.sidebar-brand`; added `.sidebar-brand-name` (bold, no-wrap); added `.sidebar-collapsed .sidebar-brand-name` visually-hidden rule
+
+**Files changed:** `frontend/src/components/Sidebar.jsx`, `frontend/src/pages/HomePage.jsx`, `frontend/src/index.css`
+
+---
+
+### 44. Home Page — Redesign Grid Layout for Two User Types
+
+**Reason:** The previous layout served neither new users (no clear guided entry) nor purposeful users (search was stretched across 2 cols and looked awkward). Platform Summary contained internal documentation, not student-facing content.
+
+**New grid:**
+```
+Row 1: [Search col 1] [Quick Actions col 2] [Leaderboard col 3, rows 1-2]
+Row 2: [Country Snapshot cols 1-2]          [Leaderboard cont.]
+```
+
+- **Search (col 1, row 1)** — single column, comfortable width for purposeful users
+- **Where to start / Quick Actions (col 2, row 1)** — new dedicated panel with 3 action cards, each with a one-line description. Serves new discovery users who don't know what to search yet
+- **Best Value Universities (col 3, rows 1-2)** — unchanged, passive useful data
+- **Country Snapshot (cols 1-2, row 2)** — replaces Platform Summary. Three big-number stat blocks (Taiwan / Thailand / Singapore program counts). Context without documentation
+
+**Removed:** `home-welcome-panel` and `home-about-panel` (Platform Summary bullet points now live on About page)
+
+**Added CSS:** `.home-actions-panel`, `.home-action-cards`, `.home-action-card`, `.home-action-card-title`, `.home-action-card-desc`, `.home-snapshot-panel`, `.home-country-grid`, `.home-country-card`, `.home-country-name`, `.home-country-count`, `.home-country-label`
+
+**Files changed:** `frontend/src/pages/HomePage.jsx`, `frontend/src/index.css`
+
+---
+
+### 43. Home Page — Reorder Grid for Student-First UX
+
+**Reason:** Original order (Welcome → Search → Platform Summary → Leaderboard) put marketing copy above the two most useful student-facing elements. Students arrive with questions, not wanting to read mission statements first.
+
+**New visual order:**
+1. Trust strip (unchanged)
+2. **University Explorer** (row 1, cols 1–2) — search is the primary action
+3. **Best Value Universities** (col 3, rows 1–2) — instant affordable-program signal
+4. **Quick actions / Make an informed decision** (row 2, col 1) — orientation after student has context
+5. **Platform Summary** (row 2, col 2) — metadata last
+
+**CSS:** `home-search-panel` gets `grid-column: 1/3; grid-row: 1`; `home-welcome-panel` moves to `grid-column: 1; grid-row: 2`; `home-about-panel` gets `grid-column: 2; grid-row: 2`; mobile reset updated.
+
+**Files changed:** `frontend/src/pages/HomePage.jsx`, `frontend/src/index.css`
+
+---
+
 ### 42. University Explorer — Simplified Search UX
 
 **Reason:** Previous attempt to add a Coursera-style search (floating dropdown, `isSearchActive` state, `mousedown` outside-click handler, `searchContainerRef`) introduced two bugs: results rendered outside the ref caused the University Explorer panel to expand, and the `mousedown` handler unmounted result cards before their `click` event could fire, making links unclickable.
