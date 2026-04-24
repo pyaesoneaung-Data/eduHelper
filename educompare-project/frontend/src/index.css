@@ -191,11 +191,9 @@ img {
 }
 
 .sidebar-collapse-icon {
-  font-size: 1rem;
-  line-height: 1;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
-  width: 22px;
-  text-align: center;
 }
 
 /* Collapsed sidebar overrides */
@@ -285,10 +283,10 @@ img {
 
 .sidebar-group-chevron {
   margin-left: auto;
-  font-size: 0.8rem;
+  width: 14px;
+  height: 14px;
   color: var(--muted);
   flex-shrink: 0;
-  line-height: 1;
   transition: transform 0.15s ease;
 }
 
@@ -531,10 +529,7 @@ label,
   color: var(--color-text);
 }
 
-:root[data-theme='dark'] .sidebar-link-icon,
-:root[data-theme='dark'] .topbar-icon {
-  filter: invert(1);
-}
+/* filter: invert(1) removed — icons now use lucide-react which inherits currentColor */
 
 .mobile-menu-button {
   display: none;
@@ -1116,6 +1111,12 @@ select {
   background: var(--panel-soft);
 }
 
+.search-result-card:hover,
+.search-result-card-active {
+  background: var(--panel-muted);
+  border-color: var(--accent);
+}
+
 .option-group {
   gap: 10px;
 }
@@ -1197,48 +1198,159 @@ select {
   gap: 18px;
 }
 
+.home-search-container {
+  position: relative;
+}
+
 .home-search-bar {
-  display: grid;
-  grid-template-columns: 56px minmax(0, 1fr) 88px;
+  display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-  background: var(--panel-muted);
+  padding: 0 12px 0 0;
+  height: 48px;
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
+}
+
+.home-search-bar:focus-within {
+  border-color: var(--accent);
 }
 
 .home-search-badge {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 52px;
+  flex-shrink: 0;
 }
 
 .home-search-logo {
-  width: 36px;
-  height: 36px;
-  padding: 6px;
+  width: 32px;
+  height: 32px;
+  padding: 5px;
   border-radius: 999px;
-  background: var(--panel-bg);
+  background: var(--panel-soft);
 }
 
 .home-search-bar input {
+  flex: 1;
   border: 0;
   background: transparent;
   padding: 0;
+  font-size: 0.9rem;
+  color: var(--text);
+  outline: none;
+  min-width: 0;
 }
 
-.home-search-action {
-  min-height: 36px;
+.home-search-bar input::placeholder {
+  color: var(--muted);
 }
 
-.home-search-helper {
-  display: inline-flex;
+.home-search-icon-right {
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.home-search-clear {
+  display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 36px;
-  padding: 8px 14px;
-  border: 1px solid var(--border);
-  background: var(--panel-soft);
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
   color: var(--muted);
+  padding: 0;
+}
+
+.home-search-clear:hover {
+  background: var(--panel-soft);
+  color: var(--text);
+}
+
+.home-search-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+  overflow: hidden;
+}
+
+.home-search-dropdown-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 10px 14px 6px;
+  margin: 0;
+}
+
+.home-search-result {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 14px;
+  text-decoration: none;
+  color: var(--text);
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.home-search-result:hover,
+.home-search-result-active {
+  background: var(--panel-soft);
+}
+
+.home-search-result-name {
+  font-size: 0.87rem;
+  font-weight: 600;
+}
+
+.home-search-result-meta {
+  font-size: 0.77rem;
+  color: var(--muted);
+}
+
+.home-search-recent {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 14px;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text);
+  text-align: left;
+}
+
+.home-search-recent:hover {
+  background: var(--panel-soft);
+}
+
+.home-search-recent svg {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.home-search-empty {
+  padding: 14px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0;
 }
 
 .home-about-panel {
@@ -1384,13 +1496,6 @@ select {
     padding: 18px;
   }
 
-  .home-search-bar {
-    grid-template-columns: 48px minmax(0, 1fr);
-  }
-
-  .home-search-action {
-    grid-column: 1 / -1;
-  }
 
   .result-card-header,
   .comparison-country-head,

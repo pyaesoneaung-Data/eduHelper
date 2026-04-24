@@ -4,6 +4,7 @@ __pycache__/
 .venv/
 venv/
 educompare-project/backend/__pycache__
+.claude/
 
 # Backend local environment
 educompare-project/backend/.env

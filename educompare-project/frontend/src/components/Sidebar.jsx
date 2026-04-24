@@ -1,13 +1,7 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { BarChart2, ChevronLeft, ChevronRight, Compass, House, Info, Scale, Settings, ShieldAlert } from 'lucide-react'
 import { useAppShell } from '../context/AppShellContext'
-import analyticsIcon from '../assets/icons/analytics.svg'
-import decisionHubIcon from '../assets/icons/decision_hub.svg'
-import homeIcon from '../assets/icons/home.svg'
-import legalIcon from '../assets/icons/legal.svg'
-import languageIcon from '../assets/icons/language.svg'
-import settingsIcon from '../assets/icons/setting.svg'
-import warningIcon from '../assets/icons/warning.svg'
 import logoIcon from '../assets/logo/logo.svg'
 import IconImage from './IconImage'
 
@@ -18,13 +12,13 @@ const navConfig = [
     to: '/',
     end: true,
     label: 'Home',
-    icon: homeIcon,
+    icon: House,
   },
   {
     key: 'decision-hub',
     type: 'group',
     label: 'Decision Hub',
-    icon: decisionHubIcon,
+    icon: Compass,
     basePath: '/decision-hub',
     defaultTo: '/decision-hub/recommendation',
     children: [
@@ -37,7 +31,7 @@ const navConfig = [
     key: 'analytics',
     type: 'group',
     label: 'Analytics',
-    icon: analyticsIcon,
+    icon: BarChart2,
     basePath: '/analytics',
     defaultTo: '/analytics',
     children: [
@@ -52,20 +46,20 @@ const navConfig = [
     type: 'link',
     to: '/legal',
     label: 'Legal Info',
-    icon: legalIcon,
+    icon: Scale,
   },
   {
     key: 'red-flags',
     type: 'link',
     to: '/red-flags',
     label: 'Red Flag Guide',
-    icon: warningIcon,
+    icon: ShieldAlert,
   },
 ]
 
 const footerLinks = [
-  { to: '/settings', label: 'Settings', icon: settingsIcon },
-  { to: '/about', label: 'About', icon: languageIcon },
+  { to: '/settings', label: 'Settings', icon: Settings },
+  { to: '/about', label: 'About', icon: Info },
 ]
 
 function Sidebar() {
@@ -134,6 +128,7 @@ function Sidebar() {
       <nav className="sidebar-nav" aria-label="Primary navigation">
         {navConfig.map((item) => {
           if (item.type === 'link') {
+            const Icon = item.icon
             return (
               <NavLink
                 key={item.to}
@@ -144,13 +139,14 @@ function Sidebar() {
                 onClick={closeSidebar}
                 className={() => getLinkClass(item.to, item.end)}
               >
-                <IconImage src={item.icon} className="sidebar-link-icon" alt="" />
+                <Icon className="sidebar-link-icon" aria-hidden="true" />
                 <span className="sidebar-link-label">{item.label}</span>
               </NavLink>
             )
           }
 
           if (item.type === 'group') {
+            const Icon = item.icon
             const isOpen = openGroups.has(item.key)
             const isActive = location.pathname.startsWith(item.basePath)
 
@@ -163,14 +159,12 @@ function Sidebar() {
                   aria-expanded={isOpen && !isSidebarCollapsed}
                   title={item.label}
                 >
-                  <IconImage src={item.icon} className="sidebar-link-icon" alt="" />
+                  <Icon className="sidebar-link-icon" aria-hidden="true" />
                   <span className="sidebar-link-label">{item.label}</span>
-                  <span
+                  <ChevronRight
                     className={`sidebar-group-chevron${isOpen ? ' sidebar-group-chevron-open' : ''}`}
                     aria-hidden="true"
-                  >
-                    ›
-                  </span>
+                  />
                 </button>
 
                 {isOpen && !isSidebarCollapsed ? (
@@ -222,19 +216,22 @@ function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
-        {footerLinks.map((link) => (
-          <NavLink
-            key={link.to}
-            to={link.to}
-            title={link.label}
-            aria-label={link.label}
-            onClick={closeSidebar}
-            className={() => getLinkClass(link.to, false)}
-          >
-            <IconImage src={link.icon} className="sidebar-link-icon" alt="" />
-            <span className="sidebar-link-label">{link.label}</span>
-          </NavLink>
-        ))}
+        {footerLinks.map((link) => {
+          const Icon = link.icon
+          return (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              title={link.label}
+              aria-label={link.label}
+              onClick={closeSidebar}
+              className={() => getLinkClass(link.to, false)}
+            >
+              <Icon className="sidebar-link-icon" aria-hidden="true" />
+              <span className="sidebar-link-label">{link.label}</span>
+            </NavLink>
+          )
+        })}
         <button
           type="button"
           className="sidebar-collapse-btn"
@@ -242,9 +239,10 @@ function Sidebar() {
           aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <span className="sidebar-collapse-icon" aria-hidden="true">
-            {isSidebarCollapsed ? '›' : '‹'}
-          </span>
+          {isSidebarCollapsed
+            ? <ChevronRight className="sidebar-collapse-icon" aria-hidden="true" />
+            : <ChevronLeft className="sidebar-collapse-icon" aria-hidden="true" />
+          }
           <span className="sidebar-link-label">Collapse</span>
         </button>
       </div>

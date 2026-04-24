@@ -4,6 +4,62 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 42. University Explorer — Simplified Search UX
+
+**Reason:** Previous attempt to add a Coursera-style search (floating dropdown, `isSearchActive` state, `mousedown` outside-click handler, `searchContainerRef`) introduced two bugs: results rendered outside the ref caused the University Explorer panel to expand, and the `mousedown` handler unmounted result cards before their `click` event could fire, making links unclickable.
+
+**Fix:** Removed all active-state complexity and rewrote the search section with a simple `searchTerm.trim()` conditional:
+- No search term → recent searches shown as chip buttons (`.recent-search-chip`), plus a program count hint
+- Has term → inline `search-result-card` results, or no-match message if nothing found
+- No `isSearchActive` state, no `searchContainerRef`, no `mousedown` handler
+- Result links are always clickable and panel layout never shifts
+
+**Files changed:**
+- `frontend/src/pages/HomePage.jsx`
+
+---
+
+### 41. Icons — Replaced All Nav Icons with Lucide React
+
+> **Action required:** Run `npm install lucide-react` inside `educompare-project/frontend/` before starting the dev server, or the app will crash on import.
+
+**Reason:** Existing SVG icon files were basic placeholders with inconsistent quality. Lucide React provides a clean, MIT-licensed, consistent stroke icon set. Icons now inherit `currentColor` — they respond correctly to theme and CSS color without any filter hacks.
+
+**Icon mapping:**
+
+| Location | Old SVG | Lucide component |
+|---|---|---|
+| Home | `home.svg` | `House` |
+| Decision Hub | `decision_hub.svg` | `Compass` |
+| Analytics | `analytics.svg` | `BarChart2` |
+| Legal Info | `legal.svg` | `Scale` |
+| Red Flag Guide | `warning.svg` | `ShieldAlert` |
+| Settings (footer) | `setting.svg` | `Settings` |
+| About (footer) | `language.svg` (placeholder) | `Info` |
+| Topbar language toggle | `language.svg` | `Languages` |
+| Topbar theme toggle | `moon.svg` | `Moon` |
+
+**Changes:**
+
+- `frontend/src/components/Sidebar.jsx`:
+  - Removed all 7 SVG icon imports from `assets/icons/`
+  - Added `import { BarChart2, Compass, House, Info, Scale, Settings, ShieldAlert } from 'lucide-react'`
+  - `navConfig` and `footerLinks` now store Lucide component references (e.g. `icon: House`) instead of SVG import variables
+  - Render: `const Icon = item.icon` then `<Icon className="sidebar-link-icon" aria-hidden="true" />` — dynamic component pattern
+  - `IconImage` import kept (still used for the logo SVG)
+
+- `frontend/src/components/Layout.jsx`:
+  - Removed `languageIcon`, `moonIcon` SVG imports and `IconImage` import
+  - Added `import { Languages, Moon } from 'lucide-react'`
+  - Replaced both `<IconImage>` topbar icon usages with `<Languages>` and `<Moon>`
+
+- `frontend/src/index.css`:
+  - Removed `filter: invert(1)` from dark-mode rule for `.sidebar-link-icon` and `.topbar-icon` — this was a workaround for black SVGs; Lucide icons use `currentColor` and invert correctly with the theme automatically
+
+**Old SVG files:** Left in place at `assets/icons/` — not deleted, not imported. Safe to remove later once your friend confirms icons look good.
+
+---
+
 ### 40. Collapsed Sidebar — CSS Fly-out Submenu for Group Navigation
 
 **Reason:** In collapsed (icon-only) mode, Decision Hub and Analytics group icons gave no hint that sub-pages existed underneath them. Students could only reach sub-pages by expanding the sidebar first.

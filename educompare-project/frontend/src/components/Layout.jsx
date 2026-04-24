@@ -1,9 +1,7 @@
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { AppShellProvider, useAppShell } from '../context/AppShellContext'
-import languageIcon from '../assets/icons/language.svg'
-import moonIcon from '../assets/icons/moon.svg'
-import IconImage from './IconImage'
+import { Languages, Moon } from 'lucide-react'
 import Sidebar from './Sidebar'
 
 function getSectionLabel(pathname) {
@@ -76,7 +74,7 @@ function LayoutFrame() {
               aria-label={t('ui.language', 'Language')}
               title={t('ui.language', 'Language')}
             >
-              <IconImage src={languageIcon} className="topbar-icon" alt="" />
+              <Languages className="topbar-icon" aria-hidden="true" />
             </button>
             <div className="topbar-utility-copy">
               <span className="topbar-utility-label">Theme</span>
@@ -91,7 +89,7 @@ function LayoutFrame() {
               aria-label={theme === 'light' ? t('ui.darkMode', 'Dark mode') : t('ui.lightMode', 'Light mode')}
               title={theme === 'light' ? t('ui.darkMode', 'Dark mode') : t('ui.lightMode', 'Light mode')}
             >
-              <IconImage src={moonIcon} className="topbar-icon" alt="" />
+              <Moon className="topbar-icon" aria-hidden="true" />
             </button>
           </div> : null}
         </header>
