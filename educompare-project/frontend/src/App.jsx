@@ -4,8 +4,10 @@ import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AnalyticsLayoutPage from './pages/AnalyticsLayoutPage'
 import AnalyticsPage from './pages/AnalyticsPage'
+import AboutPage from './pages/AboutPage'
 import AnalyticsPlaceholderPage from './pages/AnalyticsPlaceholderPage'
 import AdmissionAnalyticsPage from './pages/AdmissionAnalyticsPage'
+import RankingInsightsPage from './pages/RankingInsightsPage'
 import CompareProgramsPage from './pages/CompareProgramsPage'
 import DeadlineInsightsPage from './pages/DeadlineInsightsPage'
 import CostCalculatorPage from './pages/CostCalculatorPage'
@@ -42,19 +44,12 @@ function App() {
           <Route index element={<AnalyticsPage />} />
           <Route path="admission" element={<AdmissionAnalyticsPage />} />
           <Route path="deadlines" element={<DeadlineInsightsPage />} />
-          <Route
-            path="ranking"
-            element={
-              <AnalyticsPlaceholderPage
-                title="Ranking insights are withheld until ranking data is standardized."
-                description="No ranking chart is shown here because mixed or incomplete ranking sources would create a misleading comparison."
-              />
-            }
-          />
+          <Route path="ranking" element={<RankingInsightsPage />} />
         </Route>
         <Route path="/legal" element={<LegalGuardrailPage />} />
         <Route path="/red-flags" element={<RedFlagGuidePage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/logout" element={<LogoutPage />} />
         <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />

@@ -1,41 +1,127 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAppShell } from '../context/AppShellContext'
 import analyticsIcon from '../assets/icons/analytics.svg'
 import decisionHubIcon from '../assets/icons/decision_hub.svg'
 import homeIcon from '../assets/icons/home.svg'
 import legalIcon from '../assets/icons/legal.svg'
+import languageIcon from '../assets/icons/language.svg'
 import settingsIcon from '../assets/icons/setting.svg'
 import warningIcon from '../assets/icons/warning.svg'
 import logoIcon from '../assets/logo/logo.svg'
 import IconImage from './IconImage'
 
-const navItems = [
-  { to: '/', labelKey: 'nav.home', fallback: 'Home', icon: homeIcon, end: true },
+const navConfig = [
   {
-    to: '/decision-hub/recommendation',
-    labelKey: 'nav.decisionHub',
-    fallback: 'Decision Hub',
-    icon: decisionHubIcon,
+    key: 'home',
+    type: 'link',
+    to: '/',
+    end: true,
+    label: 'Home',
+    icon: homeIcon,
   },
-  { to: '/analytics', labelKey: 'nav.analytics', fallback: 'Analytics', icon: analyticsIcon },
-  { to: '/legal', labelKey: 'nav.legal', fallback: 'Legal Info', icon: legalIcon },
-  { to: '/red-flags', labelKey: 'nav.redFlags', fallback: 'Red Flag Guide', icon: warningIcon },
+  {
+    key: 'decision-hub',
+    type: 'group',
+    label: 'Decision Hub',
+    icon: decisionHubIcon,
+    basePath: '/decision-hub',
+    defaultTo: '/decision-hub/recommendation',
+    children: [
+      { label: 'Recommendation', to: '/decision-hub/recommendation' },
+      { label: 'Compare', to: '/decision-hub/compare' },
+      { label: 'Cost Calculator', to: '/decision-hub/cost-calculator' },
+    ],
+  },
+  {
+    key: 'analytics',
+    type: 'group',
+    label: 'Analytics',
+    icon: analyticsIcon,
+    basePath: '/analytics',
+    defaultTo: '/analytics',
+    children: [
+      { label: 'Cost Overview', to: '/analytics', end: true },
+      { label: 'Admission Overview', to: '/analytics/admission' },
+      { label: 'Deadline Insights', to: '/analytics/deadlines' },
+      { label: 'Ranking Insights', to: '/analytics/ranking' },
+    ],
+  },
+  {
+    key: 'legal',
+    type: 'link',
+    to: '/legal',
+    label: 'Legal Info',
+    icon: legalIcon,
+  },
+  {
+    key: 'red-flags',
+    type: 'link',
+    to: '/red-flags',
+    label: 'Red Flag Guide',
+    icon: warningIcon,
+  },
 ]
 
-const footerItems = [
-  { to: '/settings', labelKey: 'nav.settings', fallback: 'Settings', icon: settingsIcon },
+const footerLinks = [
+  { to: '/settings', label: 'Settings', icon: settingsIcon },
+  { to: '/about', label: 'About', icon: languageIcon },
 ]
 
 function Sidebar() {
-  const { t, closeSidebar, isSidebarCollapsed, toggleSidebarCollapsed } = useAppShell()
+  const { closeSidebar, isSidebarCollapsed, toggleSidebarCollapsed } = useAppShell()
   const location = useLocation()
+  const navigate = useNavigate()
 
-  function getLinkClassName(item) {
-    const isActive =
-      item.end
-        ? location.pathname === item.to
-        : location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)
+  const [openGroups, setOpenGroups] = useState(() => {
+    const initial = new Set()
+    navConfig.forEach((item) => {
+      if (item.type === 'group' && location.pathname.startsWith(item.basePath)) {
+        initial.add(item.key)
+      }
+    })
+    return initial
+  })
 
+  // Auto-expand group when navigating to a child path externally
+  useEffect(() => {
+    navConfig.forEach((item) => {
+      if (item.type === 'group' && location.pathname.startsWith(item.basePath)) {
+        setOpenGroups((prev) => {
+          if (prev.has(item.key)) return prev
+          const next = new Set(prev)
+          next.add(item.key)
+          return next
+        })
+      }
+    })
+  }, [location.pathname])
+
+  function toggleGroup(key) {
+    setOpenGroups((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) {
+        next.delete(key)
+      } else {
+        next.add(key)
+      }
+      return next
+    })
+  }
+
+  function handleGroupClick(item) {
+    if (isSidebarCollapsed) {
+      navigate(item.defaultTo)
+      closeSidebar()
+    } else {
+      toggleGroup(item.key)
+    }
+  }
+
+  function getLinkClass(to, end) {
+    const isActive = end
+      ? location.pathname === to
+      : location.pathname === to || location.pathname.startsWith(`${to}/`)
     return isActive ? 'sidebar-link sidebar-link-active' : 'sidebar-link'
   }
 
@@ -46,34 +132,107 @@ function Sidebar() {
       </div>
 
       <nav className="sidebar-nav" aria-label="Primary navigation">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.end}
-            title={t(item.labelKey, item.fallback)}
-            aria-label={t(item.labelKey, item.fallback)}
-            onClick={closeSidebar}
-            className={() => getLinkClassName(item)}
-          >
-            <IconImage src={item.icon} className="sidebar-link-icon" alt="" />
-            <span className="sidebar-link-label">{t(item.labelKey, item.fallback)}</span>
-          </NavLink>
-        ))}
+        {navConfig.map((item) => {
+          if (item.type === 'link') {
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                title={item.label}
+                aria-label={item.label}
+                onClick={closeSidebar}
+                className={() => getLinkClass(item.to, item.end)}
+              >
+                <IconImage src={item.icon} className="sidebar-link-icon" alt="" />
+                <span className="sidebar-link-label">{item.label}</span>
+              </NavLink>
+            )
+          }
+
+          if (item.type === 'group') {
+            const isOpen = openGroups.has(item.key)
+            const isActive = location.pathname.startsWith(item.basePath)
+
+            return (
+              <div key={item.key} className="sidebar-group">
+                <button
+                  type="button"
+                  className={`sidebar-group-btn${isActive ? ' sidebar-group-btn-active' : ''}`}
+                  onClick={() => handleGroupClick(item)}
+                  aria-expanded={isOpen && !isSidebarCollapsed}
+                  title={item.label}
+                >
+                  <IconImage src={item.icon} className="sidebar-link-icon" alt="" />
+                  <span className="sidebar-link-label">{item.label}</span>
+                  <span
+                    className={`sidebar-group-chevron${isOpen ? ' sidebar-group-chevron-open' : ''}`}
+                    aria-hidden="true"
+                  >
+                    ›
+                  </span>
+                </button>
+
+                {isOpen && !isSidebarCollapsed ? (
+                  <div className="sidebar-group-children">
+                    {item.children.map((child) => (
+                      <NavLink
+                        key={child.to}
+                        to={child.to}
+                        end={child.end}
+                        onClick={closeSidebar}
+                        className={({ isActive: childActive }) =>
+                          childActive
+                            ? 'sidebar-sub-link sidebar-sub-link-active'
+                            : 'sidebar-sub-link'
+                        }
+                      >
+                        {child.label}
+                      </NavLink>
+                    ))}
+                  </div>
+                ) : null}
+
+                {/* Fly-out panel — only visible in collapsed mode on hover (CSS-driven) */}
+                <div className="sidebar-flyout" aria-hidden="true">
+                  <p className="sidebar-flyout-title">{item.label}</p>
+                  <div className="sidebar-flyout-divider" />
+                  {item.children.map((child) => (
+                    <NavLink
+                      key={child.to}
+                      to={child.to}
+                      end={child.end}
+                      onClick={closeSidebar}
+                      className={({ isActive: childActive }) =>
+                        childActive
+                          ? 'sidebar-flyout-link sidebar-flyout-link-active'
+                          : 'sidebar-flyout-link'
+                      }
+                    >
+                      {child.label}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+            )
+          }
+
+          return null
+        })}
       </nav>
 
       <div className="sidebar-footer">
-        {footerItems.map((item) => (
+        {footerLinks.map((link) => (
           <NavLink
-            key={item.to}
-            to={item.to}
-            title={t(item.labelKey, item.fallback)}
-            aria-label={t(item.labelKey, item.fallback)}
+            key={link.to}
+            to={link.to}
+            title={link.label}
+            aria-label={link.label}
             onClick={closeSidebar}
-            className={() => getLinkClassName(item)}
+            className={() => getLinkClass(link.to, false)}
           >
-            <IconImage src={item.icon} className="sidebar-link-icon" alt="" />
-            <span className="sidebar-link-label">{t(item.labelKey, item.fallback)}</span>
+            <IconImage src={link.icon} className="sidebar-link-icon" alt="" />
+            <span className="sidebar-link-label">{link.label}</span>
           </NavLink>
         ))}
         <button

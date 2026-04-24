@@ -2,11 +2,11 @@
 
 Kino Part
 
-0- move secondary nav buttons wrapping inside the main nav bar
-0- connect ranking insights with backend
+1- move secondary nav buttons wrapping inside the main nav bar - 24/04/2026
+1- connect ranking insights with backend - 24/04/2026
 0- country filter in cost overview
 0- update cost overview analytics
-0- Add about page
+1- Add about page - 24/04/2026
 0- Add App logo in explore background(check in figma )
 0- add splash page
 0- update logo

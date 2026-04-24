@@ -4,6 +4,119 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 40. Collapsed Sidebar — CSS Fly-out Submenu for Group Navigation
+
+**Reason:** In collapsed (icon-only) mode, Decision Hub and Analytics group icons gave no hint that sub-pages existed underneath them. Students could only reach sub-pages by expanding the sidebar first.
+
+**Solution:** Pure CSS hover fly-out — no JavaScript required. When the sidebar is collapsed and the student hovers a group icon, a floating panel appears to the right listing all sub-pages. Hovering the panel itself keeps it visible (the panel is a DOM child of the group so the parent `:hover` stays active — no gap, no JS timer needed).
+
+**Changes:**
+
+- `frontend/src/components/Sidebar.jsx`:
+  - Added `<div className="sidebar-flyout">` inside each group render (always in DOM, display:none by default)
+  - Fly-out contains: group title (small uppercase label), divider, all children as `NavLink`s
+  - Uses same `sidebar-flyout-link` / `sidebar-flyout-link-active` classes for active styling
+  - Marked `aria-hidden="true"` since it duplicates the expanded sub-links (screen readers use expanded mode)
+
+- `frontend/src/index.css`:
+  - `.sidebar-flyout { display: none }` — hidden in all modes by default
+  - `.sidebar-collapsed .sidebar-group { position: relative }` — added to existing rule so fly-out can be absolutely positioned relative to the group
+  - `.sidebar-collapsed .sidebar-group:hover .sidebar-flyout` — reveals panel: `position: absolute; left: 100%; top: 0` (right edge of sidebar), `min-width: 188px`, panel-bg background, border, border-radius: 10px, box-shadow, z-index: 100
+  - Added `.sidebar-flyout-title`, `.sidebar-flyout-divider`, `.sidebar-flyout-link`, `.sidebar-flyout-link-active`
+
+**Result:** Collapsed sidebar now fully navigable. Hovering Decision Hub or Analytics icon shows all sub-pages instantly. No sidebar expansion required.
+
+---
+
+### 39. About Page — Placeholder Under Settings in Sidebar Footer
+
+**Reason:** Added a simple About page accessible from the sidebar footer, below Settings.
+
+**Changes:**
+
+- `frontend/src/pages/AboutPage.jsx` — new placeholder page with: project description InfoCards, platform details (version, dataset date, country count), data source note, disclaimer
+- `frontend/src/App.jsx` — added `GET /about` route and `AboutPage` import
+- `frontend/src/components/Sidebar.jsx`:
+  - `footerLink` (single object) → `footerLinks` (array)
+  - Added `{ to: '/about', label: 'About', icon: languageIcon }` entry (language.svg used as placeholder icon)
+  - Footer renders `footerLinks.map(...)` instead of a single NavLink
+
+---
+
+### 38. Sidebar — Nested Groups Replace Secondary Navigation Bars
+
+**Reason:** Decision Hub and Analytics each had a horizontal secondary nav bar (SectionNav) at the top of their content area. This created two navigation systems for students to learn. Folding sub-items directly into the sidebar gives one consistent navigation pattern throughout the app.
+
+**Changes:**
+
+- `frontend/src/components/Sidebar.jsx` — full rewrite:
+  - `navItems` array replaced with typed `navConfig` array: `{ type: 'link' }` for flat links, `{ type: 'group' }` for expandable sections
+  - Decision Hub group: children are Recommendation, Compare, Cost Calculator
+  - Analytics group: children are Cost Overview, Admission Overview, Deadline Insights, Ranking Insights
+  - `openGroups` state (Set) tracks which groups are expanded; initialized from current path on mount
+  - `useEffect` auto-expands the correct group when path changes (handles direct navigation / browser back)
+  - `toggleGroup(key)` flips open/closed for expanded sidebar
+  - `handleGroupClick(item)`: when sidebar is collapsed (icon-only), clicking a group navigates directly to its `defaultTo` child; when expanded, it toggles the group
+  - Group button shows chevron (›) that rotates 90° when open
+  - Active group button gets `sidebar-group-btn-active` class (matches sidebar-link hover style)
+  - Sub-links use `NavLink` with `sidebar-sub-link` / `sidebar-sub-link-active` classes
+  - Removed `t()` translation wrapper on labels (labels are plain strings; i18n can be re-added later)
+  - Added `useNavigate` import
+
+- `frontend/src/pages/AnalyticsLayoutPage.jsx` — simplified to `<Outlet />` only (removed PageHeader, SectionNav, section-shell wrapper)
+
+- `frontend/src/pages/DecisionHubLayoutPage.jsx` — simplified to `<Outlet />` only (removed PageHeader, SectionNav, section-shell wrapper)
+
+- `frontend/src/pages/AnalyticsPage.jsx`:
+  - Added data freshness note here since AnalyticsLayoutPage no longer renders it
+
+- `frontend/src/index.css`:
+  - Added `.sidebar-group`, `.sidebar-group-btn`, `.sidebar-group-btn-active`
+  - Added `.sidebar-group-chevron`, `.sidebar-group-chevron-open` (rotates on open)
+  - Added `.sidebar-group-children` (indented container for sub-links)
+  - Added `.sidebar-sub-link`, `.sidebar-sub-link-active`
+  - Added collapsed overrides: group centered at 52×52px, chevron hidden, children never rendered (handled in JSX)
+
+**Result:** Students see one sidebar with expandable Decision Hub and Analytics groups. No horizontal tab bars. Collapsing the sidebar still works — group icons navigate directly to their default child.
+
+---
+
+### 37. Ranking Insights Page — QS World University Rankings
+
+**Reason:** Singapore universities have verified QS World University Rankings data (`world_rank` field in the University model). The Ranking Insights route was previously a static placeholder. Now that real data exists, the page shows it.
+
+**Changes:**
+
+- `backend/main.py`:
+  - Added `GET /analytics/ranking-overview` endpoint
+  - Queries all universities, filters to those with a non-empty `world_rank`, parses rank as integer, sorts ascending
+  - Returns `{ universities: [...] }` with `university_id`, `university_name`, `country_id`, `country_name`, `city`, `university_type`, `world_rank`, `official_website`
+  - Adds `RANKING_COUNTRY_NAMES` map: `C001→Taiwan`, `C002→Thailand`, `C003→Singapore`
+
+- `frontend/src/api/api.js`:
+  - Added `getRankingOverview()` calling `GET /analytics/ranking-overview`
+
+- `frontend/src/pages/RankingInsightsPage.jsx` — new file:
+  - Fetches ranking data and groups by `country_name`
+  - Shows a data source InfoCard: QS World University Rankings 2025, link to topuniversities.com
+  - Shows one InfoCard per country with a ranked table (QS Rank, University name linked to official site, City, Type)
+  - Ranks ≤100 highlighted with accent color; others shown in muted
+  - Shows a "Pending ranking data" InfoCard listing Taiwan and Thailand as pending
+  - Countries with no ranked data are skipped in the ranked section entirely
+
+- `frontend/src/App.jsx`:
+  - Replaced static `AnalyticsPlaceholderPage` on `/analytics/ranking` with `RankingInsightsPage`
+  - Added `import RankingInsightsPage` at top
+
+- `frontend/src/index.css`:
+  - Added `.ranking-rank-cell` — bold rank number, muted by default
+  - Added `.ranking-rank-top` — accent color for ranks ≤100
+  - Added `.pending-country-tags` and `.pending-country-tag` — pill tags for pending countries
+
+**Result:** `/analytics/ranking` now shows a live table of Singapore's 4 QS-ranked universities (NUS #8, NTU #12, SMU #511, SUTD #519), with a clear source attribution and a pending notice for Taiwan and Thailand.
+
+---
+
 ## [2026-04-19] — Kaung Khant Lin
 
 ### 1. Cloud Database — Neon DB

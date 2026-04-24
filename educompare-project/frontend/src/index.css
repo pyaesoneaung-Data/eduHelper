@@ -252,6 +252,161 @@ img {
   gap: 0;
 }
 
+/* Sidebar expandable groups */
+.sidebar-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.sidebar-group-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  gap: 10px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.sidebar-group-btn:hover,
+.sidebar-group-btn-active {
+  background: var(--panel-soft);
+  border-color: var(--border);
+}
+
+.sidebar-group-chevron {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--muted);
+  flex-shrink: 0;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+.sidebar-group-chevron-open {
+  transform: rotate(90deg);
+}
+
+.sidebar-group-children {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 8px 4px 34px;
+}
+
+.sidebar-sub-link {
+  display: flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--muted);
+  border: 1px solid transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-sub-link:hover,
+.sidebar-sub-link-active {
+  background: var(--panel-soft);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+/* Fly-out panel — hidden everywhere except collapsed hover */
+.sidebar-flyout {
+  display: none;
+}
+
+/* Collapsed overrides for groups */
+.sidebar-collapsed .sidebar-group {
+  align-items: center;
+  position: relative;
+}
+
+.sidebar-collapsed .sidebar-group:hover .sidebar-flyout {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: absolute;
+  left: 100%;
+  top: 0;
+  min-width: 188px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-flyout-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 10px 4px;
+  margin: 0;
+}
+
+.sidebar-flyout-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 2px 0 4px;
+}
+
+.sidebar-flyout-link {
+  display: flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--muted);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.sidebar-flyout-link:hover,
+.sidebar-flyout-link-active {
+  background: var(--panel-soft);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.sidebar-collapsed .sidebar-group-btn {
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  gap: 0;
+}
+
+.sidebar-collapsed .sidebar-group-btn .sidebar-link-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.sidebar-collapsed .sidebar-group-chevron {
+  display: none;
+}
+
 .danger-text-button {
   display: inline-block;
   background: transparent;
@@ -1280,4 +1435,31 @@ select {
   font-weight: 500;
   color: var(--accent);
   margin: 0;
+}
+
+/* Ranking Insights page */
+.ranking-rank-cell {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.ranking-rank-top {
+  color: var(--accent);
+}
+
+.pending-country-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.pending-country-tag {
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: var(--panel-muted);
+  padding: 4px 10px;
+  border-radius: 4px;
 }

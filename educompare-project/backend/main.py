@@ -521,3 +521,38 @@ def analytics_admission_overview(db: Session = Depends(get_db)):
             for name, entries in country_groups.items()
         }
     }
+
+
+RANKING_COUNTRY_NAMES = {
+    "C001": "Taiwan",
+    "C002": "Thailand",
+    "C003": "Singapore",
+}
+
+
+@app.get("/analytics/ranking-overview")
+def analytics_ranking_overview(db: Session = Depends(get_db)):
+    universities = db.query(University).all()
+
+    ranked = []
+    for u in universities:
+        raw = str(u.world_rank).strip() if u.world_rank else ""
+        if not raw:
+            continue
+        try:
+            rank_int = int(raw)
+        except ValueError:
+            continue
+        ranked.append({
+            "university_id": u.university_id,
+            "university_name": u.university_name,
+            "country_id": u.country_id,
+            "country_name": RANKING_COUNTRY_NAMES.get(u.country_id, u.country_id),
+            "city": u.city,
+            "university_type": u.university_type,
+            "world_rank": rank_int,
+            "official_website": u.official_website,
+        })
+
+    ranked.sort(key=lambda x: x["world_rank"])
+    return {"universities": ranked}

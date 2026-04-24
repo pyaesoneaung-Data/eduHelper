@@ -167,6 +167,11 @@ function AnalyticsPage() {
         <p>Compare average yearly costs and tuition using backend-provided country summaries.</p>
       </div>
 
+      <p className="data-freshness-note">
+        Dataset verified April 2026 — sourced from official university and government websites.
+        Figures reflect the intake cycle recorded at that time.
+      </p>
+
       {error ? <p className="error-text">{error}</p> : null}
 
       {!data && !error ? <p className="muted-text">Loading cost data...</p> : null}

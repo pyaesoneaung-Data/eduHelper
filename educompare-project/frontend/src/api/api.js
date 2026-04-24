@@ -70,4 +70,9 @@ export async function getAdmissionAnalytics() {
   return response.data
 }
 
+export async function getRankingOverview() {
+  const response = await api.get('/analytics/ranking-overview')
+  return response.data
+}
+
 export default api
