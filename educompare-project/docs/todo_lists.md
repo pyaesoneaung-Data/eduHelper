@@ -8,7 +8,7 @@ Kino Part
 0- update cost overview analytics
 0- Add about page
 0- Add App logo in explore background(check in figma )
-0- add flash page
+0- add splash page
 0- update logo
 
 
