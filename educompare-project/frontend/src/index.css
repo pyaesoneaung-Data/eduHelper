@@ -643,6 +643,24 @@ label,
   gap: 12px;
 }
 
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: var(--muted);
+  align-self: flex-start;
+}
+
+.back-button:hover {
+  color: var(--text);
+}
+
 .primary-button {
   background: var(--text);
   border-color: var(--text);

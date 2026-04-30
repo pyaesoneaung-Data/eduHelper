@@ -1,9 +1,11 @@
 import InfoCard from '../components/InfoCard'
 import PageHeader from '../components/PageHeader'
+import BackButton from '../components/BackButton'
 
 function AdminDashboardPage() {
   return (
     <div className="page-stack">
+      <BackButton fallback="/" />
       <PageHeader
         eyebrow="Planned Admin"
         title="Admin dashboard will be added after the public MVP is stable."

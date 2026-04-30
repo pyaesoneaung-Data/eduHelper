@@ -9,7 +9,7 @@ Kino Part
 1- Add about page - 24/04/2026
 0- Add App logo in explore background(check in figma )
 0- add splash page
-0- add go back funtion in everywhere it needs
+1- add go back funtion in everywhere it needs - 30/4/2026
 1- update logo
 1- overall icons changes - 24/04/2026
 

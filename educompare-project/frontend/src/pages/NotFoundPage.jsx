@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
+import BackButton from '../components/BackButton'
 
 function NotFoundPage() {
   return (
     <div className="page-stack">
+      <BackButton fallback="/" />
       <PageHeader
         eyebrow="Not Found"
         title="That page is not available."

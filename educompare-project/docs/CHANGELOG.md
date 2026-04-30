@@ -4,6 +4,60 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 49. Back Button — Reusable Component Added Across All Entry-Point Pages
+
+**Reason:** Students reaching pages via search results, recommendation cards, or direct URLs had no visible way to return without using the browser's own back button. Investigated every page and identified which ones genuinely need it (deep pages only — sidebar-navigated section pages don't need it since the sidebar provides full navigation context).
+
+**New component:** `src/components/BackButton.jsx`
+- Uses `navigate(-1)` from React Router v6 when `window.history.state?.idx > 0` — meaning a previous app page exists in the session history
+- Falls back to `fallback` prop (default `"/"`) when opened via direct URL or new tab with no history
+- Uses Lucide `ArrowLeft` icon
+- Sits above `PageHeader` as the first element in the `page-stack`
+
+**Pages updated:**
+| Page | Reason |
+|---|---|
+| `ProgramDetailPage` | Reached from search, recommendation results, compare table, deadline page — most critical |
+| `NotFoundPage` | Secondary escape alongside existing "Return home" link |
+| `AdminLoginPage` | Placeholder page with no other exit |
+| `AdminDashboardPage` | Placeholder page with no other exit |
+
+**Pages intentionally skipped:** All sidebar-navigated pages (Decision Hub, Analytics, Legal, Red Flags, Settings, About) — sidebar handles all navigation there, a back button would be redundant.
+
+**CSS added:** `.back-button` — inline-flex, transparent, muted color, hovers to full text color. Quiet, non-intrusive.
+
+**Files changed:** `frontend/src/components/BackButton.jsx` (new), `frontend/src/index.css`, `frontend/src/pages/ProgramDetailPage.jsx`, `frontend/src/pages/NotFoundPage.jsx`, `frontend/src/pages/AdminLoginPage.jsx`, `frontend/src/pages/AdminDashboardPage.jsx`
+
+---
+
+### 48. Dead Files Deleted — Navbar.jsx and Home.jsx
+
+**Action:** Deleted `src/components/Navbar.jsx` and `src/pages/Home.jsx` — confirmed unused via import scan. Neither file was referenced by any other file in the project.
+
+---
+
+### 47. Dead Files Identified — Navbar.jsx and Home.jsx
+
+**Finding:** Two legacy files confirmed unused via import scan:
+- `src/components/Navbar.jsx` — old flat top-navigation bar from pre-sidebar era. Contains obsolete flat route links (`/recommend`, `/compare`). Not imported anywhere.
+- `src/pages/Home.jsx` — one-line re-export stub (`export { default } from './HomePage'`). Left behind when the file was renamed to `HomePage.jsx`. Not imported anywhere.
+
+**Action:** No code changed. Both files are safe to delete. Flagged for cleanup.
+
+---
+
+### 46. Logo — Remove Circle Container
+
+**Reason:** The `border-radius: 999px` + `background: var(--panel-soft)` + `padding` container clipped the corners of the new logo SVGs. Since the new logos are theme-aware and designed to sit directly on the panel background, the container is unnecessary.
+
+**Changes:**
+- `.sidebar-logo`: removed `border-radius`, `background`, `padding`; size adjusted to `36px` clean; added `flex-shrink: 0`
+- `.home-search-logo`: removed `border-radius`, `background`, `padding`; size adjusted to `28px` clean; added `object-fit: contain`
+
+**Files changed:** `frontend/src/index.css`
+
+---
+
 ### 45. Logo — Theme-Aware SVGs + "UniMatch" Brand Name in Sidebar
 
 **Reason:** Old `logo.svg` had hardcoded black fill, breaking in dark mode. Two new theme-specific files provided: `logo_light_without_text.svg` (black fill, for light mode) and `logo_dark_without_text.svg` (#F0F0F0 fill, for dark mode). Sidebar expanded state also had blank space next to the logo with no brand identity.

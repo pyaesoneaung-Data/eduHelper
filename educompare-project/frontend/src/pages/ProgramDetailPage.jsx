@@ -6,6 +6,7 @@ import { convertCurrency } from '../utils/currency'
 import { isDeadlinePassed } from '../utils/date'
 import InfoCard from '../components/InfoCard'
 import PageHeader from '../components/PageHeader'
+import BackButton from '../components/BackButton'
 
 const COUNTRY_NAMES = {
   C001: 'Taiwan',
@@ -53,6 +54,7 @@ function ProgramDetailPage() {
 
   return (
     <div className="page-stack">
+      <BackButton fallback="/" />
       <PageHeader
         eyebrow="Program Detail"
         title={data ? data.program.major_name : error ? 'Program not found' : 'Loading...'}
