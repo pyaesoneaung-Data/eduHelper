@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { getAdmissionAnalytics } from '../api/api'
 import InfoCard from '../components/InfoCard'
 
@@ -67,7 +68,11 @@ function ProgramsTable({ title, programs }) {
             <tbody>
               {programs.map((program) => (
                 <tr key={`${title}-${program.country_id}-${program.program_id}`}>
-                  <td>{program.major_name}</td>
+                  <td>
+                    <Link className="text-link" to={`/programs/${program.program_id}`}>
+                      {program.major_name}
+                    </Link>
+                  </td>
                   <td>{program.university_name}</td>
                   <td>{formatRequirementValue(program.min_gpa)}</td>
                   <td>{formatRequirementValue(program.ielts_min)}</td>
@@ -191,6 +196,11 @@ function AdmissionAnalyticsPage() {
         <p>Compare GPA and IELTS thresholds using the backend admission analytics summary.</p>
       </div>
 
+      <p className="data-freshness-note">
+        Dataset verified April 2026 — sourced from official university and government websites.
+        Figures reflect the intake cycle recorded at that time.
+      </p>
+
       {error ? <p className="error-text">{error}</p> : null}
 
       {!data && !error ? <p className="muted-text">Loading admission data...</p> : null}
@@ -210,7 +220,7 @@ function AdmissionAnalyticsPage() {
             ))}
           </div>
 
-          <InfoCard title="Admission requirement comparison">
+          <InfoCard title="Admission Requirement Comparison">
             <div className="comparison-stack">
               <ComparisonRow
                 label="Average GPA requirement"
@@ -232,11 +242,11 @@ function AdmissionAnalyticsPage() {
           </InfoCard>
 
           <div className="two-column-grid">
-            <ProgramsTable title="Lowest-barrier programs" programs={easiestPrograms} />
-            <ProgramsTable title="Highest-barrier programs" programs={hardestPrograms} />
+            <ProgramsTable title="Lowest-Barrier Programs" programs={easiestPrograms} />
+            <ProgramsTable title="Highest-Barrier Programs" programs={hardestPrograms} />
           </div>
 
-          <InfoCard title="Insights">
+          <InfoCard title="Key Insights">
             {insights.length ? (
               <ul className="content-list">
                 {insights.map((insight) => (

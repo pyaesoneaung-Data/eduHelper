@@ -60,7 +60,7 @@ function SettingsPage() {
         </InfoCard>
       </div>
 
-      <InfoCard title="Display currency">
+      <InfoCard title="Display Currency">
         <div className="option-group">
           <button
             className={currency === 'native' ? 'option-button option-button-active' : 'option-button'}
@@ -82,8 +82,8 @@ function SettingsPage() {
         </p>
       </InfoCard>
 
-      <InfoCard title="Account">
-        <p className="muted-text">You are signed in. Sign out when you're done using the platform.</p>
+      <InfoCard title="Admin">
+        <p className="muted-text">Admin access only. Use this to sign out of an active admin session.</p>
         <Link to="/logout" className="danger-text-button">Sign out</Link>
       </InfoCard>
     </div>

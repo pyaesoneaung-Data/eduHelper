@@ -11,6 +11,9 @@ function getSectionLabel(pathname) {
   if (pathname.startsWith('/red-flags')) return 'Red Flag Guide'
   if (pathname.startsWith('/settings')) return 'Settings'
   if (pathname.startsWith('/logout')) return 'Logout'
+  if (pathname.startsWith('/about')) return 'About'
+  if (pathname.startsWith('/admin')) return 'Admin'
+  if (pathname.startsWith('/programs')) return 'Program Detail'
   return 'Home'
 }
 

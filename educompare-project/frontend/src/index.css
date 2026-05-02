@@ -163,8 +163,8 @@ img {
 }
 
 .sidebar-link-icon {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
   object-fit: contain;
 }
@@ -244,8 +244,8 @@ img {
 }
 
 .sidebar-collapsed .sidebar-link-icon {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
 }
 
 .sidebar-collapsed .sidebar-link-label {
@@ -415,8 +415,8 @@ img {
 }
 
 .sidebar-collapsed .sidebar-group-btn .sidebar-link-icon {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
 }
 
 .sidebar-collapsed .sidebar-group-chevron {
@@ -1635,6 +1635,294 @@ select {
   font-weight: 500;
   color: var(--accent);
   margin: 0;
+}
+
+/* ── Analytics page ───────────────────────────────────────────── */
+
+.analytics-controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Country filter pills */
+.country-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.country-pill {
+  padding: 5px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: none;
+}
+
+.country-pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.country-pill-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--panel-bg);
+}
+
+.country-pill-active:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--panel-bg);
+  filter: brightness(0.88);
+}
+
+/* KPI metric list inside InfoCard */
+.kpi-metric-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.kpi-metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.kpi-metric-row:last-child {
+  border-bottom: none;
+}
+
+.kpi-metric-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.kpi-metric-value {
+  font-size: 0.97rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Stacked bar chart (Viz 1) */
+.stacked-bar-legend {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.stacked-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.stacked-legend-item::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.stacked-legend-tuition::before {
+  background: var(--accent);
+}
+
+.stacked-legend-living::before {
+  background: #c9a071;
+}
+
+.stacked-bar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stacked-bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stacked-bar-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.stacked-bar-country {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.stacked-bar-total {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.stacked-bar-track {
+  height: 24px;
+  background: var(--panel-soft);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stacked-bar-outer {
+  display: flex;
+  height: 100%;
+}
+
+.stacked-fill-tuition {
+  height: 100%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.stacked-fill-living {
+  height: 100%;
+  background: #c9a071;
+  flex-shrink: 0;
+}
+
+.stacked-bar-breakdown {
+  display: flex;
+  gap: 20px;
+  font-size: 0.83rem;
+  color: var(--muted);
+}
+
+/* Monthly reality check (Viz 2) */
+.reality-check-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.reality-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reality-row-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.reality-not-permitted {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--danger);
+  padding: 2px 8px;
+  border: 1px solid var(--danger);
+  border-radius: 999px;
+}
+
+.reality-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+}
+
+.reality-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reality-stat-label {
+  font-size: 0.80rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reality-stat-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.reality-track-shell {
+  height: 18px;
+  background: var(--panel-soft);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.reality-fill {
+  height: 100%;
+  background: #5a9e7a;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.reality-verdict-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.reality-verdict {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.reality-verdict-annual {
+  margin: 0;
+  font-size: 0.83rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* Cheapest programs table (Viz 3) */
+.cheapest-programs-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.cheapest-country-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cheapest-country-label {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 /* Ranking Insights page */
