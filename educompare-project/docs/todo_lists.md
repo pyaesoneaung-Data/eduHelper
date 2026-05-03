@@ -17,6 +17,7 @@ Kino Part
 0- Update Course Overview
 0- Update Admission Overview 
     -  Chart and some require icons update
+0- check home and about pages if something is not working carefully, fix it
 
 
 Dot Part
@@ -34,3 +35,5 @@ Dot Part
 3/5/2026
 0- Find color palette
 1- Update Admission Overview
+1- Update Home page
+1- Update About Page
