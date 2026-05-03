@@ -13,15 +13,22 @@ Kino Part
 1- update logo
 1- overall icons changes - 24/04/2026
 
+3/5/2026
+0- Update Course Overview
+
 
 Dot Part
 
 23/04/2026
 0- analytics design 
-    1. cost overview 
-    2. adminssion overview
+    1. cost overview 1
+    2. adminssion overview 0
     3. deadline insights
 
 1- find universities' logo
 1- define unimatch logo
 1- flash page slogan define
+
+3/5/2026
+0- Find color palette
+0- 
