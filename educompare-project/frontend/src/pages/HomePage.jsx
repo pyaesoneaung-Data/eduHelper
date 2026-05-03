@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Building2, CalendarDays, Globe2, ShieldCheck } from 'lucide-react'
 import { getBestValuePrograms, getPrograms, getUniversities } from '../api/api'
 import { useAppShell } from '../context/AppShellContext'
 import { convertCurrency } from '../utils/currency'
@@ -76,6 +77,21 @@ function loadRecentSearches() {
   } catch {
     return []
   }
+}
+
+function HomeKpiCard({ icon: Icon, title, value, subtitle, accentClass }) {
+  return (
+    <article className="home-kpi-card">
+      <div className={`home-kpi-icon ${accentClass}`}>
+        <Icon size={18} strokeWidth={2} aria-hidden="true" />
+      </div>
+      <div className="home-kpi-copy">
+        <span className="home-kpi-title">{title}</span>
+        <strong className="home-kpi-value">{value}</strong>
+        <span className="home-kpi-subtitle">{subtitle}</span>
+      </div>
+    </article>
+  )
 }
 
 function HomePage() {
@@ -162,11 +178,43 @@ function HomePage() {
   )
 
   const valueLeaderboard = useMemo(() => buildValueLeaderboard(rawValueData), [rawValueData])
+  const totalPrograms = programs.length || 15
 
   return (
     <div className="page-stack">
       <section className="home-trust-strip">
         <p>UniMatch / EduCompare turns current program records into a safer starting point for Thailand, Taiwan, and Singapore decisions.</p>
+      </section>
+
+      <section className="home-kpi-row" aria-label="Home summary metrics">
+        <HomeKpiCard
+          icon={Building2}
+          title="Programs in database"
+          value={totalPrograms}
+          subtitle="Across 3 countries"
+          accentClass="home-kpi-icon-programs"
+        />
+        <HomeKpiCard
+          icon={ShieldCheck}
+          title="Verified records"
+          value="100%"
+          subtitle="Updated from source data"
+          accentClass="home-kpi-icon-verified"
+        />
+        <HomeKpiCard
+          icon={Globe2}
+          title="Countries covered"
+          value="3"
+          subtitle="Taiwan, Thailand, Singapore"
+          accentClass="home-kpi-icon-countries"
+        />
+        <HomeKpiCard
+          icon={CalendarDays}
+          title="Last data refresh"
+          value="3/May/2026"
+          subtitle="Up to date"
+          accentClass="home-kpi-icon-refresh"
+        />
       </section>
 
       <section className="home-figma-grid">

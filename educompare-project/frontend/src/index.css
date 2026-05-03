@@ -1290,6 +1290,84 @@ select {
   font-size: 1rem;
 }
 
+.home-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.home-kpi-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--border) 82%, white 18%);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 255, 0.96) 100%);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.home-kpi-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  flex-shrink: 0;
+}
+
+.home-kpi-icon-programs {
+  background: #eef4ff;
+  border-color: #d9e7ff;
+  color: #4c6fb4;
+}
+
+.home-kpi-icon-verified {
+  background: #edf9f1;
+  border-color: #d4efdd;
+  color: #3f8b61;
+}
+
+.home-kpi-icon-countries {
+  background: #fff5ea;
+  border-color: #f6e0bf;
+  color: #b27a2d;
+}
+
+.home-kpi-icon-refresh {
+  background: #f4efff;
+  border-color: #e2d9ff;
+  color: #6b5bb0;
+}
+
+.home-kpi-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.home-kpi-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.home-kpi-value {
+  font-size: 1.65rem;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.home-kpi-subtitle {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
 .home-figma-grid {
   display: grid;
   grid-template-columns: minmax(280px, 1.25fr) minmax(280px, 1.25fr) minmax(240px, 0.9fr);
@@ -1660,6 +1738,10 @@ select {
     grid-template-columns: 1fr;
   }
 
+  .home-kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .home-search-panel,
   .home-actions-panel,
   .home-snapshot-panel,
@@ -1676,6 +1758,11 @@ select {
 }
 
 @media (max-width: 760px) {
+  .home-kpi-row,
+  .home-country-grid {
+    grid-template-columns: 1fr;
+  }
+
   .dashboard-topbar,
   .page-shell {
     padding-left: 16px;
