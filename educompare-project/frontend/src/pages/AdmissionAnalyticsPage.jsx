@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getAdmissionAnalytics } from '../api/api'
-import InfoCard from '../components/InfoCard'
 
 const COUNTRY_LABEL = {
   taiwan: 'Taiwan',
@@ -9,10 +8,12 @@ const COUNTRY_LABEL = {
   singapore: 'Singapore',
 }
 
-const COUNTRY_FILL_CLASS = {
-  taiwan: 'comparison-fill-taiwan',
-  thailand: 'comparison-fill-thailand',
-  singapore: 'comparison-fill-singapore',
+const SNAPSHOT_COUNTRY_KEYS = ['taiwan', 'thailand', 'singapore']
+
+const COUNTRY_MARKER = {
+  taiwan: 'TW',
+  thailand: 'TH',
+  singapore: 'SG',
 }
 
 function formatRequirementValue(value) {
@@ -23,7 +24,27 @@ function formatRequirementValue(value) {
   return Number(value).toFixed(2)
 }
 
-function ComparisonRow({ label, entries, maxValue }) {
+function isAvailable(value) {
+  if (value === null || value === undefined || value === '') {
+    return false
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase()
+    if (!normalized || normalized === 'not available' || normalized === 'n/a') {
+      return false
+    }
+  }
+
+  const numericValue = Number(value)
+  return Number.isFinite(numericValue) && numericValue > 0
+}
+
+function formatMetric(value) {
+  return isAvailable(value) ? Number(value).toFixed(2) : 'Not available'
+}
+
+function ComparisonRow({ label, entries, maxValue, fillClass }) {
   // entries: [{ key, value }]
   return (
     <div className="comparison-row">
@@ -39,7 +60,7 @@ function ComparisonRow({ label, entries, maxValue }) {
               </div>
               <div className="comparison-track">
                 <div
-                  className={`comparison-fill ${COUNTRY_FILL_CLASS[key] ?? 'comparison-fill-taiwan'}`}
+                  className={`comparison-fill ${fillClass}`}
                   style={{ width }}
                 />
               </div>
@@ -53,10 +74,13 @@ function ComparisonRow({ label, entries, maxValue }) {
 
 function ProgramsTable({ title, programs }) {
   return (
-    <InfoCard title={title}>
+    <section className="admission-overview-card admission-programs-card">
+      <div className="admission-card-head">
+        <h3>{title}</h3>
+      </div>
       {programs.length ? (
-        <div className="table-shell">
-          <table className="compare-table">
+        <div className="table-shell admission-table-shell">
+          <table className="compare-table admission-programs-table">
             <thead>
               <tr>
                 <th>Program</th>
@@ -69,7 +93,7 @@ function ProgramsTable({ title, programs }) {
               {programs.map((program) => (
                 <tr key={`${title}-${program.country_id}-${program.program_id}`}>
                   <td>
-                    <Link className="text-link" to={`/programs/${program.program_id}`}>
+                    <Link className="text-link admission-program-link" to={`/programs/${program.program_id}`}>
                       {program.major_name}
                     </Link>
                   </td>
@@ -84,7 +108,7 @@ function ProgramsTable({ title, programs }) {
       ) : (
         <p className="muted-text">No ranked programs were available in the dataset.</p>
       )}
-    </InfoCard>
+    </section>
   )
 }
 
@@ -168,6 +192,10 @@ function AdmissionAnalyticsPage() {
 
   const countryData = data?.countries ?? {}
   const countryKeys = Object.keys(countryData)
+  const snapshotCountryKeys = (() => {
+    const orderedKeys = SNAPSHOT_COUNTRY_KEYS.filter((key) => countryKeys.includes(key))
+    return orderedKeys.length ? orderedKeys : countryKeys
+  })()
 
   const comparisonMax = useMemo(() => {
     if (!countryKeys.length) return { gpa: 0, ielts: 0 }
@@ -207,56 +235,112 @@ function AdmissionAnalyticsPage() {
 
       {data ? (
         <>
-          <div className="card-grid">
-            {countryKeys.map((key) => (
-              <InfoCard key={`gpa-${key}`} title={`Avg GPA: ${COUNTRY_LABEL[key] ?? key}`}>
-                <p className="kpi-value">{formatRequirementValue(countryData[key]?.average_min_gpa)}</p>
-              </InfoCard>
-            ))}
-            {countryKeys.map((key) => (
-              <InfoCard key={`ielts-${key}`} title={`Avg IELTS: ${COUNTRY_LABEL[key] ?? key}`}>
-                <p className="kpi-value">{formatRequirementValue(countryData[key]?.average_ielts)}</p>
-              </InfoCard>
-            ))}
+          <section className="admission-snapshot-section" aria-labelledby="admission-snapshot-title">
+            <div className="admission-snapshot-head">
+              <h3 id="admission-snapshot-title">Admission Snapshot by Country</h3>
+            </div>
+
+            <div className="admission-snapshot-grid">
+              {snapshotCountryKeys.map((key) => {
+                const averageGpa = countryData[key]?.average_min_gpa
+                const averageIelts = countryData[key]?.average_ielts
+                const hasCompleteData = isAvailable(averageGpa) && isAvailable(averageIelts)
+
+                return (
+                  <article key={key} className="admission-snapshot-country">
+                    <div className="admission-snapshot-country-head">
+                      <span className="admission-snapshot-flag" aria-hidden="true">
+                        {COUNTRY_MARKER[key] ?? '--'}
+                      </span>
+                      <h4>{COUNTRY_LABEL[key] ?? key}</h4>
+                    </div>
+
+                    <div className="admission-snapshot-status">
+                      <span className="admission-snapshot-checkbox" aria-hidden="true">
+                        {hasCompleteData ? 'x' : ''}
+                      </span>
+                      <span>{hasCompleteData ? 'Completed' : 'Partial Data'}</span>
+                    </div>
+
+                    <dl className="admission-snapshot-metrics">
+                      <div className="admission-snapshot-metric">
+                        <dt>Avg GPA</dt>
+                        <dd>{formatMetric(averageGpa)}</dd>
+                      </div>
+                      <div className="admission-snapshot-divider" aria-hidden="true" />
+                      <div className="admission-snapshot-metric">
+                        <dt>Avg IELTS</dt>
+                        <dd>{formatMetric(averageIelts)}</dd>
+                      </div>
+                    </dl>
+                  </article>
+                )
+              })}
+            </div>
+          </section>
+
+          <div className="admission-middle-grid">
+            <section className="admission-overview-card admission-comparison-card">
+              <div className="admission-card-head">
+                <h3>Admission Requirement Comparison</h3>
+              </div>
+
+              <div className="admission-comparison-legend" aria-label="Chart legend">
+                <span className="admission-legend-item">
+                  <span className="admission-legend-swatch admission-legend-swatch-gpa" aria-hidden="true" />
+                  GPA
+                </span>
+                <span className="admission-legend-item">
+                  <span className="admission-legend-swatch admission-legend-swatch-ielts" aria-hidden="true" />
+                  IELTS
+                </span>
+              </div>
+
+              <div className="comparison-stack">
+                <ComparisonRow
+                  label="Average GPA requirement"
+                  entries={countryKeys.map((key) => ({
+                    key,
+                    value: countryData[key]?.average_min_gpa ?? 0,
+                  }))}
+                  maxValue={comparisonMax.gpa}
+                  fillClass="comparison-fill-gpa"
+                />
+                <ComparisonRow
+                  label="Average IELTS requirement"
+                  entries={countryKeys.map((key) => ({
+                    key,
+                    value: countryData[key]?.average_ielts ?? 0,
+                  }))}
+                  maxValue={comparisonMax.ielts}
+                  fillClass="comparison-fill-ielts"
+                />
+              </div>
+
+              <p className="admission-axis-label">Country Name</p>
+            </section>
+
+            <section className="admission-overview-card admission-insights-card">
+              <div className="admission-card-head">
+                <h3>Key Insights</h3>
+              </div>
+
+              {insights.length ? (
+                <ul className="content-list admission-insight-list">
+                  {insights.map((insight) => (
+                    <li key={insight}>{insight}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="muted-text">No insights available.</p>
+              )}
+            </section>
           </div>
 
-          <InfoCard title="Admission Requirement Comparison">
-            <div className="comparison-stack">
-              <ComparisonRow
-                label="Average GPA requirement"
-                entries={countryKeys.map((key) => ({
-                  key,
-                  value: countryData[key]?.average_min_gpa ?? 0,
-                }))}
-                maxValue={comparisonMax.gpa}
-              />
-              <ComparisonRow
-                label="Average IELTS requirement"
-                entries={countryKeys.map((key) => ({
-                  key,
-                  value: countryData[key]?.average_ielts ?? 0,
-                }))}
-                maxValue={comparisonMax.ielts}
-              />
-            </div>
-          </InfoCard>
-
-          <div className="two-column-grid">
+          <div className="admission-bottom-grid">
             <ProgramsTable title="Lowest-Barrier Programs" programs={easiestPrograms} />
             <ProgramsTable title="Highest-Barrier Programs" programs={hardestPrograms} />
           </div>
-
-          <InfoCard title="Key Insights">
-            {insights.length ? (
-              <ul className="content-list">
-                {insights.map((insight) => (
-                  <li key={insight}>{insight}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="muted-text">Not enough GPA and IELTS data is available to generate insights yet.</p>
-            )}
-          </InfoCard>
         </>
       ) : null}
     </div>

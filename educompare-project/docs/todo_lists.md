@@ -15,6 +15,8 @@ Kino Part
 
 3/5/2026
 0- Update Course Overview
+0- Update Admission Overview 
+    -  Chart and some require icons update
 
 
 Dot Part
@@ -31,4 +33,4 @@ Dot Part
 
 3/5/2026
 0- Find color palette
-0- 
+1- Update Admission Overview
