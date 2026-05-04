@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { BarChart2, ChevronLeft, ChevronRight, Compass, House, Info, Scale, Settings, ShieldAlert } from 'lucide-react'
 import { useAppShell } from '../context/AppShellContext'
 import logoLight from '../assets/logo/logo_light_without_text.svg'
@@ -123,10 +123,10 @@ function Sidebar() {
 
   return (
     <div className="sidebar-panel">
-      <div className="sidebar-brand">
+      <Link to="/" className="sidebar-brand" onClick={closeSidebar} aria-label="Go to home page">
         <IconImage src={logoSrc} className="sidebar-logo" alt="UniMatch logo" />
         <span className="sidebar-brand-name">UniMatch</span>
-      </div>
+      </Link>
 
       <nav className="sidebar-nav" aria-label="Primary navigation">
         {navConfig.map((item) => {

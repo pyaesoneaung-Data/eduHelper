@@ -23,6 +23,7 @@ function LayoutFrame() {
     useAppShell()
   const sectionLabel = getSectionLabel(location.pathname)
   const isSettingsPage = location.pathname.startsWith('/settings')
+  const isCostOverviewPage = location.pathname === '/analytics'
 
   useEffect(() => {
     closeSidebar()
@@ -53,19 +54,23 @@ function LayoutFrame() {
           </div>
 
           {!isSettingsPage ? <div className="topbar-actions">
-            <div className="topbar-utility-copy">
-              <span className="topbar-utility-label">Currency</span>
-              <span className="topbar-utility-value">{currency === 'USD' ? 'USD' : 'Local'}</span>
-            </div>
-            <button
-              className="topbar-icon-button"
-              type="button"
-              onClick={toggleCurrency}
-              aria-label={currency === 'USD' ? 'Switch to local currencies' : 'Switch to USD'}
-              title={currency === 'USD' ? 'Switch to local currencies' : 'Switch to USD'}
-            >
-              <span className="topbar-currency-symbol" aria-hidden="true">$</span>
-            </button>
+            {!isCostOverviewPage ? (
+              <>
+                <div className="topbar-utility-copy">
+                  <span className="topbar-utility-label">Currency</span>
+                  <span className="topbar-utility-value">{currency === 'USD' ? 'USD' : 'Local'}</span>
+                </div>
+                <button
+                  className="topbar-icon-button"
+                  type="button"
+                  onClick={toggleCurrency}
+                  aria-label={currency === 'USD' ? 'Switch to local currencies' : 'Switch to USD'}
+                  title={currency === 'USD' ? 'Switch to local currencies' : 'Switch to USD'}
+                >
+                  <span className="topbar-currency-symbol" aria-hidden="true">$</span>
+                </button>
+              </>
+            ) : null}
             <div className="topbar-utility-copy">
               <span className="topbar-utility-label">{t('ui.language', 'Language')}</span>
               <span className="topbar-utility-value">{language.toUpperCase()}</span>

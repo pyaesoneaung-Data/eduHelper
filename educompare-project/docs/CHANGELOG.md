@@ -5,6 +5,378 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 79. Admission Overview — Wording and UX Polish
+
+**Reason:** Several labels and copy lines used technical jargon ("backend", "intake cycle"), an ambiguous metric name ("Avg GPA" could mean student GPA not the requirement), a wordy chart footnote, and a literal "x" character as a status checkmark.
+
+**What changed:**
+- Page description: removed "backend" jargon → "Compare GPA and IELTS admission thresholds across Taiwan, Thailand, and Singapore."
+- Data freshness note: "intake cycle recorded at that time" → "admission requirements recorded at that time."
+- Country card metric label: "Avg GPA" → "Avg. Min. GPA" (accurately reflects `average_min_gpa` — the average of each program's minimum required GPA).
+- Chart footnote: "GPA is out of 4.0 · IELTS is out of 9.0 — bars reflect values on their respective scales." → "GPA: 0–4.0 scale · IELTS: 0–9.0 scale" (shorter, same information).
+- Status badge: `'x'` → `'✓'` so the Completed indicator looks like a proper checkmark.
+- Programs table titles: "Lowest-Barrier Programs" → "Easiest Programs to Enter", "Highest-Barrier Programs" → "Most Competitive Programs" (student-facing language, no jargon).
+
+**Files changed:** `frontend/src/pages/AdmissionAnalyticsPage.jsx`
+
+---
+
+### 78. Sidebar — Make UniMatch Logo and Name Clickable (Link to Home)
+
+**Reason:** The sidebar brand area (logo + "UniMatch" text) was a plain `<div>` with no interaction. Users expect clicking a product logo to return them to the home page — this is a standard navigation pattern.
+
+**What changed:**
+- Wrapped `.sidebar-brand` div in a `<Link to="/">` (React Router), importing `Link` alongside the existing `NavLink`.
+- Added `onClick={closeSidebar}` so the mobile sidebar closes on navigation.
+- Added `aria-label="Go to home page"` for accessibility.
+- Added `text-decoration: none` and `cursor: pointer` to `.sidebar-brand` in CSS so it doesn't render as an underlined anchor.
+
+**Files changed:** `frontend/src/components/Sidebar.jsx`, `frontend/src/index.css`
+
+---
+
+### 77. Admission Overview — Replace Custom Bar Chart with Recharts Grouped Vertical Bar Chart
+
+**Reason:** The handwritten CSS bar chart (horizontal fills on `<div>` elements) was fragile, didn't respect theme variables, and couldn't render gracefully when data was missing for one country. Replacing with a proper Recharts `BarChart` gives themed tooltips, a legend, correct axis labels, and consistent behavior with the rest of the analytics pages.
+
+**What changed:**
+- Added `ADMISSION_TOOLTIP_STYLE` constant (uses CSS vars: `--panel-bg`, `--border`, `--text`).
+- Added `AdmissionComparisonChart` component using `<BarChart>` (grouped, not stacked): GPA bar (`var(--accent)`) and IELTS bar (`#5a9e7a`), both with `radius={[3,3,0,0]}`. Legend at top-right. Height 280px.
+- `barData` maps country keys → `{ country, gpa, ielts }` with `isAvailable()` guard so missing values produce `undefined` (bar omitted, no crash).
+- Removed `ComparisonRow` component entirely (no longer needed).
+- Removed `comparisonMax` useMemo (no longer needed).
+- Replaced the old comparison section JSX with `<AdmissionComparisonChart countryKeys={countryKeys} countryData={countryData} />`.
+- Removed all now-unused CSS classes from `index.css`: `.admission-comparison-legend`, `.admission-legend-item`, `.admission-legend-swatch`, `.comparison-stack`, `.comparison-row`, `.comparison-label`, `.comparison-bars`, `.comparison-country`, `.comparison-country-head`, `.comparison-track`, `.comparison-fill`, `.comparison-fill-gpa`, `.comparison-fill-ielts`, `.admission-axis-label`.
+- Added a note below chart: "GPA is out of 4.0 · IELTS is out of 9.0 — bars reflect values on their respective scales."
+
+**Files changed:** `frontend/src/pages/AdmissionAnalyticsPage.jsx`, `frontend/src/index.css`
+
+---
+
+### 76. Admission Snapshot — Replace Country Abbreviations with Real Flags
+
+**Reason:** TW/TH/SG text abbreviations in country snapshot cards were placeholder stand-ins. Real flag SVGs are clearer, more professional, and immediately recognisable.
+
+**What changed:**
+- Installed `react-country-flag` (1 package, 0 vulnerabilities).
+- Replaced `COUNTRY_MARKER` constant with `COUNTRY_CODE` (same values, clearer name).
+- Replaced `{COUNTRY_MARKER[key]}` text span with `<ReactCountryFlag countryCode={...} svg />` inside the existing flag container span. SVG sized 34×22px to fit the 36×24px container.
+- Updated `.admission-snapshot-flag` CSS: removed text-specific properties (`font-size`, `font-weight`, `letter-spacing`), added `overflow: hidden` so SVG clips cleanly within the border.
+
+**Files changed:** `frontend/src/pages/AdmissionAnalyticsPage.jsx`, `frontend/src/index.css`, `frontend/package.json`
+
+---
+
+### 75. Admission Overview — Fix Light/Dark Mode (Replace All Hardcoded Colors)
+
+**Reason:** Every CSS rule on the Admission Overview page used hardcoded hex values (#ffffff, #bdbdbd, #222222, etc.) instead of CSS variables, so the page was completely unresponsive to light/dark theme switching.
+
+**Replacements made across all admission CSS rules:**
+- `#ffffff` → `var(--panel-bg)`
+- `#f3f3f3`, `#f7f7f7`, `#eeeeee` (soft backgrounds) → `var(--panel-soft)`
+- `#bdbdbd`, `#d0d0d0`, `#9c9c9c`, `#999999`, `#777777` (borders) → `var(--border)`
+- `#222222`, `#333333` (text) → `var(--text)`
+- `#555555` (muted text) → `var(--muted)`
+- GPA fill/swatch `#cfcfcf` (light gray — invisible in dark mode) → `var(--accent)`
+- IELTS fill/swatch `#eeeeee` (near-white — invisible in dark mode) → `#5a9e7a` (green, clearly distinct from accent blue)
+- `.admission-program-link` `color: #222222; text-decoration: underline` → `color: var(--accent)` (matches `.text-link` used elsewhere)
+
+**Files changed:** `frontend/src/index.css`
+
+---
+
+### 74. Cost Overview — Move "All values in USD" Next to Page Title
+
+**Reason:** The currency indicator was floating at the right of the filter pills row, disconnected from context. Moving it next to the page title sets the currency expectation immediately before the student sees any data.
+
+**What changed:**
+- Wrapped `<h2>` in a `.section-heading-title-row` flex div (align-items: baseline, gap: 12px) so the badge sits on the same baseline as the heading.
+- Added `<span className="page-currency-badge">All values in USD</span>` inline after the h2.
+- Removed the span from the `analytics-controls-row`.
+- Added CSS: `.section-heading-title-row` (flex, baseline, gap) and `.page-currency-badge` (small caps style, muted color).
+
+**Files changed:** `frontend/src/pages/AnalyticsPage.jsx`, `frontend/src/index.css`
+
+---
+
+### 73. Cost Overview — Remove KPI Cards; Reorder Page Sections
+
+**Reason:** KPI cards were redundant — every number they showed is now covered by the visualizations. Exchange Rate card was at the top before any cost data, which is wrong UX — students need costs first, rates are reference. Cheapest Programs sat between charts and reality check, breaking the analytical flow.
+
+**KPI cards removed:**
+- Deleted `KpiCards` component function entirely.
+- Removed JSX usage from render.
+- Removed `formatDisplayCost` import (only used by KpiCards).
+- "Excludes application and insurance fees" footnote moved to directly below the Cost Breakdown + Pie grid — where it is contextually relevant.
+
+**New page order:**
+1. Filter pills
+2. Cost Breakdown + Cost Share By Country (pie)
+3. Footnote (fees disclaimer)
+4. Tuition vs Living + Monthly Commitment charts
+5. Monthly Reality Check
+6. Key Observations
+7. Cheapest Programs ← moved to end as "act on it" step
+8. Exchange Rate Reference ← moved to very bottom as reference material
+
+**Files changed:** `frontend/src/pages/AnalyticsPage.jsx`
+
+---
+
+### 72. Cost Overview — Copy & Label Review Pass
+
+**Reason:** Text across the page was either vague, technical, redundant, or made assumptions about students' financial situations. Pass focused on clarity first, then conciseness — keeping enough context that students understand without information overload.
+
+**Changes (13 total, text only — no logic changes):**
+- Page description: clearer second sentence — "See how part-time income stacks up against monthly costs."
+- Data freshness note: condensed to one line, removed redundant "Figures reflect the intake cycle recorded at that time."
+- KPI eyebrow: "Country Averages" → "Average costs across all programs"
+- Cost Breakdown eyebrow: added "months" after ×12 for clarity
+- Monthly Commitment eyebrow: replaced formula ("Tuition ÷ 12 + monthly living") with plain English
+- Cheapest Programs eyebrow: removed internal "source: cost overview dataset" suffix
+- Monthly Reality Check eyebrow: replaced redundant subtitle with "How far part-time income goes each month"
+- Annual gap line: "from savings or family" → "gap to cover" (removes financial assumption)
+- Reality check footnote: removed preachy second sentence, kept the reference disclaimer only
+- No-permit static note: "international university students" → "international students on a student visa" (clearer on why)
+- Key Observations eyebrow: "Auto-generated from current data" → "Based on your selected countries"
+- Insight #1: removed "among selected countries" (implied), restructured to "at $X/yr"
+- Insight #3: simplified — removed "the highest among selected countries" qualifier, shortened to "can cover about X%"
+- Insight #4 (no-permit): "budget must rely fully on savings or family support" → "full living costs must be covered without part-time income"
+
+**Files changed:** `frontend/src/pages/AnalyticsPage.jsx`
+
+---
+
+### 71. Monthly Reality Check — Hide No-Permit Country Rows
+
+**Reason:** Countries that don't permit part-time work produced blank, confusing rows (empty progress bar, savings-only text) that added noise without insight. The persistent note at the bottom already handles the communication clearly.
+
+**What changed:**
+- Filter in `rows` changed from `.filter(Boolean)` to `.filter((r) => r !== null && r.partTimeAllowed !== false)` — countries with `part_time_allowed: false` are excluded from the rendered list entirely.
+- Removed dead JSX branches inside the row that only fired when `partTimeAllowed === false` (badge, savings verdict block) — no longer reachable.
+- Simplified remaining row JSX: removed all `partTimeAllowed &&` guards since every rendered row is guaranteed to allow part-time work.
+
+**Files changed:** `frontend/src/pages/AnalyticsPage.jsx`
+
+---
+
+### 70. Monthly Reality Check — Persistent No-Work-Permit Warning
+
+**Reason:** When Thailand appeared in the reality check with no part-time data, the row looked blank and confusing. Students needed a clear, always-visible notice about which countries don't permit part-time work — regardless of whether that country is currently selected in the filter.
+
+**What changed:**
+- Added `noWorkCountries` computation in `MonthlyRealityCheck` using `COUNTRY_ORDER` (full list, not filtered) and `rulesMap` — so it reflects actual backend data and works automatically if rules change.
+- Added `<p className="reality-static-note">` at the bottom of the InfoCard: e.g. **Thailand** does not permit part-time work for international university students. Always visible.
+- Grammar-aware: uses "does" for one country, "do" for multiple.
+- Added `.reality-static-note` CSS: left-border style (`border-left: 2px solid var(--border)`), muted text, bold country name in `var(--text)` for emphasis.
+
+**Files changed:** `frontend/src/pages/AnalyticsPage.jsx`, `frontend/src/index.css`
+
+---
+
+### 69. Cost Overview — Remove Annual Cost Breakdown; Chart Polish
+
+**Reason:** Annual Cost Breakdown (custom CSS bar chart) was made redundant by the new Recharts horizontal stacked bar. Legend at chart bottom looked disconnected. Both new charts were too short at 220px.
+
+**Removed:** `StackedCostBar` component and its JSX usage — component definition and render call both deleted.
+
+**Tuition vs Living bar — legend moved to top right:** `verticalAlign="top"` + `align="right"` on `<Legend>`. Changed `wrapperStyle` from `paddingTop` to `paddingBottom` so the spacing sits between legend and chart.
+
+**Both charts — height increased:** 220px → 280px on both `<ResponsiveContainer>` instances for better vertical breathing room.
+
+**Files changed:** `frontend/src/pages/AnalyticsPage.jsx`
+
+---
+
+### 68. Cost Overview — Tuition vs Living Bar + Monthly Commitment Bar
+
+**Reason:** Added a second two-panel row below the existing Cost Breakdown / Cost Share section. Left panel shows a horizontal stacked bar chart (Tuition vs Living Cost per country); right panel shows a vertical bar chart of monthly commitment per country. Both are filtered by the country pills.
+
+**Left — Tuition vs Living Cost (horizontal stacked bar):**
+- Recharts `BarChart layout="vertical"` with two stacked `<Bar stackId="a">` components.
+- Tuition segment: `var(--accent)` (blue). Living Cost segment: `#c9a071` (warm orange) — matches colors already used in the Cost Breakdown table above.
+- `XAxis type="number"` with `$Xk` tick formatter. `YAxis type="category"` with country names (width 75px).
+- `CartesianGrid` vertical lines only. Legend at bottom with square icons.
+- Themed tooltip showing tuition $, living $, country name as header.
+
+**Right — Monthly Commitment (vertical single bar):**
+- Recharts `BarChart` standard vertical layout. Single `<Bar>` with per-bar `<Cell>` colors matching the pie chart country colors (Taiwan blue, Thailand orange, Singapore green) for visual consistency.
+- `YAxis` with `$X,XXX` tick formatter. `XAxis` with country short names.
+- `CartesianGrid` horizontal lines only. No legend (single series, axis labels sufficient).
+- Themed tooltip: `$X,XXX/mo` format. Monthly value derived as `(tuitionUSD / 12) + livingMonthlyUSD` — same logic as existing KPI card, new independent component.
+
+**New CSS:** `.cost-charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px }` — no height cascade needed since both panels use `ResponsiveContainer`.
+
+**Recharts import updated** to include `BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend`.
+
+**Files changed:** `frontend/src/pages/AnalyticsPage.jsx`, `frontend/src/index.css`, `docs/CHANGELOG.md`
+
+---
+
+### 67. Cost Overview — Left Table Space-Evenly; Pie Tooltip Shows Country Name
+
+**Reason:** Left table columns used `justify-content: center` which floated the two content blocks (header + breakdown) in the exact middle of tall cells, looking disconnected and cramped. Pie chart tooltip suppressed the country name (`labelStyle: display:none`), leaving users unable to identify which country a hovered slice belongs to without cross-referencing the legend.
+
+**Left table — vertical distribution:**
+- Changed `.cost-column` `justify-content: center` → `justify-content: space-evenly` so equal whitespace appears above, between, and below the header and breakdown blocks — intentional use of the full cell height instead of floating content in the middle.
+
+**Pie chart — tooltip country label:**
+- Removed `labelStyle={{ display: 'none' }}` from `<Tooltip>` in `CountryCostPie`.
+- Replaced with themed `labelStyle={{ color: 'var(--text)', fontWeight: 600, marginBottom: 2 }}` so Recharts renders the country name as a styled header at the top of the tooltip box.
+
+**Files changed:** `frontend/src/index.css`, `frontend/src/pages/AnalyticsPage.jsx`
+
+---
+
+### 66. Cost Overview — Left Table Center + Fill Height; Pie Thicker Ring + % on Slices
+
+**Reason:** Left cost-breakdown table content was left-aligned and cramped into the top of the card despite the card having height from stretching to match the pie chart. Pie chart ring was too thin and the % was shown in the legend rather than directly on the slices where it is immediately readable.
+
+**Left table — center alignment:**
+- Added `text-align: center; justify-content: center` to `.cost-column` — text inherits center alignment, content is vertically centred within the cell height.
+- Added `align-items: center` to `.cost-col-header` and `.cost-col-item` — country name, total, and breakdown labels are centred within their own flex containers.
+
+**Left table — fill card height:**
+- Added `.cost-overview-viz-grid > .info-card:first-child { display: flex; flex-direction: column }` — left InfoCard becomes a flex column so its content wrapper can grow.
+- Added `> div:last-child { flex: 1 }` — the children wrapper div fills remaining card height after the title.
+- Added `height: 100%` to `.cost-columns-grid` — the grid fills the flex wrapper, so each column cell gets the full available height. `justify-content: center` on each column then centres the header + breakdown block vertically.
+
+**Pie chart — thicker ring:**
+- `innerRadius` 58 → 48 (ring width increases from 32 px to 42 px).
+
+**Pie chart — % on slices instead of legend:**
+- Added `renderPctLabel` function: calculates midpoint of each slice (`innerRadius + (outerRadius - innerRadius) × 0.5`) and renders white bold text at that position using SVG `<text>`.
+- Added `label={renderPctLabel}` and `labelLine={false}` to `<Pie>` — percentage appears inside each coloured ring segment.
+- Removed `pct` calculation and `pie-legend-pct` span from legend — legend now shows only country name + USD amount.
+
+**Files changed:** `frontend/src/pages/AnalyticsPage.jsx`, `frontend/src/index.css`
+
+---
+
+### 65. Cost Overview — Pie Chart: Remove Center Total, Show Combined Total Below Chart
+
+**Reason:** CSS absolute overlay for the center circle conflicted with Recharts' internal tooltip event handling, causing the tooltip to not fire. Recharts does not have a reliable built-in API for a true inner-circle decoration in a donut chart without fighting SVG stacking and pointer-event routing. Decision: drop the center element entirely and show the combined total as a clean labelled line directly below the pie area — honest, readable, no library conflict.
+
+**Changes:**
+- Removed `pie-donut-wrapper` div and `pie-donut-center` div from JSX.
+- Removed `.pie-donut-wrapper` and `.pie-donut-center` CSS rules.
+- `<ResponsiveContainer>` now sits directly inside `.pie-chart-area` with no extra wrapper — this restores normal Recharts tooltip pointer-event routing.
+- Added `<p className="pie-combined-total">` below the chart: label "Combined total" in muted text + the USD sum in bold tabular text.
+- Added `.pie-combined-total` and `.pie-combined-total span` CSS using `var(--muted)` / `var(--text)` so it adapts to both themes.
+
+**Files changed:** `frontend/src/pages/AnalyticsPage.jsx`, `frontend/src/index.css`
+
+---
+
+### 64. Cost Overview — Pie Center Label: Replace Broken Recharts Label with CSS Overlay
+
+**Reason:** Recharts `<Label position="center">` inside `<Pie>` receives `viewBox.cx/cy` as SVG-internal pixel coordinates that do not reliably match the rendered DOM center — the text was visibly off-center. The fix is to not fight the library and instead use a CSS absolute-position overlay on the wrapper div. Because the pie always renders at `cx="50%" cy="50%"`, the SVG center and the DOM center of its container are the same, making `position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%)` perfectly accurate.
+
+**Changes:**
+- Removed `<Label>` from inside `<Pie>` and removed `Label` from the recharts import.
+- Wrapped `<ResponsiveContainer>` in a `.pie-donut-wrapper` div (`position: relative`).
+- Added a `.pie-donut-center` div inside the wrapper: `position: absolute`, centred with `translate(-50%, -50%)`, `pointer-events: none` so it does not block tooltip hover on the slices.
+- Text: "Total" — small caps, muted colour, letter-spaced. Uses `var(--muted)` so it adapts to light/dark theme.
+
+**Files changed:** `frontend/src/pages/AnalyticsPage.jsx`, `frontend/src/index.css`
+
+---
+
+### 63. Cost Overview — Pie Chart: Restore Right Legend, Remove Slice Labels, Clean Center
+
+**Reason:** Previous pass (#62) mistakenly removed the right-side legend and added country name labels directly on the pie slices. User feedback: keep the right legend (it shows name + amount + %), remove cluttered slice labels, and put only "TOTAL" text in the center hole — no dollar amount. The donut center should be clean and readable; actual values are in the legend and tooltip.
+
+**Changes:**
+- Removed `label` and `labelLine` props from `<Pie>` (no slice labels).
+- Removed `renderSliceLabel` helper function (no longer needed).
+- Restored `.pie-chart-layout` flex wrapper with pie on the left and `.pie-legend` on the right.
+- Restored custom legend: colour dot + country name + USD amount + % per entry.
+- Center `<Label>` now shows only "TOTAL" (single `<text>` element, small caps, muted colour, vertically centred with `dominantBaseline="central"`). Dollar amount removed from center.
+- Tooltip remains for hover interaction — users can inspect exact values by hovering slices.
+- `ResponsiveContainer` height set to 220px (no label overhang needed).
+
+**Files changed:** `frontend/src/pages/AnalyticsPage.jsx`
+
+---
+
+### 62. Cost Overview — Pie Slice Labels + Center Total; Left Table Divider + More Breathing Room
+
+**Reason:** Two visual issues after the previous polish pass: (1) the pie chart had no country labels on the slices — the right-side legend was the only way to read which slice was which, making the chart feel incomplete; the friend's mockup explicitly showed country names near each slice and "Total" in the donut center. (2) The left cost-breakdown columns felt cramped with no visual separator between Tuition and Living Cost.
+
+**Pie chart slice labels + center total:**
+- Removed the custom `.pie-chart-layout` / `.pie-legend` JSX wrapper (right-side legend). Country identification now lives on the slices themselves.
+- Added `label={renderSliceLabel}` to `<Pie>` — renders country name as SVG `<text>` with `fill="var(--muted)"` so it inherits the active light/dark theme.
+- Added `labelLine={{ stroke: 'var(--border)', strokeWidth: 1 }}` so the connecting lines also use the theme border colour.
+- Added `<Label content={...} position="center">` inside `<Pie>` — renders two SVG text lines in the donut hole: "TOTAL" (small caps, muted) and the USD sum (larger, bold, text colour). Uses CSS vars so it renders correctly in both themes.
+- Increased `ResponsiveContainer` height from 200 → 260 to give enough room for labels outside the outer ring.
+- Removed unused `Legend` import from recharts; added `Label`.
+
+**Left table — center divider + breathing room:**
+- `.cost-column` padding: `14px 16px` → `20px 18px`; gap: `12px` → `18px`. More vertical air between the header and breakdown.
+- `.cost-col-breakdown` gap: `8px` → `0`. Spacing is now handled by padding on the items themselves.
+- `.cost-col-item`: added `padding: 0 10px`. First child (Tuition): `padding-left: 0; border-right: 1px solid var(--border)`. Last child (Living Cost): `padding-right: 0`. This creates a clean visible center divider line between the two sub-columns.
+
+**Files changed:** `frontend/src/pages/AnalyticsPage.jsx`, `frontend/src/index.css`
+
+---
+
+### 61. Cost Overview — Pie Chart Polish: Legend Right, Themed Tooltip, Equal Card Heights
+
+**Reason:** After building the two-panel layout (#60), three visual issues were found: (1) the left card was shorter than the right because `align-items: start` prevented grid stretch; (2) the Recharts default tooltip used hardcoded white/black colours that ignored the app's light/dark theme; (3) the Recharts `<Legend>` rendered below the pie and overlapped with it at normal heights.
+
+**Equal heights:**
+- Changed `align-items: start` → `align-items: stretch` in `.cost-overview-viz-grid`. Grid default stretch makes both cards the same height — the taller right card sets the row height and the left card's border box matches it. No changes to InfoCard needed.
+
+**Legend moved to right side:**
+- Removed Recharts `<Legend>` component entirely. Replaced with a custom JSX `.pie-legend` div rendered to the right of the pie area inside a `.pie-chart-layout` flex row.
+- Layout: `.pie-chart-area` takes `flex: 1 1 0` (fills remaining space), `.pie-legend` takes `flex: 0 0 auto` (wraps content).
+- Each legend item: colour dot + country name + USD amount + % share, all in separate lines for scannability.
+- Removed unused `Legend` from the Recharts import.
+
+**Tooltip theming:**
+- Added `contentStyle`, `itemStyle`, and `labelStyle` props to `<Tooltip>` using CSS custom properties (`var(--panel-bg)`, `var(--border)`, `var(--text)`). CSS variables work in inline styles in modern browsers, so this correctly inherits the active theme without JS.
+- Set `labelStyle={{ display: 'none' }}` to suppress the redundant slice name header Recharts adds above the value row.
+
+**Responsive:**
+- Added `.pie-chart-layout { flex-direction: column }` at `≤760px` so the pie and legend stack vertically on mobile.
+
+**Files changed:** `frontend/src/pages/AnalyticsPage.jsx`, `frontend/src/index.css`
+
+---
+
+### 60. Cost Overview — Country Cost Columns + Pie Chart, USD-Only Page
+
+**Reason:** The Cost Overview page lacked a direct at-a-glance comparison of each country's total yearly cost split into tuition vs. living. Students need to see the composition side by side (not just bar proportions) and understand how each country relates to the others as a share of overall cost. The global currency toggle was also confusing on this page because the existing stacked bar already needed USD for fair cross-country proportions — a student could switch to "local" and see three different currencies, which is hard to compare. Making the page USD-only removes the ambiguity entirely.
+
+**New components:**
+- `CountryCostColumns` — shows each selected country as a vertical column. Each column has: country name, total annual cost ($), then two sub-columns for Tuition and Living Cost with both USD amounts and percentages of that country's total. Responds to the country filter (deselected countries disappear). Data: `average_yearly_tuition` + `average_monthly_living_cost × 12`, converted to USD.
+- `CountryCostPie` (Recharts `PieChart`) — donut chart showing each selected country's total annual cost as a slice of the combined cost across all selected countries. Each slice colour is consistent with the country identity used elsewhere. Legend shows: country name, USD amount, and % share. Also responds to the country filter.
+- Both components are placed in a `.cost-overview-viz-grid` two-column layout above the existing Annual Cost Breakdown section.
+
+**USD-only page:**
+- Removed `currency` and `toggleCurrency` from `useAppShell()` destructure in `AnalyticsPage`. Hardcoded `const displayCurrency = 'USD'`. All existing components (`StackedCostBar`, `MonthlyRealityCheck`, `InsightsCard`, etc.) continue to receive `displayCurrency` as a prop — no internal changes to those components needed.
+- Removed the "Showing USD · Switch to local →" toggle from the controls row. Replaced with a static "All values in USD" label.
+- Removed unused `isUSD` constant and `useAppShell` import from `AnalyticsPage`.
+
+**Topbar currency toggle hidden on Cost Overview:**
+- Added `isCostOverviewPage = location.pathname === '/analytics'` in `Layout.jsx`.
+- Wrapped the currency label + button in the topbar with `{!isCostOverviewPage ? (...) : null}`. Language and Theme toggles remain visible on all pages.
+- Uses exact path match (`=== '/analytics'`) so other analytics sub-routes (`/analytics/admission`, etc.) are unaffected.
+
+**Recharts installed:**
+- `npm install recharts` (v2) — chosen for React-native API, single package covering Pie/Bar/Line charts for future analytics modules.
+
+**CSS added (`index.css`):**
+- `.cost-overview-viz-grid` — 1:1 two-column grid, aligns items to top.
+- `.cost-columns-grid` — `auto-fit` grid with `minmax(130px, 1fr)` so it naturally adjusts to 1, 2, or 3 columns based on selected countries.
+- `.cost-column`, `.cost-col-header`, `.cost-col-country`, `.cost-col-total`, `.cost-col-breakdown`, `.cost-col-item`, `.cost-col-label`, `.cost-col-amount`, `.cost-col-pct` — layout and typography for the column cards.
+- `.cost-col-tuition .cost-col-amount` uses `var(--accent)` (blue), `.cost-col-living .cost-col-amount` uses `#c9a071` (warm orange) — same colours as the stacked bar fills for visual consistency.
+- Responsive: at `≤760px`, `.cost-overview-viz-grid` and `.cost-columns-grid` collapse to single column; `.cost-column` border switches from right to bottom.
+
+**Files changed:** `frontend/src/pages/AnalyticsPage.jsx`, `frontend/src/components/Layout.jsx`, `frontend/src/index.css`, `frontend/package.json`
+
+---
+
 ### 59. Settings Page — Fix Misleading "Account" Card + Title Case
 
 **Reason:** The Settings page had an "Account" card with the text "You are signed in. Sign out when you're done using the platform." This is factually wrong — the platform has no student authentication and no account system by design. Students visiting Settings would see this and either be confused or assume they need an account. Also found "Display currency" card title in sentence case.

@@ -14,9 +14,10 @@ Kino Part
 1- overall icons changes - 24/04/2026
 
 3/5/2026
-0- Update Course Overview
-0- Update Admission Overview 
+1- Update Course Overview - 4/05/2026
+1- Update Admission Overview - 4/05/2026
     -  Chart and some require icons update
+1- Adding Home link to Logo in Nav bar - 4/05/2026
 0- check home and about pages if something is not working carefully, fix it
 
 

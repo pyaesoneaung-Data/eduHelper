@@ -102,6 +102,8 @@ img {
   justify-content: flex-start;
   padding: 0 16px;
   width: 100%;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .sidebar-brand-name {
@@ -601,6 +603,20 @@ label,
   flex-direction: column;
 }
 
+.section-heading-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.page-currency-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .page-header {
   gap: 12px;
 }
@@ -1068,8 +1084,8 @@ select {
   display: grid;
   gap: 18px;
   padding: 24px;
-  border: 1px solid #bdbdbd;
-  background: #ffffff;
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
   box-shadow: none;
 }
 
@@ -1090,96 +1106,6 @@ select {
   align-content: start;
 }
 
-.admission-comparison-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.admission-legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.84rem;
-  color: #333333;
-}
-
-.admission-legend-swatch {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border: 1px solid #9c9c9c;
-}
-
-.admission-legend-swatch-gpa {
-  background: #cfcfcf;
-}
-
-.admission-legend-swatch-ielts {
-  background: #eeeeee;
-}
-
-.comparison-stack {
-  display: grid;
-  gap: 16px;
-}
-
-.comparison-row {
-  display: grid;
-  gap: 12px;
-  padding: 16px;
-  border: 1px solid #d0d0d0;
-  background: #f7f7f7;
-}
-
-.comparison-label {
-  font-weight: 600;
-  color: #222222;
-}
-
-.comparison-bars {
-  display: grid;
-  gap: 12px;
-}
-
-.comparison-country {
-  display: grid;
-  gap: 7px;
-}
-
-.comparison-country-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 0.92rem;
-  color: #222222;
-}
-
-.comparison-track {
-  height: 12px;
-  overflow: hidden;
-  border: 1px solid #bdbdbd;
-  border-radius: 0;
-  background: #ffffff;
-}
-
-.comparison-fill {
-  height: 100%;
-}
-
-.comparison-fill-gpa {
-  background: #cfcfcf;
-}
-
-.comparison-fill-ielts {
-  background: #eeeeee;
-}
-
-.admission-axis-label {
-  margin: 0;
-  font-size: 0.82rem;
-  color: #555555;
-}
 
 .admission-insight-list {
   display: grid;
@@ -1188,29 +1114,28 @@ select {
 }
 
 .admission-insight-list li {
-  color: #222222;
+  color: var(--text);
   line-height: 1.5;
 }
 
 .admission-table-shell {
-  border: 1px solid #bdbdbd;
-  background: #ffffff;
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
   box-shadow: none;
 }
 
 .admission-programs-table th,
 .admission-programs-table td {
-  border-bottom: 1px solid #d0d0d0;
-  color: #222222;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
 }
 
 .admission-programs-table thead th {
-  background: #eeeeee;
+  background: var(--panel-soft);
 }
 
 .admission-program-link {
-  color: #222222;
-  text-decoration: underline;
+  color: var(--accent);
 }
 
 .kpi-value {
@@ -2289,6 +2214,28 @@ select {
     flex-direction: column;
     align-items: flex-start;
   }
+
+  .cost-overview-viz-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cost-columns-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cost-column {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cost-column:last-child {
+    border-bottom: none;
+  }
+
+  .pie-chart-layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 @media (max-width: 520px) {
@@ -2380,8 +2327,8 @@ select {
   display: grid;
   gap: 18px;
   padding: 24px;
-  border: 1px solid #bdbdbd;
-  background: #ffffff;
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
 }
 
 .admission-snapshot-head {
@@ -2407,8 +2354,8 @@ select {
   gap: 16px;
   min-height: 170px;
   padding: 20px;
-  border: 1px solid #999999;
-  background: #f3f3f3;
+  border: 1px solid var(--border);
+  background: var(--panel-soft);
 }
 
 .admission-snapshot-country-head {
@@ -2428,11 +2375,9 @@ select {
   justify-content: center;
   width: 36px;
   height: 24px;
-  border: 1px solid #999999;
-  background: #ffffff;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  overflow: hidden;
 }
 
 .admission-snapshot-status {
@@ -2449,8 +2394,8 @@ select {
   justify-content: center;
   width: 18px;
   height: 18px;
-  border: 1px solid #777777;
-  background: #ffffff;
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
   font-size: 0.78rem;
   line-height: 1;
 }
@@ -2486,7 +2431,7 @@ select {
 .admission-snapshot-divider {
   height: 1px;
   margin: 12px 0;
-  background: #bdbdbd;
+  background: var(--border);
 }
 
 @media (max-width: 900px) {
@@ -2715,6 +2660,20 @@ select {
   color: var(--muted);
 }
 
+.reality-static-note {
+  margin: 12px 0 0;
+  padding: 8px 12px;
+  border-left: 2px solid var(--border);
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.reality-static-note strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
 /* Cheapest programs table (Viz 3) */
 .cheapest-programs-sections {
   display: flex;
@@ -2735,6 +2694,200 @@ select {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+/* Cost charts: tuition-vs-living + monthly commitment two-up grid */
+.cost-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Cost overview: columns + pie two-up grid */
+.cost-overview-viz-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
+
+/* Left InfoCard: fill grid cell height so columns can stretch */
+.cost-overview-viz-grid > .info-card:first-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.cost-overview-viz-grid > .info-card:first-child > div:last-child {
+  flex: 1;
+}
+
+/* Country cost columns (left panel) */
+.cost-columns-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  height: 100%;
+}
+
+.cost-column {
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  border-right: 1px solid var(--border);
+  text-align: center;
+  justify-content: space-evenly;
+}
+
+.cost-column:last-child {
+  border-right: none;
+}
+
+.cost-col-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border);
+  align-items: center;
+}
+
+.cost-col-country {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.cost-col-total {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.cost-col-breakdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.cost-col-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 10px;
+  align-items: center;
+}
+
+.cost-col-item:first-child {
+  padding-left: 0;
+  border-right: 1px solid var(--border);
+}
+
+.cost-col-item:last-child {
+  padding-right: 0;
+}
+
+.cost-col-label {
+  font-size: 0.70rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.cost-col-amount {
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.cost-col-pct {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.cost-col-tuition .cost-col-amount {
+  color: var(--accent);
+}
+
+.cost-col-living .cost-col-amount {
+  color: #c9a071;
+}
+
+/* Pie chart layout (right panel) */
+.pie-chart-layout {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.pie-chart-area {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.pie-combined-total {
+  margin: 8px 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.pie-combined-total span {
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.pie-legend {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pie-legend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.pie-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.pie-legend-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pie-legend-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pie-legend-value {
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.pie-legend-pct {
+  font-size: 0.75rem;
+  color: var(--muted);
 }
 
 /* Ranking Insights page */

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import ReactCountryFlag from 'react-country-flag'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { getAdmissionAnalytics } from '../api/api'
 
 const COUNTRY_LABEL = {
@@ -10,7 +12,7 @@ const COUNTRY_LABEL = {
 
 const SNAPSHOT_COUNTRY_KEYS = ['taiwan', 'thailand', 'singapore']
 
-const COUNTRY_MARKER = {
+const COUNTRY_CODE = {
   taiwan: 'TW',
   thailand: 'TH',
   singapore: 'SG',
@@ -44,31 +46,67 @@ function formatMetric(value) {
   return isAvailable(value) ? Number(value).toFixed(2) : 'Not available'
 }
 
-function ComparisonRow({ label, entries, maxValue, fillClass }) {
-  // entries: [{ key, value }]
+const ADMISSION_TOOLTIP_STYLE = {
+  background: 'var(--panel-bg)',
+  border: '1px solid var(--border)',
+  borderRadius: '4px',
+  color: 'var(--text)',
+  fontSize: '0.82rem',
+}
+
+function AdmissionComparisonChart({ countryKeys, countryData }) {
+  const barData = countryKeys.map((key) => ({
+    country: COUNTRY_LABEL[key] ?? key,
+    gpa: isAvailable(countryData[key]?.average_min_gpa)
+      ? Number(Number(countryData[key].average_min_gpa).toFixed(2))
+      : undefined,
+    ielts: isAvailable(countryData[key]?.average_ielts)
+      ? Number(Number(countryData[key].average_ielts).toFixed(2))
+      : undefined,
+  }))
+
   return (
-    <div className="comparison-row">
-      <div className="comparison-label">{label}</div>
-      <div className="comparison-bars">
-        {entries.map(({ key, value }) => {
-          const width = maxValue > 0 ? `${(value / maxValue) * 100}%` : '0%'
-          return (
-            <div key={key} className="comparison-country">
-              <div className="comparison-country-head">
-                <span>{COUNTRY_LABEL[key] ?? key}</span>
-                <strong>{formatRequirementValue(value)}</strong>
-              </div>
-              <div className="comparison-track">
-                <div
-                  className={`comparison-fill ${fillClass}`}
-                  style={{ width }}
-                />
-              </div>
-            </div>
-          )
-        })}
+    <section className="admission-overview-card admission-comparison-card">
+      <div className="admission-card-head">
+        <h3>Admission Requirement Comparison</h3>
       </div>
-    </div>
+      <ResponsiveContainer width="100%" height={280}>
+        <BarChart data={barData} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+          <XAxis
+            dataKey="country"
+            tick={{ fontSize: 12, fill: 'var(--text)' }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis
+            tick={{ fontSize: 11, fill: 'var(--muted)' }}
+            axisLine={false}
+            tickLine={false}
+            width={40}
+          />
+          <Tooltip
+            formatter={(value, name) => [Number(value).toFixed(2), name]}
+            contentStyle={ADMISSION_TOOLTIP_STYLE}
+            itemStyle={{ color: 'var(--text)' }}
+            labelStyle={{ color: 'var(--text)', fontWeight: 600, marginBottom: 2 }}
+            cursor={{ fill: 'var(--border)', opacity: 0.5 }}
+          />
+          <Legend
+            iconType="square"
+            iconSize={10}
+            verticalAlign="top"
+            align="right"
+            wrapperStyle={{ fontSize: '0.8rem', paddingBottom: '8px' }}
+          />
+          <Bar name="GPA" dataKey="gpa" fill="var(--accent)" radius={[3, 3, 0, 0]} />
+          <Bar name="IELTS" dataKey="ielts" fill="#5a9e7a" radius={[3, 3, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+      <p className="muted-text" style={{ fontSize: '0.78rem' }}>
+        GPA: 0–4.0 scale · IELTS: 0–9.0 scale
+      </p>
+    </section>
   )
 }
 
@@ -197,14 +235,6 @@ function AdmissionAnalyticsPage() {
     return orderedKeys.length ? orderedKeys : countryKeys
   })()
 
-  const comparisonMax = useMemo(() => {
-    if (!countryKeys.length) return { gpa: 0, ielts: 0 }
-    return {
-      gpa: Math.max(...countryKeys.map((k) => countryData[k]?.average_min_gpa ?? 0), 0),
-      ielts: Math.max(...countryKeys.map((k) => countryData[k]?.average_ielts ?? 0), 0),
-    }
-  }, [countryData, countryKeys])
-
   const easiestPrograms = useMemo(
     () => mergeRankedPrograms(countryData, 'asc'),
     [countryData],
@@ -221,12 +251,12 @@ function AdmissionAnalyticsPage() {
     <div className="page-stack">
       <div className="section-heading">
         <h2>Admission Overview</h2>
-        <p>Compare GPA and IELTS thresholds using the backend admission analytics summary.</p>
+        <p>Compare GPA and IELTS admission thresholds across Taiwan, Thailand, and Singapore.</p>
       </div>
 
       <p className="data-freshness-note">
         Dataset verified April 2026 — sourced from official university and government websites.
-        Figures reflect the intake cycle recorded at that time.
+        Figures reflect the admission requirements recorded at that time.
       </p>
 
       {error ? <p className="error-text">{error}</p> : null}
@@ -249,22 +279,29 @@ function AdmissionAnalyticsPage() {
                 return (
                   <article key={key} className="admission-snapshot-country">
                     <div className="admission-snapshot-country-head">
-                      <span className="admission-snapshot-flag" aria-hidden="true">
-                        {COUNTRY_MARKER[key] ?? '--'}
+                      <span className="admission-snapshot-flag">
+                        {COUNTRY_CODE[key] ? (
+                          <ReactCountryFlag
+                            countryCode={COUNTRY_CODE[key]}
+                            svg
+                            style={{ width: '34px', height: '22px', display: 'block' }}
+                            title={COUNTRY_LABEL[key] ?? key}
+                          />
+                        ) : null}
                       </span>
                       <h4>{COUNTRY_LABEL[key] ?? key}</h4>
                     </div>
 
                     <div className="admission-snapshot-status">
                       <span className="admission-snapshot-checkbox" aria-hidden="true">
-                        {hasCompleteData ? 'x' : ''}
+                        {hasCompleteData ? '✓' : ''}
                       </span>
                       <span>{hasCompleteData ? 'Completed' : 'Partial Data'}</span>
                     </div>
 
                     <dl className="admission-snapshot-metrics">
                       <div className="admission-snapshot-metric">
-                        <dt>Avg GPA</dt>
+                        <dt>Avg. Min. GPA</dt>
                         <dd>{formatMetric(averageGpa)}</dd>
                       </div>
                       <div className="admission-snapshot-divider" aria-hidden="true" />
@@ -280,45 +317,10 @@ function AdmissionAnalyticsPage() {
           </section>
 
           <div className="admission-middle-grid">
-            <section className="admission-overview-card admission-comparison-card">
-              <div className="admission-card-head">
-                <h3>Admission Requirement Comparison</h3>
-              </div>
-
-              <div className="admission-comparison-legend" aria-label="Chart legend">
-                <span className="admission-legend-item">
-                  <span className="admission-legend-swatch admission-legend-swatch-gpa" aria-hidden="true" />
-                  GPA
-                </span>
-                <span className="admission-legend-item">
-                  <span className="admission-legend-swatch admission-legend-swatch-ielts" aria-hidden="true" />
-                  IELTS
-                </span>
-              </div>
-
-              <div className="comparison-stack">
-                <ComparisonRow
-                  label="Average GPA requirement"
-                  entries={countryKeys.map((key) => ({
-                    key,
-                    value: countryData[key]?.average_min_gpa ?? 0,
-                  }))}
-                  maxValue={comparisonMax.gpa}
-                  fillClass="comparison-fill-gpa"
-                />
-                <ComparisonRow
-                  label="Average IELTS requirement"
-                  entries={countryKeys.map((key) => ({
-                    key,
-                    value: countryData[key]?.average_ielts ?? 0,
-                  }))}
-                  maxValue={comparisonMax.ielts}
-                  fillClass="comparison-fill-ielts"
-                />
-              </div>
-
-              <p className="admission-axis-label">Country Name</p>
-            </section>
+            <AdmissionComparisonChart
+              countryKeys={countryKeys}
+              countryData={countryData}
+            />
 
             <section className="admission-overview-card admission-insights-card">
               <div className="admission-card-head">
@@ -338,8 +340,8 @@ function AdmissionAnalyticsPage() {
           </div>
 
           <div className="admission-bottom-grid">
-            <ProgramsTable title="Lowest-Barrier Programs" programs={easiestPrograms} />
-            <ProgramsTable title="Highest-Barrier Programs" programs={hardestPrograms} />
+            <ProgramsTable title="Easiest Programs to Enter" programs={easiestPrograms} />
+            <ProgramsTable title="Most Competitive Programs" programs={hardestPrograms} />
           </div>
         </>
       ) : null}
