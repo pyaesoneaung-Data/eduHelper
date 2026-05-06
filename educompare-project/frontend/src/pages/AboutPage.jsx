@@ -1,396 +1,213 @@
-import { Link } from 'react-router-dom'
-import {
-  BadgeCheck,
-  Clock3,
-  Code2,
-  DollarSign,
-  Landmark,
-  Search,
-  ShieldCheck,
-  Target,
-  TrendingUp,
-  Globe2,
-} from 'lucide-react'
+import { BadgeCheck, DollarSign, Landmark } from 'lucide-react'
 
-const missionCards = [
+const phases = [
   {
-    title: 'Mission',
-    description: 'Help students make safer, more informed education decisions.',
-    icon: Target,
+    number: 1,
+    title: 'Problem & Scope',
+    description:
+      'Identified that students planning to study abroad in the region had no reliable, unbiased source. Most relied on agents or social media — both with clear conflicts of interest. We defined what "verified" means for this project, then scoped the initial 3 countries and core data points: cost, admission requirements, and legal rules.',
   },
   {
-    title: 'Focus',
-    description: 'Transparent comparison, real cost, admissions, legal information.',
-    icon: Search,
+    number: 2,
+    title: 'Research & Data Collection',
+    description:
+      'Pulled data directly from official university websites, government education portals (MoE Taiwan, Ministry of Education Thailand, MOE Singapore), QS and THE rankings, and verified exchange rate references. Every data point was cross-referenced against at least two sources before inclusion.',
   },
   {
-    title: 'Growth',
-    description: 'Expanding beyond initial countries to more regions and more data over time.',
-    icon: TrendingUp,
-  },
-]
-
-const methodologySteps = [
-  {
-    step: 'Plan',
-    description: 'Define scope, questions, and success metrics.',
+    number: 3,
+    title: 'Cleaning & Structuring',
+    description:
+      'Standardised formats across all three countries — currencies, GPA scales, IELTS versus TOEFL thresholds. Data gaps were flagged and documented honestly rather than filled with estimates. Singapore GPA data is one known gap in the current dataset.',
   },
   {
-    step: 'Collect',
-    description: 'Gather data from official sources and trusted references.',
+    number: 4,
+    title: 'Backend & Tools',
+    description:
+      'Built a FastAPI backend with endpoints for program scoring, admission analytics, cost summaries, and comparison. All program data is stored in PostgreSQL with consistent schemas across countries, making cross-country comparison queries reliable and fast.',
   },
   {
-    step: 'Clean & Structure',
-    description: 'Standardize, validate, and structure data for consistency.',
+    number: 5,
+    title: 'Frontend & Analytics',
+    description:
+      'Built the React dashboard: program comparison view, cost calculator, recommendation engine, and two analytics pages — Cost Overview (tuition vs. living breakdown, monthly commitment) and Admission Overview (average GPA and IELTS thresholds per country with program-level tables).',
   },
   {
-    step: 'Build & Analyze',
-    description: 'Build tools and run analyses to generate insights.',
-  },
-  {
-    step: 'Test & Improve',
-    description: 'Test with real users and improve accuracy continuously.',
-  },
-]
-
-const mvpCards = [
-  {
-    title: 'Real-Cost Calculator',
-    description: 'Estimate total cost of attendance including living expenses.',
-  },
-  {
-    title: 'Major Matcher',
-    description: 'Find majors and programs that fit your goals.',
-  },
-  {
-    title: 'Legal Guardrail Dashboard',
-    description: 'Understand visas, work rules, and policy requirements.',
-  },
-  {
-    title: 'Accessibility Filters',
-    description: 'Filter by language, accommodation, and campus support.',
-  },
-  {
-    title: 'Red Flag Guide',
-    description: 'Spot risks early with our red flag checklist.',
-  },
-]
-
-const platformFacts = [
-  {
-    label: 'Countries covered (initial)',
-    value: 'Starting point, not the final scope',
-    icon: Globe2,
-  },
-  {
-    label: 'Core stack',
-    value: 'FastAPI + React + PostgreSQL',
-    icon: Code2,
-  },
-  {
-    label: 'Dataset verification',
-    value: 'April 2026',
-    icon: ShieldCheck,
-  },
-  {
-    label: 'Project status',
-    value: 'Beta MVP',
-    icon: Clock3,
-  },
-]
-
-const builders = [
-  {
-    name: 'Pyae Sone Aung',
-    role: 'Data / Analytics / Project Research',
-    githubName: 'pyaesoneaung-Data',
-    githubUrl: 'https://github.com/pyaesoneaung-Data',
-  },
-  {
-    name: 'Zaw Myo Aung',
-    role: 'Frontend / UI / Implementation',
-    githubName: 'Kinosaur',
-    githubUrl: 'https://github.com/Kinosaur',
+    number: 6,
+    title: 'Testing & Refinement',
+    description:
+      'Tested against real student scenarios: varying budgets, different English proficiency levels, and different target countries. Data gaps identified in testing were documented. An update cycle is set for each new university intake period.',
   },
 ]
 
 const sourceCards = [
   {
     title: 'Official Sources',
-    description: 'Universities, government portals, and regulators.',
+    description: 'University websites, government portals, and regulatory bodies.',
     icon: Landmark,
   },
   {
     title: 'Rankings',
-    description: 'Trusted rankings and accreditation databases.',
+    description: 'QS and THE rankings and accreditation databases.',
     icon: BadgeCheck,
   },
   {
     title: 'Exchange Rates',
-    description: 'Verified FX providers for accurate conversions.',
+    description: 'Verified FX providers for accurate USD conversions.',
     icon: DollarSign,
   },
 ]
 
+const builders = [
+  {
+    name: 'Pyae Sone Aung',
+    role: 'Data · Analytics · Project Research',
+    githubName: 'pyaesoneaung-Data',
+    githubUrl: 'https://github.com/pyaesoneaung-Data',
+  },
+  {
+    name: 'Kaung Khant Lin',
+    role: 'Frontend · UI · Implementation',
+    githubName: 'Kinosaur',
+    githubUrl: 'https://github.com/Kinosaur',
+  },
+]
+
+const stats = [
+  { value: '3', label: 'Countries covered' },
+  { value: '15', label: 'Programs in database' },
+  { value: 'Apr 2026', label: 'Data verified' },
+  { value: 'Beta MVP', label: 'Current status' },
+]
+
 function AboutPage() {
   return (
-    <div className="page-stack about-page" id="top">
-      <section className="about-hero">
-        <div className="about-photo-placeholder about-photo-placeholder-hero">
-          <span>Hero Photo Placeholder — graduating students / studying abroad / campus skyline</span>
-        </div>
-
-        <div className="about-hero-copy">
-          <h1>
-            About <span className="about-accent">UniMatch</span>
-          </h1>
-          <p className="about-lead">
-            A student-built platform helping students compare universities using verified data, not marketing hype.
-          </p>
-          <p className="about-supporting-copy">
-            Built to start with verified data and designed to expand across many countries over time.
-          </p>
-
-          <div className="about-hero-actions">
-            <Link className="about-button about-button-primary" to="/">
-              Explore Platform
-            </Link>
-            <a className="about-button about-button-secondary" href="#methodology">
-              View Methodology
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section className="about-card-grid about-mission-grid">
-        {missionCards.map((card) => {
-          const Icon = card.icon
-          return (
-            <article key={card.title} className="about-card about-icon-card">
-              <div className="about-icon-circle" aria-hidden="true">
-                <Icon size={26} strokeWidth={1.8} />
-              </div>
-              <div className="about-card-copy">
-                <h2 className="about-card-title about-accent">{card.title}</h2>
-                <p>{card.description}</p>
-              </div>
-            </article>
-          )
-        })}
-      </section>
-
-      <section className="about-two-column-section">
-        <div className="about-section-copy">
-          <h2>
-            Why <span className="about-accent">UniMatch</span>?
-          </h2>
-          <p>
-            UniMatch is a trustworthy comparison platform that helps students and families make confident education decisions with verified data, clear explanations, and practical tools.
-          </p>
-
-          <div className="about-photo-placeholder about-photo-placeholder-secondary">
-            <span>Photo Placeholder — students researching together / comparing universities</span>
-          </div>
-        </div>
-
-        <div className="about-stack">
-          <article className="about-card" id="features">
-            <h3 className="about-accent">What the platform does</h3>
-            <ul className="about-list">
-              <li>Compare programs across universities</li>
-              <li>Estimate real costs (tuition + living)</li>
-              <li>Summarize admission requirements</li>
-              <li>Show legal / work guardrails (visas, policies)</li>
-              <li>Organize verified information in one place</li>
-            </ul>
-          </article>
-
-          <article className="about-card">
-            <h3 className="about-accent">Who it is for</h3>
-            <ul className="about-list">
-              <li>First-generation students</li>
-              <li>International applicants</li>
-              <li>Families</li>
-              <li>Anyone who wants verified university information</li>
-            </ul>
-          </article>
-        </div>
-      </section>
-
-      <section className="about-section" id="methodology">
-        <div className="about-section-heading about-section-heading-centered">
-          <h2>
-            Our <span className="about-accent">Methodology</span>
-          </h2>
-        </div>
-
-        <div className="about-methodology-grid">
-          {methodologySteps.map((item, index) => (
-            <article key={item.step} className="about-step-card">
-              <span className="about-step-badge">{index + 1}</span>
-              <h3>{item.step}</h3>
-              <p>{item.description}</p>
-            </article>
-          ))}
-        </div>
-
-        <p className="about-section-note about-section-note-centered">
-          Designed to support ongoing data expansion across more countries and institutions.
+    <div className="page-stack">
+      <div className="section-heading">
+        <h2>About UniMatch</h2>
+        <p>
+          A student-built platform for comparing universities in Taiwan, Thailand, and Singapore
+          — built on verified data, not marketing.
         </p>
-      </section>
+      </div>
 
-      <section className="about-section" id="mvp">
-        <div className="about-section-heading about-section-heading-centered">
-          <h2>
-            What&apos;s included in the <span className="about-accent">MVP</span>
-          </h2>
+      <section id="mission" className="about-section-block">
+        <div className="about-section-head">
+          <h3>Mission</h3>
         </div>
-
-        <div className="about-card-grid about-mvp-grid">
-          {mvpCards.map((card) => (
-            <article key={card.title} className="about-card about-mvp-card">
-              <div className="about-mini-placeholder" aria-hidden="true" />
-              <h3>{card.title}</h3>
-              <p>{card.description}</p>
-            </article>
+        <p className="about-prose">
+          UniMatch started from a real problem: students planning to study abroad in the region
+          were relying on agents and social media — both of which have obvious conflicts of
+          interest. We built this to give students a direct source: actual costs, real admission
+          thresholds, and honest legal information, all collected from official sources and
+          structured into tools anyone can use.
+        </p>
+        <div className="about-stats-row">
+          {stats.map((stat) => (
+            <div key={stat.label} className="about-stat">
+              <span className="about-stat-value">{stat.value}</span>
+              <span className="about-stat-label">{stat.label}</span>
+            </div>
           ))}
         </div>
       </section>
 
-      <section className="about-card-grid about-facts-grid">
-        {platformFacts.map((fact) => {
-          const Icon = fact.icon
-          return (
-            <article key={fact.label} className="about-fact-card">
-              <div className="about-icon-circle about-icon-circle-small" aria-hidden="true">
-                <Icon size={22} strokeWidth={1.8} />
-              </div>
-              <div className="about-card-copy">
-                <span className="about-fact-label">{fact.label}</span>
-                <strong className="about-fact-value">{fact.value}</strong>
-              </div>
-            </article>
-          )
-        })}
+      <section id="features" className="about-section-block">
+        <div className="about-section-head">
+          <h3>Features</h3>
+        </div>
+        <div className="about-two-col">
+          <div className="about-feature-card">
+            <h4>What it does</h4>
+            <ul className="about-feature-list">
+              <li>Compare programs across universities</li>
+              <li>Estimate real yearly costs — tuition and living</li>
+              <li>Review GPA and IELTS admission thresholds</li>
+              <li>Understand visa and work permit rules by country</li>
+              <li>Identify red flags in university offers</li>
+            </ul>
+          </div>
+          <div className="about-feature-card">
+            <h4>Who it&apos;s for</h4>
+            <ul className="about-feature-list">
+              <li>Students planning to study abroad in the region</li>
+              <li>First-generation international applicants</li>
+              <li>Families comparing cost and safety across countries</li>
+              <li>Anyone who wants verified data instead of agent advice</li>
+            </ul>
+          </div>
+        </div>
       </section>
 
-      <section className="about-section" id="team">
-        <div className="about-section-heading about-section-heading-centered">
-          <h2>Meet the Builders</h2>
-          <p>Built collaboratively by student contributors.</p>
+      <section id="methodology" className="about-section-block">
+        <div className="about-section-head">
+          <h3>Methodology</h3>
+          <p className="muted-text">
+            How this project was researched and built, phase by phase.
+          </p>
         </div>
-
-        <div className="about-card-grid about-builders-grid">
-          {builders.map((builder) => (
-            <article key={builder.githubName} className="about-builder-card">
-              <div className="about-avatar-placeholder" aria-hidden="true">
-                <span>Profile Photo Placeholder</span>
+        <div className="about-phase-list">
+          {phases.map((phase) => (
+            <div key={phase.number} className="about-phase-card">
+              <div className="about-phase-header">
+                <span className="about-phase-number" aria-hidden="true">{phase.number}</span>
+                <h4 className="about-phase-title">{phase.title}</h4>
               </div>
-
-              <div className="about-builder-copy">
-                <h3 className="about-accent">{builder.name}</h3>
-                <p className="about-builder-role">{builder.role}</p>
-                <p className="about-builder-link-row">
-                  GitHub:{' '}
-                  <a
-                    className="about-inline-link"
-                    href={builder.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {builder.githubName}
-                  </a>
-                </p>
-              </div>
-            </article>
+              <p className="about-phase-desc">{phase.description}</p>
+            </div>
           ))}
         </div>
       </section>
 
-      <section className="about-section">
-        <div className="about-sources-intro">
-          <div className="about-section-heading">
-            <h2 className="about-accent">Data &amp; Sources</h2>
-          </div>
-
-          <div className="about-sources-copy">
-            <p className="about-section-intro">
-              We collect data from official university websites, government portals, rankings providers, and exchange-rate references. Every dataset is reviewed and verified for reliability.
-            </p>
-            <p className="about-section-note">More sources and countries will be added over time.</p>
-          </div>
+      <section id="data" className="about-section-block">
+        <div className="about-section-head">
+          <h3>Data &amp; Sources</h3>
+          <p className="muted-text">
+            All data is collected from primary sources and reviewed for accuracy.
+          </p>
         </div>
-
-        <div className="about-card-grid about-sources-grid">
+        <div className="about-sources-row">
           {sourceCards.map((card) => {
             const Icon = card.icon
             return (
-              <article key={card.title} className="about-card about-icon-card">
-                <div className="about-icon-circle about-icon-circle-small" aria-hidden="true">
-                  <Icon size={22} strokeWidth={1.8} />
-                </div>
-                <div className="about-card-copy">
-                  <h3>{card.title}</h3>
+              <article key={card.title} className="about-source-card">
+                <Icon size={20} strokeWidth={1.8} className="about-source-icon" aria-hidden="true" />
+                <div>
+                  <h4>{card.title}</h4>
                   <p>{card.description}</p>
                 </div>
               </article>
             )
           })}
         </div>
+        <p className="muted-text" style={{ fontSize: '0.82rem' }}>
+          More countries and institutions will be added over time.
+        </p>
       </section>
 
-      <section className="about-cta">
-        <div className="about-cta-copy">
-          <h2>Helping students choose with confidence</h2>
+      <section id="team" className="about-section-block">
+        <div className="about-section-head">
+          <h3>Meet the Builders</h3>
+          <p className="muted-text">Built collaboratively by two student contributors.</p>
         </div>
-        <Link className="about-button about-button-inverse" to="/">
-          Start Exploring
-        </Link>
-      </section>
-
-      <section className="about-footer">
-        <div className="about-footer-grid">
-          <div className="about-footer-column">
-            <h3 className="about-accent">UniMatch</h3>
-            <p>
-              A student-built platform that brings transparency to university decisions through verified data and practical tools.
-            </p>
-          </div>
-
-          <div className="about-footer-column">
-            <h3>Platform</h3>
-            <ul className="about-footer-list">
-              <li><a className="about-footer-link" href="#top">About</a></li>
-              <li><a className="about-footer-link" href="#features">Features</a></li>
-              <li><a className="about-footer-link" href="#methodology">Methodology</a></li>
-              <li><a className="about-footer-link" href="#mvp">MVP</a></li>
-              <li><a className="about-footer-link" href="#team">Team</a></li>
-            </ul>
-          </div>
-
-          <div className="about-footer-column">
-            <h3>Support</h3>
-            <ul className="about-footer-list">
-              <li>Help Center</li>
-              <li>FAQ</li>
-              <li>Feedback</li>
-              <li>Privacy Policy</li>
-              <li>Terms of Use</li>
-            </ul>
-          </div>
-
-          <div className="about-footer-column">
-            <h3>Contact / Project</h3>
-            <ul className="about-footer-list">
-              <li>Email: contact@unimatch.app</li>
-              <li>GitHub: unimatch-platform</li>
-              <li>Location: Student Project</li>
-              <li>Built for transparency</li>
-            </ul>
-          </div>
+        <div className="about-team-grid">
+          {builders.map((builder) => (
+            <article key={builder.githubName} className="about-team-card">
+              <div className="about-avatar" aria-hidden="true" />
+              <div className="about-builder-info">
+                <h4>{builder.name}</h4>
+                <p className="muted-text">{builder.role}</p>
+                <a
+                  className="text-link"
+                  href={builder.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub: {builder.githubName}
+                </a>
+              </div>
+            </article>
+          ))}
         </div>
-
-        <p className="about-footer-bottom">© 2026 UniMatch | Student-built transparency platform</p>
       </section>
     </div>
   )

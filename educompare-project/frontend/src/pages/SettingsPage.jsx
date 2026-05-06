@@ -4,7 +4,7 @@ import InfoCard from '../components/InfoCard'
 import PageHeader from '../components/PageHeader'
 
 function SettingsPage() {
-  const { language, setLanguage, theme, setTheme, currency, setCurrency, t } = useAppShell()
+  const { language, setLanguage, theme, setTheme, currency, setCurrency, isAdmin, t } = useAppShell()
 
   return (
     <div className="page-stack">
@@ -82,10 +82,12 @@ function SettingsPage() {
         </p>
       </InfoCard>
 
-      <InfoCard title="Admin">
-        <p className="muted-text">Admin access only. Use this to sign out of an active admin session.</p>
-        <Link to="/logout" className="danger-text-button">Sign out</Link>
-      </InfoCard>
+      {isAdmin ? (
+        <InfoCard title="Admin">
+          <p className="muted-text">Admin access only. Use this to sign out of an active admin session.</p>
+          <Link to="/logout" className="danger-text-button">Sign out</Link>
+        </InfoCard>
+      ) : null}
     </div>
   )
 }

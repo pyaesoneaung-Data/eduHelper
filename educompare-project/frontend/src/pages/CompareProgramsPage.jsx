@@ -1,7 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { getProgramDetail, getPrograms, getUniversities } from '../api/api'
 import CompareTable from '../components/CompareTable'
 import FormSection from '../components/FormSection'
+
+const COUNTRY_NAMES = { C001: 'Taiwan', C002: 'Thailand', C003: 'Singapore' }
+const COUNTRY_ORDER = ['C001', 'C002', 'C003']
+const SESSION_KEY = 'unimatch_compare'
 
 function CompareProgramsPage() {
   const [programs, setPrograms] = useState([])
@@ -10,6 +14,20 @@ function CompareProgramsPage() {
   const [rows, setRows] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Restore state after back navigation
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(SESSION_KEY)
+      if (saved) {
+        const { programIds: savedIds, rows: savedRows } = JSON.parse(saved)
+        if (savedIds) setProgramIds(savedIds)
+        if (savedRows) setRows(savedRows)
+      }
+    } catch {
+      sessionStorage.removeItem(SESSION_KEY)
+    }
+  }, [])
 
   useEffect(() => {
     async function loadPrograms() {
@@ -25,16 +43,28 @@ function CompareProgramsPage() {
     loadPrograms()
   }, [])
 
-  const universityMap = universities.reduce((map, university) => {
-    map[university.university_id] = university.university_name
-    return map
-  }, {})
+  const universityMap = useMemo(
+    () => universities.reduce((map, university) => {
+      map[university.university_id] = university
+      return map
+    }, {}),
+    [universities],
+  )
+
+  const programsByCountry = useMemo(() => {
+    const groups = Object.fromEntries(COUNTRY_ORDER.map((id) => [id, []]))
+    programs.forEach((program) => {
+      const countryId = universityMap[program.university_id]?.country_id
+      if (countryId && groups[countryId]) groups[countryId].push(program)
+    })
+    return groups
+  }, [programs, universityMap])
 
   async function handleSubmit(event) {
     event.preventDefault()
 
     if (!programIds.first || !programIds.second) {
-      setError('Select two program IDs to compare.')
+      setError('Select two programs to compare.')
       return
     }
 
@@ -69,13 +99,40 @@ function CompareProgramsPage() {
         }
       }
 
-      setRows([toRow(firstDetail), toRow(secondDetail)])
+      const newRows = [toRow(firstDetail), toRow(secondDetail)]
+      setRows(newRows)
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ programIds, rows: newRows }))
     } catch {
       setError('Comparison data could not be loaded.')
       setRows([])
     } finally {
       setLoading(false)
     }
+  }
+
+  function programSelect(which) {
+    return (
+      <label>
+        {which === 'first' ? 'First program' : 'Second program'}
+        <select
+          value={programIds[which]}
+          onChange={(event) => setProgramIds((current) => ({ ...current, [which]: event.target.value }))}
+        >
+          <option value="">Select program</option>
+          {COUNTRY_ORDER.map((countryId) =>
+            programsByCountry[countryId]?.length ? (
+              <optgroup key={countryId} label={COUNTRY_NAMES[countryId]}>
+                {programsByCountry[countryId].map((program) => (
+                  <option key={program.program_id} value={program.program_id}>
+                    {`${universityMap[program.university_id]?.university_name ?? 'Unknown university'} — ${program.major_name}`}
+                  </option>
+                ))}
+              </optgroup>
+            ) : null,
+          )}
+        </select>
+      </label>
+    )
   }
 
   return (
@@ -90,40 +147,26 @@ function CompareProgramsPage() {
           title="Comparison inputs"
           description="Choose any two programs from the list. All costs, requirements, and deadlines are pulled from the live database."
         >
-          <label>
-            First program
-            <select
-              value={programIds.first}
-              onChange={(event) => setProgramIds((current) => ({ ...current, first: event.target.value }))}
-            >
-              <option value="">Select program</option>
-              {programs.map((program) => (
-                <option key={program.program_id} value={program.program_id}>
-                  {`${universityMap[program.university_id] ?? 'Unknown university'} — ${program.major_name}`}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            Second program
-            <select
-              value={programIds.second}
-              onChange={(event) => setProgramIds((current) => ({ ...current, second: event.target.value }))}
-            >
-              <option value="">Select program</option>
-              {programs.map((program) => (
-                <option key={program.program_id} value={program.program_id}>
-                  {`${universityMap[program.university_id] ?? 'Unknown university'} — ${program.major_name}`}
-                </option>
-              ))}
-            </select>
-          </label>
+          {programSelect('first')}
+          {programSelect('second')}
         </FormSection>
 
         <div className="action-row">
           <button className="primary-button" type="submit" disabled={loading}>
             {loading ? 'Loading comparison...' : 'Compare programs'}
+          </button>
+          <button
+            type="button"
+            className="secondary-button"
+            disabled={!programIds.first && !programIds.second && !rows.length}
+            onClick={() => {
+              setProgramIds({ first: '', second: '' })
+              setRows([])
+              setError('')
+              sessionStorage.removeItem(SESSION_KEY)
+            }}
+          >
+            Clear
           </button>
         </div>
       </form>

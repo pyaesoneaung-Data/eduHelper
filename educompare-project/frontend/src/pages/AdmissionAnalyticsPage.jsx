@@ -339,6 +339,10 @@ function AdmissionAnalyticsPage() {
             </section>
           </div>
 
+          <div className="section-heading" style={{ marginBottom: 0 }}>
+            <h3 style={{ fontSize: '1rem', margin: 0 }}>Program Rankings</h3>
+            <p style={{ margin: 0 }}>Top 5 easiest and most competitive programs by GPA and IELTS thresholds.</p>
+          </div>
           <div className="admission-bottom-grid">
             <ProgramsTable title="Easiest Programs to Enter" programs={easiestPrograms} />
             <ProgramsTable title="Most Competitive Programs" programs={hardestPrograms} />

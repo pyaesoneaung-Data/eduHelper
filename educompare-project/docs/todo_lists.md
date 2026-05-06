@@ -18,7 +18,8 @@ Kino Part
 1- Update Admission Overview - 4/05/2026
     -  Chart and some require icons update
 1- Adding Home link to Logo in Nav bar - 4/05/2026
-0- check home and about pages if something is not working carefully, fix it
+0- check home page
+1- about pages if something is not working carefully, fix it - 5/05/2026
 
 
 Dot Part

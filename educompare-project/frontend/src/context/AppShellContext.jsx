@@ -5,6 +5,7 @@ const THEME_STORAGE_KEY = 'unimatch-theme'
 const LANGUAGE_STORAGE_KEY = 'unimatch-language'
 const CURRENCY_STORAGE_KEY = 'unimatch-currency'
 const SIDEBAR_COLLAPSED_KEY = 'unimatch-sidebar-collapsed'
+const IS_ADMIN_KEY = 'unimatch-is-admin'
 
 const AppShellContext = createContext(null)
 
@@ -32,6 +33,9 @@ export function AppShellProvider({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
     () => readStoredValue(SIDEBAR_COLLAPSED_KEY, 'false') === 'true',
+  )
+  const [isAdmin] = useState(
+    () => readStoredValue(IS_ADMIN_KEY, 'false') === 'true',
   )
 
   useEffect(() => {
@@ -69,9 +73,10 @@ export function AppShellProvider({ children }) {
       toggleSidebar: () => setIsSidebarOpen((current) => !current),
       isSidebarCollapsed,
       toggleSidebarCollapsed: () => setIsSidebarCollapsed((current) => !current),
+      isAdmin,
       t: (key, fallback = key) => getTranslationValue(language, key) ?? fallback,
     }),
-    [theme, language, currency, isSidebarOpen, isSidebarCollapsed],
+    [theme, language, currency, isSidebarOpen, isSidebarCollapsed, isAdmin],
   )
 
   return <AppShellContext.Provider value={value}>{children}</AppShellContext.Provider>

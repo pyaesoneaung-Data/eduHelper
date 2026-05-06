@@ -2,7 +2,7 @@
 from fastapi.middleware.cors import CORSMiddleware
 
 #backend
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from database import get_db
 from datetime import date
@@ -14,9 +14,16 @@ from schemas import (
     CountryRuleSchema,
     CostAndFinanceSchema,
 )
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
+
+limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(title="EduCompare API")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -178,7 +185,9 @@ def cost_summary(program_id: str, db: Session = Depends(get_db)):
     }
 
 @app.get("/recommend/programs")
+@limiter.limit("20/minute")
 def recommend_programs(
+    request: Request,
     country_id: str | None = None,
     degree_level: str | None = None,
     instruction_language: str | None = None,
@@ -302,7 +311,8 @@ def recommend_programs(
 
 
 @app.get("/analytics/cost-overview")
-def analytics_cost_overview(db: Session = Depends(get_db)):
+@limiter.limit("20/minute")
+def analytics_cost_overview(request: Request, db: Session = Depends(get_db)):
     country_rules = db.query(CountryRule).all()
     country_name_map = {
         rule.country_id: (rule.country_name or "").strip().lower() for rule in country_rules
@@ -399,7 +409,8 @@ def analytics_cost_overview(db: Session = Depends(get_db)):
 
 
 @app.get("/analytics/best-value-programs")
-def best_value_programs(db: Session = Depends(get_db)):
+@limiter.limit("20/minute")
+def best_value_programs(request: Request, db: Session = Depends(get_db)):
     # Single JOIN for programs + universities + costs (no duplicates)
     records = (
         db.query(Program, University, CostAndFinance)
@@ -434,7 +445,8 @@ def best_value_programs(db: Session = Depends(get_db)):
 
 
 @app.get("/analytics/admission-overview")
-def analytics_admission_overview(db: Session = Depends(get_db)):
+@limiter.limit("20/minute")
+def analytics_admission_overview(request: Request, db: Session = Depends(get_db)):
     records = (
         db.query(Requirement, Program, University)
         .join(Program, Program.program_id == Requirement.program_id)
@@ -531,7 +543,8 @@ RANKING_COUNTRY_NAMES = {
 
 
 @app.get("/analytics/ranking-overview")
-def analytics_ranking_overview(db: Session = Depends(get_db)):
+@limiter.limit("30/minute")
+def analytics_ranking_overview(request: Request, db: Session = Depends(get_db)):
     universities = db.query(University).all()
 
     ranked = []

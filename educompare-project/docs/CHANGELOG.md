@@ -5,6 +5,328 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 96. Legal Info — restore accordion with independent multi-open state and visa notes first
+
+**Reason:** Accordion is the right pattern for this page — students come to check one or two specific countries, not read all three in parallel. Sequential deep reading per country suits expand/collapse. The two previous attempts (horizontal card grid, vertical card stack) both moved away from this and felt wrong.
+
+**Key improvements over the original accordion:**
+1. Each country now has independent open/closed state (using a `Set` of open IDs). Previously only one could be open at a time — now you can open two countries and compare them side by side.
+2. Visa notes moved to the TOP of the expanded section so the most important warning is seen first, not buried.
+3. Collapsed row simplified — just country name + part-time badge + arrow. No "View rules" text hint, no "Has visa notes" badge cluttering the row.
+
+**What changed:**
+- `LegalGuardrailPage.jsx`: replaced `selectedCountry` (single ID) state with `openIds` (a `Set`). `toggleCountry` adds/removes from the Set rather than toggling a single value. Accordion structure restored. Visa notes rendered first inside the expanded detail. Collapsed row has name, part-time badge, and arrow only. "Compare countries" planned feature card moved to bottom.
+- `index.css`: removed card grid classes, restored accordion CSS (`.legal-country-list`, `.legal-country-item`, `.legal-country-toggle`, `.legal-country-toggle-name`, `.legal-country-toggle-arrow`, `.legal-country-item--open`, `.legal-country-detail`). Kept badge styles and visa notes styles from previous pass.
+
+**Files changed:** `frontend/src/pages/LegalGuardrailPage.jsx`, `frontend/src/index.css`
+
+---
+
+### 95. Legal Info — switch from horizontal card grid to vertical full-width cards
+
+**Reason:** The 3-column horizontal grid made each country card narrow, causing the detail fields inside to feel cramped. Full-width vertical stacking gives each country card the same comfortable reading width the old accordion had, while still keeping all three countries visible without any clicking.
+
+**What changed:**
+- `index.css`: `.legal-cards-grid` changed from `display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr))` to `display: flex; flex-direction: column`. `.legal-country-card-head` changed from column to `flex-row` (name + badge on one line, aligned center). Card padding adjusted to `22px 24px`.
+
+**Files changed:** `frontend/src/index.css`
+
+---
+
+### 94. Admission chart — revert to single y-axis; Legal Info — remove accordion
+
+**Reason:**
+- User preferred single y-axis on the admission chart — the dual-axis approach added visual complexity that was not wanted.
+- Legal Info accordion forced students to click each country one at a time, preventing any side-by-side comparison. With only 3 countries and a small set of fields, all content should be immediately visible. The "Compare Countries" planned feature card moved to the bottom since it is no longer needed as a navigation instruction.
+
+**What changed:**
+- `AdmissionAnalyticsPage.jsx`: reverted `AdmissionComparisonChart` back to a single `<YAxis>` (no `yAxisId` props). Removed right-side axis, right margin reduced to 16. Bar `name` props kept as "GPA" and "IELTS" (no axis labels in legend). Footer note simplified to "GPA: 0–4.0 scale · IELTS: 0–9.0 scale".
+- `LegalGuardrailPage.jsx`: accordion pattern removed entirely. `selectedCountry` state and `toggleCountry` function removed. Replaced `legal-country-list` + accordion items with a `legal-cards-grid` showing all three country cards expanded by default. Visa notes shown at top of each card with accent styling. "Compare countries" planned feature card moved to bottom. `formatWorkHourLimit` helper removed (merged inline into Part-time work field).
+- `index.css`: removed all accordion CSS (`.legal-country-list`, `.legal-country-item`, `.legal-country-toggle`, `.legal-country-toggle-meta`, `.legal-country-toggle-hint`, `.legal-country-toggle-arrow`, `.legal-country-item--open`, `.legal-country-detail`, `.legal-badge--note`). Added `.legal-cards-grid`, `.legal-country-card`, `.legal-country-card-head`, `.legal-country-card-name`, `.legal-badge-row`.
+
+**Files changed:** `frontend/src/pages/AdmissionAnalyticsPage.jsx`, `frontend/src/pages/LegalGuardrailPage.jsx`, `frontend/src/index.css`
+
+---
+
+### 93. Home — Remove "What's in the database" section; Admission chart legend cleanup
+
+**Reason:**
+- The database stats panel ("Taiwan 5 programs / Thailand 5 programs / Singapore 5 programs") shows raw record counts that highlight a current dataset limitation rather than platform value. A first-time student visitor seeing "5 programs" is more likely to question depth than feel reassured. Data provenance is already covered on the About page, which is the appropriate place.
+- Admission chart legend showed "GPA (left axis)" / "IELTS (right axis)" — redundant since the axis labels already identify which scale is left and right.
+
+**What changed:**
+- `HomePage.jsx`: removed the `home-snapshot-panel` section entirely. Also removed the now-unused `countryCounts` `useMemo` computation.
+- `AdmissionAnalyticsPage.jsx`: changed Bar `name` props from `"GPA (left axis)"` / `"IELTS (right axis)"` back to `"GPA"` / `"IELTS"`.
+
+**Files changed:** `frontend/src/pages/HomePage.jsx`, `frontend/src/pages/AdmissionAnalyticsPage.jsx`
+
+---
+
+### 92. UX Fixes — 11-Item Pass (Dates, Detail Page, Charts, Legal, Settings)
+
+**Reason:** UX audit identified 11 issues across the app. All fixed in this pass.
+
+**Fix 1 — Best Value name truncation (Home)**
+- `index.css`: `.value-leaderboard-name` replaced `white-space: nowrap; overflow: hidden; text-overflow: ellipsis` with `overflow-wrap: break-word` so long university names wrap rather than get clipped.
+
+**Fix 2 — ISO date format display (4 files)**
+- `utils/date.js`: added `formatDate(dateStr)` — converts "2026-01-15" → "15 Jan 2026" using `parseISODateOnly` (timezone-safe) + `toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })`.
+- Applied `formatDate()` in: `DeadlineInsightsPage.jsx` (3 occurrences), `ProgramDetailPage.jsx` (deadline field), `CompareTable.jsx` (left and right deadline cells), `ResultCard.jsx` (deadline field).
+
+**Fix 3 — Program Detail: repeated program name**
+- `ProgramDetailPage.jsx`: removed the redundant `<dt>Program</dt><dd>{major_name}</dd>` field from the Program Information card — `major_name` is already shown in the `<h1>` via PageHeader.
+
+**Fix 4 — Program Detail: documents semicolons → bulleted list**
+- `ProgramDetailPage.jsx`: `documents_required` field now splits on `";"`, trims each item, and renders as a `<ul>` with `className="doc-list"`.
+- `index.css`: added `.doc-list` and `.doc-list li` styles (left-padded, minor bottom margin).
+
+**Fix 5 — Program Detail: no estimated yearly cost**
+- `ProgramDetailPage.jsx`: added `calcEstimatedYearlyCost(cost)` helper — `(tuition_fee_per_semester × 2) + (avg_monthly_living_cost × 12)`. Rendered as the first item in the Cost Information card with a parenthetical note showing the formula. Only shown if both tuition and living cost data exist.
+
+**Fix 6 — Program Detail: navigation dead end**
+- `ProgramDetailPage.jsx`: added `.program-detail-actions` bar below the card grid with three links — "Back to recommendations", "Compare programs", "Cost calculator".
+- `index.css`: added `.program-detail-actions` (flex, wrap, gap) and `.btn-secondary` (inline bordered link button) styles.
+
+**Fix 7 — Cost Overview: Singapore $12,49 truncation**
+- `index.css`: increased `.cost-columns-grid` `minmax(130px, 1fr)` → `minmax(160px, 1fr)` so each country column is wide enough. Added `white-space: nowrap` to `.cost-col-amount` to prevent partial rendering.
+
+**Fix 8 — Admission Overview: GPA and IELTS on same y-axis**
+- `AdmissionAnalyticsPage.jsx`: replaced single `<YAxis>` with dual axes — `yAxisId="gpa"` left (domain 0–4, blue ticks) and `yAxisId="ielts"` right (domain 0–9, green ticks). Each `<Bar>` now references its correct axis. Chart right margin increased to 48 to accommodate the right axis. Legend updated to "GPA (left axis)" and "IELTS (right axis)". Footnote updated.
+
+**Fix 9 — Admission Overview: program tables not discoverable**
+- `AdmissionAnalyticsPage.jsx`: added a `.section-heading` block with "Program Rankings" title and description immediately above the `.admission-bottom-grid`. Users now see a clear label before the tables when scrolling.
+
+**Fix 10 — Legal Info: visa notes hidden inside collapsed row**
+- `LegalGuardrailPage.jsx`: visa notes moved to the top of the expanded section (first element seen on open). Added status badges on the collapsed row — "Part-time allowed" (green), "No part-time" (red), "Has visa notes" (blue accent) — so users see key facts before expanding. Visa notes block now uses `.legal-visa-notes--prominent` variant (accent-colored border + tinted background).
+- `index.css`: added `.legal-country-toggle-meta`, `.legal-badge`, `.legal-badge--ok`, `.legal-badge--no`, `.legal-badge--note`, and `.legal-visa-notes--prominent`.
+
+**Fix 11 — Settings: Admin section visible to all users**
+- `AppShellContext.jsx`: added `IS_ADMIN_KEY = 'unimatch-is-admin'` constant. `isAdmin` state reads from localStorage (defaults to `false`). Exposed as `isAdmin` in context value. Dependency added to `useMemo`.
+- `SettingsPage.jsx`: Admin InfoCard wrapped in `{isAdmin ? (...) : null}` — hidden for regular users, shown only if localStorage flag is set. Prepares structure for the future admin auth system.
+
+**Files changed:** `frontend/src/utils/date.js`, `frontend/src/pages/DeadlineInsightsPage.jsx`, `frontend/src/pages/ProgramDetailPage.jsx`, `frontend/src/pages/AdmissionAnalyticsPage.jsx`, `frontend/src/pages/LegalGuardrailPage.jsx`, `frontend/src/pages/SettingsPage.jsx`, `frontend/src/components/CompareTable.jsx`, `frontend/src/components/ResultCard.jsx`, `frontend/src/context/AppShellContext.jsx`, `frontend/src/index.css`
+
+---
+
+### 91. Backend — Rate Limiting via slowapi
+
+**Reason:** Five endpoints load full dataset joins from the database on every request with no throttle. Without limits, any client could hammer these in a loop and exhaust DB connections or slow the server for everyone.
+
+**What changed:**
+- `requirements.txt`: added `slowapi>=0.1.9,<1.0`
+- `main.py`: imported `Limiter`, `_rate_limit_exceeded_handler`, `get_remote_address`, `RateLimitExceeded` from slowapi. Created `limiter = Limiter(key_func=get_remote_address)`, assigned to `app.state.limiter`, registered `RateLimitExceeded` exception handler (returns HTTP 429 with JSON body).
+- Added `request: Request` param (required by slowapi) + `@limiter.limit()` decorator to the five heavy routes:
+  - `/recommend/programs` — 20/minute (loads all programs, universities, costs, requirements into memory)
+  - `/analytics/cost-overview` — 20/minute (3-table JOIN across full dataset)
+  - `/analytics/best-value-programs` — 20/minute (3-table JOIN + requirements lookup)
+  - `/analytics/admission-overview` — 20/minute (3-table JOIN across full dataset)
+  - `/analytics/ranking-overview` — 30/minute (universities-only, lighter)
+- Simple read endpoints (`/universities`, `/programs`, `/costs`, `/requirements`, `/country-rules`, `/programs/{id}`, `/compare/programs`, `/cost-summary`) left unlimited — they are cheap indexed queries.
+- Rate limiting is per IP address, in-memory (no Redis needed). Limits reset after 1 minute.
+
+**Files changed:** `backend/requirements.txt`, `backend/main.py`
+
+---
+
+### 90. Security Audit — Findings Log (No Action Taken Except #91)
+
+**Reason:** Full security review of frontend and backend. Results logged here as a reference for what was checked and what needs attention before production.
+
+**Confirmed secure (no issues found):**
+- SQL injection: all queries use SQLAlchemy ORM — no raw SQL or string interpolation
+- Input validation: Pydantic `Query()` enforces types and ranges on all user-controlled params (GPA 0–4.0, IELTS 0–9.0, budget ≥ 0, limit 1–50, date ISO format)
+- XSS: no `dangerouslySetInnerHTML` anywhere; all output goes through React's default escaping
+- sessionStorage: only non-sensitive data stored (form inputs, program IDs, cost figures — no tokens or PII)
+- localStorage: only UI preferences (theme, language, currency, sidebar state)
+- Error responses: HTTPExceptions return generic messages — no stack traces or DB schema leaked
+- Frontend env: `frontend/.env` contains only `VITE_API_BASE_URL=http://localhost:8000`, no secrets
+- API base URL: read from `import.meta.env.VITE_API_BASE_URL` with localhost fallback
+- .gitignore: both `.env` files properly excluded, confirmed via `git check-ignore`
+- Build config: Vite does not expose source maps in production by default
+- Dependencies: all packages current — FastAPI 0.115+, SQLAlchemy 2.0+, Pydantic 2.0+, React 19, no known critical CVEs
+
+**Issues identified — action required before production:**
+1. **No authentication on any route** (HIGH): every backend endpoint is publicly accessible. Admin pages (`AdminLoginPage`, `AdminDashboardPage`) are wired as routes but contain no real auth logic — they are intentional placeholders. Implement JWT auth before building real admin functionality.
+2. **CORS locked to localhost** (MEDIUM): `allow_origin_regex=r"http://localhost:\d+"` is correct for dev but will block all requests from a real domain on deployment. Swap to `allow_origins=["https://yourdomain.com"]` before deploying.
+3. **Database credentials in `backend/.env`** (MEDIUM): real Neon PostgreSQL connection string (username + password + host) stored in plain text. File is correctly gitignored so it has not been committed, but the password should be rotated before deployment. Add a `backend/.env.example` with placeholder values for documentation.
+4. **No rate limiting** (MEDIUM): addressed in entry #91 above.
+
+**Files changed:** None — audit only.
+
+---
+
+### 89. Project Audit — Dead Code and Unused Asset Inventory (No Action Taken)
+
+**Reason:** Routine audit of all source files, components, pages, CSS classes, and assets to identify anything unreferenced or unused. No files were deleted or modified — this entry records findings only so future cleanup sessions have a written baseline.
+
+**Findings:**
+- `App.css` (140 lines): never imported anywhere. Leftover from original Vite template. Contains old class names (`.result-card`, `.score`, `.recommend-btn`) and hardcoded dark palette from early dev. Safe to delete when ready.
+- `AnalyticsPlaceholderPage.jsx`: component is useful and correct, but the import in `App.jsx` is dead — it is imported on line 8 but never placed in any route element. Should either be wired to the two placeholder analytics routes (Deadline Insights, Ranking Insights) or the import removed until then.
+- `SectionNav.jsx`: complete, functional sticky nav component with NavLink and active state. Zero imports reference it. Deliberately prepared for the "sticky internal navigation" CLAUDE.md calls for under Decision Hub and Analytics. Keep — not dead by accident.
+- `frontend/src/assets/icons/` (9 SVG files): `analytics.svg`, `decision_hub.svg`, `home.svg`, `language.svg`, `legal.svg`, `logout.svg`, `moon.svg`, `setting.svg`, `warning.svg` — none imported. App uses lucide-react instead. Kept in case the icon system changes.
+- `frontend/src/assets/logo/logo.svg` (full logo with text): not imported anywhere. Only the two text-free variants are used (`logo_dark_without_text.svg`, `logo_light_without_text.svg`).
+- `frontend/src/assets/react.svg`, `vite.svg`, `hero.png`: zero references. Vite template leftovers plus an unused hero image.
+- University logo PNGs (16 files, folder renamed by user): `U001_ntu.png` through `U015-Suss.png`. Not referenced in any source file. Prepared for when program cards or university profile pages show real logos. Keep.
+- Orphan CSS classes in `index.css` (no JSX usage): `.comparison-bars`, `.comparison-country`, `.comparison-country-head`, `.home-welcome-copy`, `.home-welcome-side`, `.reality-not-permitted`, `.search-result-card-active`, `.info-card-muted`, and the `.section-nav*` family (tied to the unused SectionNav component).
+
+**Files changed:** None — audit only.
+
+---
+
+### 88. Decision Hub — Add Clear Button to All Three Tool Pages
+
+**Reason:** With sessionStorage state persistence added in earlier entries, users had no way to reset a page once results were loaded. The only escape was closing and reopening the tab or manually clearing browser storage. A Clear button gives users a one-click way to start a fresh search.
+
+**What changed:**
+- `RecommendationPage.jsx`: Added "Clear" button in `action-row` beside "Get recommendations". On click: resets `formData` to all-empty defaults, clears `results`, sets `hasSearched` to `false`, clears `error`, removes sessionStorage key. Disabled when form is untouched and no results exist.
+- `CompareProgramsPage.jsx`: Added "Clear" button beside "Compare programs". On click: resets `programIds` to `{ first: '', second: '' }`, clears `rows`, clears `error`, removes sessionStorage key. Disabled when both selects are empty and no comparison rows exist.
+- `CostCalculatorPage.jsx`: Added "Clear" button beside "Calculate yearly cost". On click: resets `programId` to empty string, clears `summary`, clears `error`, removes sessionStorage key. Disabled when nothing is selected and no summary is shown.
+- `index.css`: Added `.secondary-button:disabled { opacity: 0.45; cursor: not-allowed; }` — previously the disabled state had no visual style.
+
+**Files changed:** `frontend/src/pages/RecommendationPage.jsx`, `frontend/src/pages/CompareProgramsPage.jsx`, `frontend/src/pages/CostCalculatorPage.jsx`, `frontend/src/index.css`
+
+---
+
+### 87. Decision Hub — Compare Programs and Cost Calculator Improvements
+
+**Reason:** Both pages had three related problems:
+1. Program selects listed all programs in a flat list with no grouping — hard to scan when 15 programs from three countries are mixed together.
+2. Neither page preserved state across back navigation, so returning from a program detail page reset the form and cleared results.
+3. Dead-end navigation: the compare table had no link to individual program detail pages, and the calculator result had no way to drill into the selected program.
+
+**What changed:**
+- `CompareProgramsPage.jsx`: Added `COUNTRY_NAMES`, `COUNTRY_ORDER` constants and a `programsByCountry` useMemo. Both program selects now use `<optgroup>` labels (Taiwan / Thailand / Singapore). Added sessionStorage restore on mount and save after a successful comparison (`unimatch_compare` key).
+- `CostCalculatorPage.jsx`: Same optgroup grouping applied to the single program select. Added sessionStorage restore on mount and save after calculation (`unimatch_calculator` key). Removed the second InfoCard ("Interpretation note") — replaced with a single muted paragraph note and a `Link` to the full program detail page directly inside the result InfoCard.
+- `CompareTable.jsx`: Column headers now use the program's `major_name` as a `<Link>` to `/programs/:id`, with the university name displayed below it in muted text (`.compare-table-uni`). Removed the redundant "Program" data row since it's now in the header.
+- `index.css`: Added `.compare-table-uni` style for the university subtitle in table column headers.
+
+**Files changed:** `frontend/src/pages/CompareProgramsPage.jsx`, `frontend/src/pages/CostCalculatorPage.jsx`, `frontend/src/components/CompareTable.jsx`, `frontend/src/index.css`
+
+---
+
+### 86. ResultCard — Redesign for Better UX
+
+**Reason:** The old card had three UX problems: (1) a raw score badge ("40 / 75 pts") that means nothing to a student, (2) a "Match breakdown" section that listed every criterion including failures ("Budget —", "Deadline —") with four rows of dashes per card, and (3) a "View program detail" link isolated at the very bottom — the worst placement for a primary action.
+
+**What changed:**
+- Program title (`<h3>`) is now wrapped in a `<Link>` — clicking the title navigates to the program detail page. This is the natural primary action.
+- Removed the score badge (`40 / 75 pts`) entirely.
+- Removed the full "Match breakdown" list. Replaced with a "Requirements met" section that shows **only the criteria that scored positive** as small pill tags (e.g. "GPA", "IELTS"). If nothing matched, one quiet italic note — "No requirements matched your profile — shown for reference." — replaces four rows of dashes.
+- Removed the `View program detail` text link from the card footer.
+- Removed unused `MAX_SCORE` constant. Renamed `SCORE_LABELS` → `CRITERIA_LABELS` for clarity.
+- CSS: `.result-card-header` changed from `flex / space-between` (needed to push badge right) to `grid / gap 4px`. Removed `.score-badge`, `.score-max`, `.score-breakdown`, `.score-earned`, `.score-zero`. Added `.result-title-link`, `.match-tags`, `.match-tags-label`, `.match-tags-row`, `.match-tag`, `.result-no-match`. Removed stale mobile override that stacked the old flex header.
+
+**Files changed:** `frontend/src/components/ResultCard.jsx`, `frontend/src/index.css`
+
+---
+
+### 85. Performance — Session Cache, useMemo for universityMap, Stale-fetch Cleanup
+
+**Reason:** Three optimisation issues found during codebase audit:
+1. `getPrograms()`, `getUniversities()`, `getCountryRules()`, `getCostOverviewAnalytics()`, `getAdmissionAnalytics()`, and `getBestValuePrograms()` were re-fetched from the backend on every page navigation — these are reference data that don't change during a session.
+2. `universityMap` in `CostCalculatorPage` and `CompareProgramsPage` was rebuilt via `.reduce()` on every render without memoisation, even when `universities` hadn't changed.
+3. `ProgramDetailPage`'s `useEffect` had no cleanup: if the user navigated away (or `programId` changed) before the fetch resolved, the stale result would still attempt to call `setData` / `setError`.
+
+**What changed:**
+- `api.js`: Added `withCache(key, fetcher)` helper that stores the Promise in a session-scoped Map. First caller initiates the request; subsequent callers share the same in-flight promise — no duplicate network calls. Failures are evicted from the cache so they can retry. Parameterised calls (e.g. `getPrograms({ country_id: 'C001' })`) bypass the cache and always hit the network.
+- `CostCalculatorPage.jsx` + `CompareProgramsPage.jsx`: Added `useMemo` import; wrapped `universityMap` derivation so it only recomputes when `universities` changes.
+- `ProgramDetailPage.jsx`: Added `cancelled` flag in `useEffect` cleanup so stale responses after navigation or `programId` change are silently dropped.
+
+**Files changed:** `frontend/src/api/api.js`, `frontend/src/pages/CostCalculatorPage.jsx`, `frontend/src/pages/CompareProgramsPage.jsx`, `frontend/src/pages/ProgramDetailPage.jsx`
+
+---
+
+### 84. Decision Hub — Fix Back Button Navigation and Restore Recommendation State
+
+**Reason:** Two bugs found during testing:
+1. `BackButton` on ProgramDetailPage used `fallback="/"` (Home), so opening a program URL directly (bookmarked, refreshed tab) sent the user to Home instead of Decision Hub.
+2. Navigating from RecommendationPage to a program detail and clicking Back unmounted the Recommendation component, wiping all form inputs and search results. Users had to redo their search every time.
+
+**What changed:**
+- `ProgramDetailPage.jsx`: `<BackButton fallback="/" />` → `<BackButton fallback="/decision-hub" />` so the fallback lands in the right section.
+- `RecommendationPage.jsx`: Added `sessionStorage` state persistence. On mount, restores `formData`, `results`, and `hasSearched` from `unimatch_recommendation` key if present. After a successful search, writes the current state to sessionStorage. Survives back navigation; clears automatically when the browser tab is closed.
+
+**Files changed:** `frontend/src/pages/ProgramDetailPage.jsx`, `frontend/src/pages/RecommendationPage.jsx`
+
+---
+
+### 83. Sidebar — Fix Icon Spacing Jump Between Expanded and Collapsed States
+
+**Reason:** Collapsing the sidebar caused a dramatic visual jump: item gap went from 4px → 16px and item height from 44px → 52px simultaneously. This made the icons spread out noticeably when collapsed, which felt inconsistent with the expanded rhythm.
+
+**What changed:**
+- `.sidebar-collapsed .sidebar-nav` and `.sidebar-collapsed .sidebar-footer` gap: `16px` → `6px`
+- `.sidebar-collapsed .sidebar-link` size: `52×52` → `44×44` (matches expanded height)
+- `.sidebar-collapsed .sidebar-collapse-btn` size: `52×52` → `44×44`
+- `.sidebar-collapsed .sidebar-group-btn` size: `52×52` → `44×44`
+
+Result: expanded and collapsed states now share the same 44px item height and near-identical gap (4px expanded, 6px collapsed), so the transition feels smooth rather than jarring.
+
+**Files changed:** `frontend/src/index.css`
+
+---
+
+### 82. About Page — Remove Sticky Nav and Accordion; Hide Currency Toggle
+
+**Reason:** Horizontal sticky nav doesn't match how documentation/reading pages work — it adds noise without aiding navigation for a page this length. Accordion methodology creates unnecessary friction: users have to click to read, and it makes future additions (formulas, detail, links per phase) structurally awkward. Currency toggle is irrelevant on the About page and adds visual clutter.
+
+**What changed:**
+- Removed `.about-page-nav` sticky horizontal nav and all related CSS.
+- Replaced accordion methodology with flat always-visible phase cards (`.about-phase-card`): number badge + title in a header row, full description below with left padding to align under the title. Easy to extend with any content in the future.
+- Removed all accordion CSS: `.about-accordion-list`, `.about-accordion-item`, `.about-accordion-trigger`, `.about-accordion-number`, `.about-accordion-title`, `.about-accordion-chevron`, `.about-accordion-body`. Also removed `useState` and `ChevronDown` imports from the page.
+- Added `isAboutPage` check in `Layout.jsx` (`location.pathname.startsWith('/about')`) and added `&& !isAboutPage` to the currency toggle condition — currency toggle now hidden on About page.
+
+**Files changed:** `frontend/src/pages/AboutPage.jsx`, `frontend/src/index.css`, `frontend/src/components/Layout.jsx`
+
+---
+
+### 81. About Page — Restructure with Sticky Nav, Stats, and Accordion Methodology
+
+**Reason:** The first rewrite (entry #80) improved the content and removed AI filler but still used a flat document structure with no visual hierarchy or navigation — all sections had equal weight and the methodology was a plain numbered list. The user wanted the page to feel navigable (like "multiple sections"), methodology to be expandable/collapsible, and the second builder's name corrected to Kaung Khant Lin (no nickname).
+
+**What changed:**
+- Added `.about-page-nav`: sticky horizontal nav bar with 5 anchor links — Mission | Features | Methodology | Data & Sources | Team. Sits just below the page heading and stays visible while scrolling.
+- Restructured into 5 clear `id`-anchored sections, each with a `border-bottom` underline heading to visually separate them.
+- Mission section: story prose + 4-item stats row (Countries · Programs · Data verified · Status) replacing the old bottom fact strip.
+- Methodology: replaced flat phase cards with an **accordion** — 6 phases, all collapsed by default, click to expand. Uses `useState(new Set())` to allow multiple open simultaneously. Chevron icon rotates 180° when open.
+- Second builder: renamed from "Zaw Myo Aung / K-Hab" → **Kaung Khant Lin**, no nickname field.
+- Builder info simplified: removed `.about-builder-name-row` and `.about-nickname`, `h4` directly in `.about-builder-info`.
+- `about-feature-card` titles changed from `h3` → `h4` to respect heading hierarchy.
+- New CSS classes (all `var(--*)` tokens): `.about-page-nav`, `.about-page-nav-link`, `.about-prose`, `.about-stats-row`, `.about-stat`, `.about-stat-value`, `.about-stat-label`, `.about-accordion-list`, `.about-accordion-item`, `.about-accordion-trigger`, `.about-accordion-number`, `.about-accordion-title`, `.about-accordion-chevron`, `.about-accordion-body`.
+- Removed: `.about-fact-strip`, `.about-fact-item`, `.about-phase-list`, `.about-phase-item`, `.about-phase-badge`, `.about-phase-content`, `.about-builder-name-row`, `.about-nickname`.
+
+**Files changed:** `frontend/src/pages/AboutPage.jsx`, `frontend/src/index.css`
+
+---
+
+### 80. About Page — Full Rewrite (Remove AI Slop, Align to Design System)
+
+**Reason:** The previous About page was AI-generated filler — hero section with a giant photo placeholder, fake footer with non-existent links (Help Center, FAQ, Privacy Policy, contact@unimatch.app), MVP section listing unbuilt features, hardcoded hex colors (#2563eb, #1f2937, etc.) ignoring CSS variables, and a custom font/color system inconsistent with the rest of the app.
+
+**What was removed:**
+- Hero section (photo placeholder + two CTA buttons — this is a dashboard page, not a website)
+- Mission / Focus / Growth cards row
+- "Why UniMatch?" two-column section with second photo placeholder
+- MVP cards section (listed unbuilt features like Major Matcher, Accessibility Filters)
+- CTA banner ("Helping students choose with confidence")
+- Full fake page footer (4 columns, fake links, fake email, fake GitHub URL)
+- All `about-*` CSS with hardcoded hex colors (~450 lines removed)
+- All responsive `about-*` overrides in media queries
+
+**What was built:**
+- Standard `page-stack` + `section-heading` matching all other pages
+- Story prose block using `data-freshness-note` class
+- Two-column "What it does" / "Who it's for" feature cards
+- Methodology expanded to 6 real phases (Problem & Scope → Research → Cleaning → Backend → Frontend → Testing), each with 2–3 honest sentences about what actually happened
+- Data & Sources — 3 source cards (Official Sources, Rankings, Exchange Rates)
+- Platform facts strip — 4 items: Countries, Stack, Data verified, Status
+- Team — 2 builder cards with clean circular avatar placeholders (no text inside), name, nickname (K-Hab), role, GitHub link
+- New minimal CSS (all `var(--*)` tokens, no hardcoded colors): `.about-two-col`, `.about-feature-card`, `.about-phase-list`, `.about-phase-item`, `.about-phase-badge`, `.about-sources-row`, `.about-source-card`, `.about-fact-strip`, `.about-fact-item`, `.about-team-grid`, `.about-team-card`, `.about-avatar`, `.about-builder-name-row`, `.about-nickname`
+
+**Files changed:** `frontend/src/pages/AboutPage.jsx`, `frontend/src/index.css`
+
+---
+
 ### 79. Admission Overview — Wording and UX Polish
 
 **Reason:** Several labels and copy lines used technical jargon ("backend", "intake cycle"), an ambiguous metric name ("Avg GPA" could mean student GPA not the requirement), a wordy chart footnote, and a literal "x" character as a status checkmark.

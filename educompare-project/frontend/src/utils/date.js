@@ -18,3 +18,10 @@ export function isDeadlinePassed(dateStr) {
   if (!deadline) return false
   return deadline < getTodayAtStartOfDay()
 }
+
+export function formatDate(dateStr) {
+  if (!dateStr) return null
+  const date = parseISODateOnly(dateStr)
+  if (!date) return dateStr
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}

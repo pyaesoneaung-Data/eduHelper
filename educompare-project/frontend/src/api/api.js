@@ -6,14 +6,31 @@ const api = axios.create({
   baseURL: apiBaseUrl,
 })
 
-export async function getPrograms(params) {
-  const response = await api.get('/programs', { params })
-  return response.data
+// Session-scoped cache for reference data that doesn't change during a session.
+// Stores the promise itself so simultaneous callers share one in-flight request.
+// Failed requests are evicted so they can be retried.
+const sessionCache = new Map()
+
+function withCache(key, fetcher) {
+  if (!sessionCache.has(key)) {
+    const promise = fetcher().catch((err) => {
+      sessionCache.delete(key)
+      throw err
+    })
+    sessionCache.set(key, promise)
+  }
+  return sessionCache.get(key)
 }
 
-export async function getUniversities(params) {
-  const response = await api.get('/universities', { params })
-  return response.data
+// Parameterised calls bypass the cache; bare calls (no params) are cached.
+export function getPrograms(params) {
+  if (params) return api.get('/programs', { params }).then((r) => r.data)
+  return withCache('programs', () => api.get('/programs').then((r) => r.data))
+}
+
+export function getUniversities(params) {
+  if (params) return api.get('/universities', { params }).then((r) => r.data)
+  return withCache('universities', () => api.get('/universities').then((r) => r.data))
 }
 
 export async function getProgramDetail(programId) {
@@ -26,9 +43,9 @@ export async function getRequirements(params) {
   return response.data
 }
 
-export async function getCountryRules(params) {
-  const response = await api.get('/country-rules', { params })
-  return response.data
+export function getCountryRules(params) {
+  if (params) return api.get('/country-rules', { params }).then((r) => r.data)
+  return withCache('country-rules', () => api.get('/country-rules').then((r) => r.data))
 }
 
 export async function getCosts(params) {
@@ -55,19 +72,22 @@ export async function getRecommendations(params) {
   return response.data
 }
 
-export async function getBestValuePrograms() {
-  const response = await api.get('/analytics/best-value-programs')
-  return response.data
+export function getBestValuePrograms() {
+  return withCache('best-value-programs', () =>
+    api.get('/analytics/best-value-programs').then((r) => r.data),
+  )
 }
 
-export async function getCostOverviewAnalytics() {
-  const response = await api.get('/analytics/cost-overview')
-  return response.data
+export function getCostOverviewAnalytics() {
+  return withCache('cost-overview', () =>
+    api.get('/analytics/cost-overview').then((r) => r.data),
+  )
 }
 
-export async function getAdmissionAnalytics() {
-  const response = await api.get('/analytics/admission-overview')
-  return response.data
+export function getAdmissionAnalytics() {
+  return withCache('admission-overview', () =>
+    api.get('/analytics/admission-overview').then((r) => r.data),
+  )
 }
 
 export async function getRankingOverview() {

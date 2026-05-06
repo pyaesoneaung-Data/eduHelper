@@ -1,9 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useAppShell } from '../context/AppShellContext'
 import { convertCurrency } from '../utils/currency'
-import { isDeadlinePassed } from '../utils/date'
-
-const MAX_SCORE = 75
+import { formatDate, isDeadlinePassed } from '../utils/date'
 
 const COUNTRY_NAMES = {
   C001: 'Taiwan',
@@ -11,7 +9,7 @@ const COUNTRY_NAMES = {
   C003: 'Singapore',
 }
 
-const SCORE_LABELS = {
+const CRITERIA_LABELS = {
   budget_fit: 'Budget',
   gpa_fit: 'GPA',
   ielts_fit: 'IELTS',
@@ -29,19 +27,18 @@ function formatCost(value, nativeCurrency, displayCurrency) {
 function ResultCard({ item }) {
   const { currency: displayCurrency } = useAppShell()
   const deadlinePassed = isDeadlinePassed(item.application_deadline)
+  const metCriteria = Object.entries(item.score_breakdown ?? {}).filter(([, v]) => v > 0)
 
   return (
     <article className="result-card">
       <div className="result-card-header">
-        <div>
-          <p className="result-meta">{`${COUNTRY_NAMES[item.country_id] ?? item.country_id} • ${item.degree_level}`}</p>
-          <h3>{item.major_name}</h3>
-          <p className="muted-text">{item.university_name}</p>
-        </div>
-        <div className="score-badge">
-          {item.score}
-          <span className="score-max">/ {MAX_SCORE} pts</span>
-        </div>
+        <p className="result-meta">{`${COUNTRY_NAMES[item.country_id] ?? item.country_id} • ${item.degree_level}`}</p>
+        <h3>
+          <Link to={`/programs/${item.program_id}`} className="result-title-link">
+            {item.major_name}
+          </Link>
+        </h3>
+        <p className="muted-text">{item.university_name}</p>
       </div>
 
       <dl className="detail-grid compact">
@@ -64,29 +61,26 @@ function ResultCard({ item }) {
         <div>
           <dt>Deadline</dt>
           <dd className={deadlinePassed ? 'deadline-passed' : ''}>
-            {item.application_deadline ?? 'Not listed'}
+            {formatDate(item.application_deadline) ?? 'Not listed'}
             {deadlinePassed ? ' — Deadline passed' : ''}
           </dd>
         </div>
       </dl>
 
-      <div className="score-breakdown">
-        <p className="section-label">Match breakdown</p>
-        <ul className="plain-list">
-          {Object.entries(item.score_breakdown ?? {}).map(([key, value]) => (
-            <li key={key}>
-              <span>{SCORE_LABELS[key] ?? key.replace(/_/g, ' ')}</span>
-              <strong className={value > 0 ? 'score-earned' : 'score-zero'}>
-                {value > 0 ? `+${value}` : '—'}
-              </strong>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <Link className="text-link" to={`/programs/${item.program_id}`}>
-        View program detail
-      </Link>
+      {metCriteria.length > 0 ? (
+        <div className="match-tags">
+          <span className="match-tags-label">Requirements met</span>
+          <div className="match-tags-row">
+            {metCriteria.map(([key]) => (
+              <span key={key} className="match-tag">
+                {CRITERIA_LABELS[key] ?? key.replace(/_/g, ' ')}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <p className="result-no-match">No requirements matched your profile — shown for reference.</p>
+      )}
     </article>
   )
 }

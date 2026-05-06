@@ -33,6 +33,8 @@ function formatBudgetPreview(rawValue, isUSD, countryId) {
   return `$${amount.toLocaleString()} USD ≈ ${twd.toLocaleString()} TWD · ${thb.toLocaleString()} THB · ${sgd.toLocaleString()} SGD/yr`
 }
 
+const SESSION_KEY = 'unimatch_recommendation'
+
 function RecommendationPage() {
   const { currency: displayCurrency, toggleCurrency } = useAppShell()
   const [programs, setPrograms] = useState([])
@@ -49,6 +51,21 @@ function RecommendationPage() {
     user_gpa: '',
     user_ielts: '',
   })
+
+  // Restore state after back navigation
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(SESSION_KEY)
+      if (saved) {
+        const { formData: f, results: r, hasSearched: h } = JSON.parse(saved)
+        if (f) setFormData(f)
+        if (r) setResults(r)
+        if (h) setHasSearched(h)
+      }
+    } catch {
+      sessionStorage.removeItem(SESSION_KEY)
+    }
+  }, [])
 
   useEffect(() => {
     async function loadOptions() {
@@ -111,6 +128,7 @@ function RecommendationPage() {
 
       if (Array.isArray(data)) {
         setResults(data)
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({ formData, results: data, hasSearched: true }))
       } else {
         setResults([])
         setError(data.detail ?? 'No recommendations returned.')
@@ -233,6 +251,20 @@ function RecommendationPage() {
         <div className="action-row">
           <button className="primary-button" type="submit" disabled={loading}>
             {loading ? 'Loading recommendations...' : 'Get recommendations'}
+          </button>
+          <button
+            type="button"
+            className="secondary-button"
+            disabled={!hasSearched && !Object.values(formData).some((v) => v)}
+            onClick={() => {
+              setFormData({ country_id: '', degree_level: '', instruction_language: '', max_budget: '', user_gpa: '', user_ielts: '' })
+              setResults([])
+              setHasSearched(false)
+              setError('')
+              sessionStorage.removeItem(SESSION_KEY)
+            }}
+          >
+            Clear
           </button>
         </div>
       </form>

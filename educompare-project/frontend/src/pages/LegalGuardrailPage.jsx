@@ -3,21 +3,9 @@ import { getCountryRules } from '../api/api'
 import InfoCard from '../components/InfoCard'
 import PageHeader from '../components/PageHeader'
 
-function formatPartTime(rule) {
-  if (rule.part_time_allowed === true) return `Yes — up to ${rule.work_hour_limit} hrs/week`
-  if (rule.part_time_allowed === false) return 'No'
-  return 'Not listed'
-}
-
-function formatWorkHourLimit(rule) {
-  if (rule.work_hour_limit != null) return `${rule.work_hour_limit} hrs/week`
-  if (rule.part_time_allowed === false) return 'Not applicable'
-  return 'Not listed'
-}
-
 function LegalGuardrailPage() {
   const [rules, setRules] = useState([])
-  const [selectedCountry, setSelectedCountry] = useState(null)
+  const [openIds, setOpenIds] = useState(new Set())
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -34,7 +22,11 @@ function LegalGuardrailPage() {
   }, [])
 
   function toggleCountry(countryId) {
-    setSelectedCountry((prev) => (prev === countryId ? null : countryId))
+    setOpenIds((prev) => {
+      const next = new Set(prev)
+      next.has(countryId) ? next.delete(countryId) : next.add(countryId)
+      return next
+    })
   }
 
   return (
@@ -51,26 +43,18 @@ function LegalGuardrailPage() {
         <p>Any agent claim about easy part-time income should be verified against the official permit rules and visa conditions for that country before you commit to anything.</p>
       </InfoCard>
 
-      <InfoCard title="Compare countries" eyebrow="Planned feature">
-        <p>
-          A dedicated <strong>Compare Countries</strong> tool is planned for the Decision Hub —
-          letting you pick any two countries from a dropdown and see a live side-by-side of visa type, work rights, and post-study options.
-          For now, use the country list below to open and read each country's rules individually.
-        </p>
-      </InfoCard>
-
       {!rules.length && !error ? <p className="muted-text">Loading country rules...</p> : null}
 
       {rules.length ? (
         <div className="panel">
           <div className="panel-heading">
             <h2>Country rules</h2>
-            <p>Select a country to read its full visa and work rules.</p>
+            <p>Select one or more countries to read their visa and work rules.</p>
           </div>
 
           <div className="legal-country-list">
             {rules.map((rule) => {
-              const isOpen = selectedCountry === rule.country_id
+              const isOpen = openIds.has(rule.country_id)
 
               return (
                 <div key={rule.country_id} className={`legal-country-item${isOpen ? ' legal-country-item--open' : ''}`}>
@@ -81,9 +65,11 @@ function LegalGuardrailPage() {
                     aria-expanded={isOpen}
                   >
                     <span className="legal-country-toggle-name">{rule.country_name}</span>
-                    <span className="legal-country-toggle-hint">
-                      {isOpen ? 'Close' : 'View rules'}
-                    </span>
+                    {rule.part_time_allowed === true ? (
+                      <span className="legal-badge legal-badge--ok">Part-time allowed</span>
+                    ) : rule.part_time_allowed === false ? (
+                      <span className="legal-badge legal-badge--no">No part-time</span>
+                    ) : null}
                     <span className="legal-country-toggle-arrow" aria-hidden="true">
                       {isOpen ? '↑' : '↓'}
                     </span>
@@ -91,18 +77,27 @@ function LegalGuardrailPage() {
 
                   {isOpen ? (
                     <div className="legal-country-detail">
+                      {rule.visa_notes ? (
+                        <div className="legal-visa-notes legal-visa-notes--prominent">
+                          <p className="home-mini-label">Visa notes</p>
+                          <p>{rule.visa_notes}</p>
+                        </div>
+                      ) : null}
+
                       <dl className="detail-grid compact">
                         <div>
                           <dt>Visa type</dt>
                           <dd>{rule.visa_type ?? 'Not listed'}</dd>
                         </div>
                         <div>
-                          <dt>Part-time allowed</dt>
-                          <dd>{formatPartTime(rule)}</dd>
-                        </div>
-                        <div>
-                          <dt>Work hour limit</dt>
-                          <dd>{formatWorkHourLimit(rule)}</dd>
+                          <dt>Part-time work</dt>
+                          <dd>
+                            {rule.part_time_allowed === true
+                              ? `Yes — up to ${rule.work_hour_limit} hrs/week`
+                              : rule.part_time_allowed === false
+                                ? 'Not permitted'
+                                : 'Not listed'}
+                          </dd>
                         </div>
                         <div>
                           <dt>Work permit required</dt>
@@ -113,13 +108,6 @@ function LegalGuardrailPage() {
                           <dd>{rule.post_study_work_visa ?? 'Not listed'}</dd>
                         </div>
                       </dl>
-
-                      {rule.visa_notes ? (
-                        <div className="legal-visa-notes">
-                          <p className="home-mini-label">Visa notes</p>
-                          <p>{rule.visa_notes}</p>
-                        </div>
-                      ) : null}
 
                       {rule.source_url ? (
                         <div className="legal-source">
@@ -136,6 +124,13 @@ function LegalGuardrailPage() {
           </div>
         </div>
       ) : null}
+
+      <InfoCard title="Compare countries" eyebrow="Planned feature">
+        <p>
+          A dedicated <strong>Compare Countries</strong> tool is planned for the Decision Hub —
+          letting you pick any two countries and see a live side-by-side of visa type, work rights, and post-study options.
+        </p>
+      </InfoCard>
     </div>
   )
 }

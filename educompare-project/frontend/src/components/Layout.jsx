@@ -24,6 +24,7 @@ function LayoutFrame() {
   const sectionLabel = getSectionLabel(location.pathname)
   const isSettingsPage = location.pathname.startsWith('/settings')
   const isCostOverviewPage = location.pathname === '/analytics'
+  const isAboutPage = location.pathname.startsWith('/about')
 
   useEffect(() => {
     closeSidebar()
@@ -54,7 +55,7 @@ function LayoutFrame() {
           </div>
 
           {!isSettingsPage ? <div className="topbar-actions">
-            {!isCostOverviewPage ? (
+            {!isCostOverviewPage && !isAboutPage ? (
               <>
                 <div className="topbar-utility-copy">
                   <span className="topbar-utility-label">Currency</span>

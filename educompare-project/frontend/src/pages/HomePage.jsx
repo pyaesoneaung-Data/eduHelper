@@ -168,14 +168,6 @@ function HomePage() {
     })
   }
 
-  const countryCounts = useMemo(
-    () =>
-      enrichedPrograms.reduce((counts, program) => {
-        counts[program.country_id] = (counts[program.country_id] ?? 0) + 1
-        return counts
-      }, {}),
-    [enrichedPrograms],
-  )
 
   const valueLeaderboard = useMemo(() => buildValueLeaderboard(rawValueData), [rawValueData])
   const totalPrograms = programs.length || 15
@@ -338,30 +330,6 @@ function HomePage() {
           )}
         </aside>
 
-        <section className="panel home-snapshot-panel">
-          <div className="panel-heading">
-            <h2>What's in the database</h2>
-            <p>Verified program records across three countries — updated directly from source data.</p>
-          </div>
-
-          <div className="home-country-grid">
-            <div className="home-country-card">
-              <span className="home-country-name">Taiwan</span>
-              <span className="home-country-count">{countryCounts.C001 ?? 0}</span>
-              <span className="home-country-label">programs</span>
-            </div>
-            <div className="home-country-card">
-              <span className="home-country-name">Thailand</span>
-              <span className="home-country-count">{countryCounts.C002 ?? 0}</span>
-              <span className="home-country-label">programs</span>
-            </div>
-            <div className="home-country-card">
-              <span className="home-country-name">Singapore</span>
-              <span className="home-country-count">{countryCounts.C003 ?? 0}</span>
-              <span className="home-country-label">programs</span>
-            </div>
-          </div>
-        </section>
       </section>
     </div>
   )

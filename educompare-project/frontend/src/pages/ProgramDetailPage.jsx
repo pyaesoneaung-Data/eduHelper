@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import { getProgramDetail } from '../api/api'
 import { useAppShell } from '../context/AppShellContext'
 import { convertCurrency } from '../utils/currency'
-import { isDeadlinePassed } from '../utils/date'
+import { formatDate, isDeadlinePassed } from '../utils/date'
 import InfoCard from '../components/InfoCard'
 import PageHeader from '../components/PageHeader'
 import BackButton from '../components/BackButton'
@@ -28,6 +28,13 @@ function formatBool(value) {
   return 'Not listed'
 }
 
+function calcEstimatedYearlyCost(cost) {
+  const tuition = cost.tuition_fee_per_semester
+  const living = cost.avg_monthly_living_cost
+  if (tuition === null || tuition === undefined || living === null || living === undefined) return null
+  return (Number(tuition) * 2) + (Number(living) * 12)
+}
+
 function ProgramDetailPage() {
   const { programId } = useParams()
   const { currency: displayCurrency, toggleCurrency } = useAppShell()
@@ -36,11 +43,14 @@ function ProgramDetailPage() {
   const deadlinePassed = isDeadlinePassed(data?.program?.application_deadline)
 
   useEffect(() => {
+    let cancelled = false
+
     async function loadProgram() {
       try {
         const response = await getProgramDetail(programId)
-        setData(response)
+        if (!cancelled) setData(response)
       } catch (err) {
+        if (cancelled) return
         if (err?.response?.status === 404) {
           setError(`Program "${programId}" was not found in the database.`)
         } else {
@@ -50,11 +60,12 @@ function ProgramDetailPage() {
     }
 
     loadProgram()
+    return () => { cancelled = true }
   }, [programId])
 
   return (
     <div className="page-stack">
-      <BackButton fallback="/" />
+      <BackButton fallback="/decision-hub" />
       <PageHeader
         eyebrow="Program Detail"
         title={data ? data.program.major_name : error ? 'Program not found' : 'Loading...'}
@@ -67,10 +78,6 @@ function ProgramDetailPage() {
         <div className="card-grid">
           <InfoCard title="Program information">
             <dl className="detail-grid">
-              <div>
-                <dt>Program</dt>
-                <dd>{data.program?.major_name}</dd>
-              </div>
               <div>
                 <dt>Degree</dt>
                 <dd>{data.program?.degree_level}</dd>
@@ -90,7 +97,7 @@ function ProgramDetailPage() {
               <div>
                 <dt>Deadline</dt>
                 <dd className={deadlinePassed ? 'deadline-passed' : ''}>
-                  {data.program?.application_deadline ?? 'Not listed'}
+                  {formatDate(data.program?.application_deadline) ?? 'Not listed'}
                   {deadlinePassed ? ' — Deadline passed' : ''}
                 </dd>
               </div>
@@ -142,8 +149,18 @@ function ProgramDetailPage() {
                   <dd>{data.requirements[0].ielts_min ?? 'Not listed'}</dd>
                 </div>
                 <div>
-                  <dt>Documents</dt>
-                  <dd>{data.requirements[0].documents_required ?? 'Not listed'}</dd>
+                  <dt>Documents required</dt>
+                  <dd>
+                    {data.requirements[0].documents_required
+                      ? (
+                        <ul className="doc-list">
+                          {data.requirements[0].documents_required.split(';').map((doc) => doc.trim()).filter(Boolean).map((doc, i) => (
+                            <li key={i}>{doc}</li>
+                          ))}
+                        </ul>
+                      )
+                      : 'Not listed'}
+                  </dd>
                 </div>
                 <div>
                   <dt>Interview required</dt>
@@ -165,6 +182,12 @@ function ProgramDetailPage() {
                   </button>
                 </p>
                 <dl className="detail-grid">
+                  {calcEstimatedYearlyCost(data.cost) !== null ? (
+                    <div>
+                      <dt>Estimated yearly cost</dt>
+                      <dd>{formatCost(calcEstimatedYearlyCost(data.cost), data.cost.currency, displayCurrency)} <span className="muted-text" style={{ fontWeight: 400, fontSize: '0.8rem' }}>(tuition ×2 + living ×12)</span></dd>
+                    </div>
+                  ) : null}
                   <div>
                     <dt>Tuition per semester</dt>
                     <dd>{formatCost(data.cost.tuition_fee_per_semester, data.cost.currency, displayCurrency)}</dd>
@@ -187,6 +210,14 @@ function ProgramDetailPage() {
               <p className="muted-text">No cost record was returned for this program.</p>
             )}
           </InfoCard>
+        </div>
+      ) : null}
+
+      {data ? (
+        <div className="program-detail-actions">
+          <Link to="/decision-hub/recommend" className="btn-secondary">← Back to recommendations</Link>
+          <Link to="/decision-hub/compare" className="btn-secondary">Compare programs →</Link>
+          <Link to="/decision-hub/calculator" className="btn-secondary">Cost calculator →</Link>
         </div>
       ) : null}
     </div>

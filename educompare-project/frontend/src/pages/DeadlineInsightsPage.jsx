@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getPrograms, getUniversities } from '../api/api'
 import InfoCard from '../components/InfoCard'
-import { getTodayAtStartOfDay, parseISODateOnly } from '../utils/date'
+import { formatDate, getTodayAtStartOfDay, parseISODateOnly } from '../utils/date'
 
 const COUNTRY_NAMES = {
   C001: 'Taiwan',
@@ -110,7 +110,7 @@ function DeadlineInsightsPage() {
               </Link>
             </p>
             <p className="muted-text">{nextDeadline.university_name}</p>
-            <p>{nextDeadline.application_deadline} &mdash; {formatDaysLeft(daysUntil(nextDeadline.application_deadline))}</p>
+            <p>{formatDate(nextDeadline.application_deadline)} &mdash; {formatDaysLeft(daysUntil(nextDeadline.application_deadline))}</p>
           </InfoCard>
         ) : (
           <InfoCard title="No upcoming deadlines" tone="muted">
@@ -142,7 +142,7 @@ function DeadlineInsightsPage() {
                     </td>
                     <td>{p.university_name}</td>
                     <td>{COUNTRY_NAMES[p.country_id] ?? p.country_id}</td>
-                    <td>{p.application_deadline}</td>
+                    <td>{formatDate(p.application_deadline)}</td>
                     <td><strong>{formatDaysLeft(daysUntil(p.application_deadline))}</strong></td>
                   </tr>
                 ))}
@@ -177,7 +177,7 @@ function DeadlineInsightsPage() {
                     </td>
                     <td>{p.university_name}</td>
                     <td>{COUNTRY_NAMES[p.country_id] ?? p.country_id}</td>
-                    <td className="deadline-passed">{p.application_deadline}</td>
+                    <td className="deadline-passed">{formatDate(p.application_deadline)}</td>
                     <td className="deadline-passed">{formatDaysSince(daysSince(p.application_deadline))}</td>
                   </tr>
                 ))}
