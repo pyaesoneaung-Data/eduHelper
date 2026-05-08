@@ -1,8 +1,15 @@
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { AppShellProvider, useAppShell } from '../context/AppShellContext'
-import { Languages, Moon } from 'lucide-react'
+import { Moon, Sun, Globe, CurrencyDollar, List } from '@phosphor-icons/react'
 import Sidebar from './Sidebar'
+
+function getGreeting() {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Good morning'
+  if (hour < 18) return 'Good afternoon'
+  return 'Good evening'
+}
 
 function getSectionLabel(pathname) {
   if (pathname.startsWith('/decision-hub')) return 'Decision Hub'
@@ -14,7 +21,7 @@ function getSectionLabel(pathname) {
   if (pathname.startsWith('/about')) return 'About'
   if (pathname.startsWith('/admin')) return 'Admin'
   if (pathname.startsWith('/programs')) return 'Program Detail'
-  return 'Home'
+  return getGreeting()
 }
 
 function LayoutFrame() {
@@ -22,6 +29,7 @@ function LayoutFrame() {
   const { closeSidebar, isSidebarOpen, isSidebarCollapsed, language, theme, currency, cycleLanguage, toggleTheme, toggleCurrency, toggleSidebar, t } =
     useAppShell()
   const sectionLabel = getSectionLabel(location.pathname)
+  const isHomePage = location.pathname === '/'
   const isSettingsPage = location.pathname.startsWith('/settings')
   const isCostOverviewPage = location.pathname === '/analytics'
   const isAboutPage = location.pathname.startsWith('/about')
@@ -47,60 +55,62 @@ function LayoutFrame() {
 
       <div className="dashboard-main">
         <header className="dashboard-topbar">
-          <div className="topbar-start">
-            <button className="mobile-menu-button" type="button" onClick={toggleSidebar}>
-              {t('ui.menu', 'Menu')}
-            </button>
-            <span className="topbar-section-label">{sectionLabel}</span>
-          </div>
-
-          {!isSettingsPage ? <div className="topbar-actions">
-            {!isCostOverviewPage && !isAboutPage ? (
-              <>
-                <div className="topbar-utility-copy">
-                  <span className="topbar-utility-label">Currency</span>
-                  <span className="topbar-utility-value">{currency === 'USD' ? 'USD' : 'Local'}</span>
-                </div>
-                <button
-                  className="topbar-icon-button"
-                  type="button"
-                  onClick={toggleCurrency}
-                  aria-label={currency === 'USD' ? 'Switch to local currencies' : 'Switch to USD'}
-                  title={currency === 'USD' ? 'Switch to local currencies' : 'Switch to USD'}
-                >
-                  <span className="topbar-currency-symbol" aria-hidden="true">$</span>
-                </button>
-              </>
-            ) : null}
-            <div className="topbar-utility-copy">
-              <span className="topbar-utility-label">{t('ui.language', 'Language')}</span>
-              <span className="topbar-utility-value">{language.toUpperCase()}</span>
-            </div>
-            <button
-              className="topbar-icon-button"
-              type="button"
-              onClick={cycleLanguage}
-              aria-label={t('ui.language', 'Language')}
-              title={t('ui.language', 'Language')}
-            >
-              <Languages className="topbar-icon" aria-hidden="true" />
-            </button>
-            <div className="topbar-utility-copy">
-              <span className="topbar-utility-label">Theme</span>
-              <span className="topbar-utility-value">
-                {theme === 'light' ? t('ui.darkMode', 'Dark mode') : t('ui.lightMode', 'Light mode')}
+          <div className="topbar-inner">
+            <div className="topbar-start">
+              <button
+                className="mobile-menu-button"
+                type="button"
+                onClick={toggleSidebar}
+                aria-label={t('ui.menu', 'Menu')}
+                title={t('ui.menu', 'Menu')}
+              >
+                <List size={20} aria-hidden="true" />
+              </button>
+              <span className={isHomePage ? 'topbar-section-label topbar-section-greeting' : 'topbar-section-label'}>
+                {sectionLabel}
               </span>
             </div>
-            <button
-              className="topbar-icon-button"
-              type="button"
-              onClick={toggleTheme}
-              aria-label={theme === 'light' ? t('ui.darkMode', 'Dark mode') : t('ui.lightMode', 'Light mode')}
-              title={theme === 'light' ? t('ui.darkMode', 'Dark mode') : t('ui.lightMode', 'Light mode')}
-            >
-              <Moon className="topbar-icon" aria-hidden="true" />
-            </button>
-          </div> : null}
+
+            {!isSettingsPage ? (
+              <div className="topbar-actions">
+                {!isCostOverviewPage && !isAboutPage ? (
+                  <button
+                    className="topbar-toggle-btn"
+                    type="button"
+                    onClick={toggleCurrency}
+                    aria-label={currency === 'USD' ? 'Switch to local currencies' : 'Switch to USD'}
+                    title={currency === 'USD' ? 'Switch to local currencies' : 'Switch to USD'}
+                  >
+                    <CurrencyDollar size={18} weight="bold" aria-hidden="true" />
+                    <span className="toggle-label">{currency === 'USD' ? 'USD' : 'Local'}</span>
+                  </button>
+                ) : null}
+                <button
+                  className="topbar-toggle-btn"
+                  type="button"
+                  onClick={cycleLanguage}
+                  aria-label={t('ui.language', 'Language')}
+                  title={t('ui.language', 'Language')}
+                >
+                  <Globe size={18} aria-hidden="true" />
+                  <span className="toggle-label">{language.toUpperCase()}</span>
+                </button>
+                <button
+                  className="topbar-toggle-btn"
+                  type="button"
+                  onClick={toggleTheme}
+                  aria-label={theme === 'light' ? t('ui.darkMode', 'Dark mode') : t('ui.lightMode', 'Light mode')}
+                  title={theme === 'light' ? t('ui.darkMode', 'Dark mode') : t('ui.lightMode', 'Light mode')}
+                >
+                  {theme === 'light' ? (
+                    <Moon size={18} aria-hidden="true" />
+                  ) : (
+                    <Sun size={18} aria-hidden="true" />
+                  )}
+                </button>
+              </div>
+            ) : null}
+          </div>
         </header>
 
         <main className="page-shell">

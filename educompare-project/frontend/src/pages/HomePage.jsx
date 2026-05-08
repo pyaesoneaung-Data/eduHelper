@@ -1,18 +1,28 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Building2, CalendarDays, Globe2, ShieldCheck } from 'lucide-react'
+import { Buildings, Coins, GlobeSimple, GraduationCap, MagnifyingGlass } from '@phosphor-icons/react'
 import { getBestValuePrograms, getPrograms, getUniversities } from '../api/api'
 import { useAppShell } from '../context/AppShellContext'
 import { convertCurrency } from '../utils/currency'
-import logoLight from '../assets/logo/logo_light_without_text.svg'
-import logoDark from '../assets/logo/logo_dark_without_text.svg'
-import IconImage from '../components/IconImage'
 
 const COUNTRY_NAMES = {
   C001: 'Taiwan',
   C002: 'Thailand',
   C003: 'Singapore',
 }
+
+function formatDeadlineRelative(dateStr) {
+  const deadline = new Date(dateStr + 'T00:00:00')
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const diffDays = Math.round((deadline - today) / (1000 * 60 * 60 * 24))
+  if (diffDays === 0) return 'Today'
+  if (diffDays > 0 && diffDays <= 60) return `${diffDays}d`
+  if (diffDays > 60) return deadline.toLocaleDateString('en', { month: 'short', day: 'numeric' })
+  if (diffDays >= -14) return `${Math.abs(diffDays)}d ago`
+  return deadline.toLocaleDateString('en', { month: 'short', day: 'numeric' })
+}
+
 
 function formatLeaderboardCost(yearlyValue, nativeCurrency, displayCurrency) {
   if (yearlyValue == null) return 'Not listed'
@@ -65,7 +75,7 @@ function buildValueLeaderboard(rawPrograms) {
 
   return [...byUniversity.values()]
     .sort((a, b) => b.value_score - a.value_score)
-    .slice(0, 6)
+    .slice(0, 5)
 }
 
 const RECENT_SEARCHES_KEY = 'educompare_recent_searches'
@@ -83,7 +93,7 @@ function HomeKpiCard({ icon: Icon, title, value, subtitle, accentClass }) {
   return (
     <article className="home-kpi-card">
       <div className={`home-kpi-icon ${accentClass}`}>
-        <Icon size={18} strokeWidth={2} aria-hidden="true" />
+        <Icon size={28} weight="duotone" aria-hidden="true" />
       </div>
       <div className="home-kpi-copy">
         <span className="home-kpi-title">{title}</span>
@@ -95,14 +105,15 @@ function HomeKpiCard({ icon: Icon, title, value, subtitle, accentClass }) {
 }
 
 function HomePage() {
-  const { currency: displayCurrency, theme } = useAppShell()
-  const logoSrc = theme === 'dark' ? logoDark : logoLight
+  const { currency: displayCurrency } = useAppShell()
   const [programs, setPrograms] = useState([])
   const [universities, setUniversities] = useState([])
   const [rawValueData, setRawValueData] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [recentSearches, setRecentSearches] = useState(loadRecentSearches)
   const [error, setError] = useState('')
+  const searchRef = useRef(null)
 
   useEffect(() => {
     async function loadData() {
@@ -117,6 +128,8 @@ function HomePage() {
         setRawValueData(valueData)
       } catch {
         setError('Program data could not be loaded from the backend.')
+      } finally {
+        setIsLoading(false)
       }
     }
 
@@ -156,6 +169,17 @@ function HomePage() {
       .slice(0, 5)
   }, [enrichedPrograms, searchTerm])
 
+  // Close dropdown when clicking outside the search container
+  useEffect(() => {
+    function handleOutside(e) {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchTerm('')
+      }
+    }
+    document.addEventListener('mousedown', handleOutside)
+    return () => document.removeEventListener('mousedown', handleOutside)
+  }, [])
+
   function saveSearch(term) {
     const trimmed = term.trim()
     if (!trimmed) return
@@ -170,41 +194,75 @@ function HomePage() {
 
 
   const valueLeaderboard = useMemo(() => buildValueLeaderboard(rawValueData), [rawValueData])
-  const totalPrograms = programs.length || 15
+
+  const upcomingDeadlines = useMemo(() => {
+    if (!enrichedPrograms.length) return []
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const withDate = enrichedPrograms.filter((p) => p.application_deadline)
+    const future = withDate
+      .filter((p) => new Date(p.application_deadline + 'T00:00:00') >= today)
+      .sort((a, b) => new Date(a.application_deadline) - new Date(b.application_deadline))
+    const past = withDate
+      .filter((p) => new Date(p.application_deadline + 'T00:00:00') < today)
+      .sort((a, b) => new Date(b.application_deadline) - new Date(a.application_deadline))
+    return [...future, ...past].slice(0, 3)
+  }, [enrichedPrograms])
+
+
+  // Find the lowest-cost program using rawValueData — the only source with yearly_cost + currency.
+  // /programs endpoint has no cost fields; /analytics/best-value-programs does.
+  const minCostDisplay = useMemo(() => {
+    if (!rawValueData.length) return '—'
+    let lowestUSD = Infinity
+    let cheapestProgram = null
+    rawValueData.forEach((p) => {
+      if (p.yearly_cost == null || !p.currency) return
+      const usd = convertCurrency(p.yearly_cost, p.currency, 'USD')
+      if (usd != null && !isNaN(usd) && usd < lowestUSD) {
+        lowestUSD = usd
+        cheapestProgram = p
+      }
+    })
+    if (!cheapestProgram) return '—'
+    const isUSD = displayCurrency === 'USD'
+    const rawAmount = isUSD
+      ? convertCurrency(cheapestProgram.yearly_cost, cheapestProgram.currency, 'USD')
+      : cheapestProgram.yearly_cost
+    if (rawAmount == null || isNaN(rawAmount)) return '—'
+    const label = isUSD ? 'USD' : cheapestProgram.currency
+    return `${Math.round(rawAmount).toLocaleString()} ${label}`
+  }, [rawValueData, displayCurrency])
 
   return (
     <div className="page-stack">
-      <section className="home-trust-strip">
-        <p>UniMatch / EduCompare turns current program records into a safer starting point for Thailand, Taiwan, and Singapore decisions.</p>
-      </section>
-
       <section className="home-kpi-row" aria-label="Home summary metrics">
         <HomeKpiCard
-          icon={Building2}
-          title="Programs in database"
-          value={totalPrograms}
+          icon={Buildings}
+          title="Programs"
+          value={isLoading ? '—' : programs.length}
           subtitle="Across 3 countries"
           accentClass="home-kpi-icon-programs"
         />
         <HomeKpiCard
-          icon={ShieldCheck}
-          title="Verified records"
-          value="100%"
-          subtitle="Updated from source data"
+          icon={GraduationCap}
+          title="Universities"
+          value={isLoading ? '—' : universities.length}
+          subtitle="In our database"
           accentClass="home-kpi-icon-verified"
         />
         <HomeKpiCard
-          icon={Globe2}
-          title="Countries covered"
+          icon={GlobeSimple}
+          title="Countries"
           value="3"
-          subtitle="Taiwan, Thailand, Singapore"
+          subtitle="Taiwan · Thailand · Singapore"
           accentClass="home-kpi-icon-countries"
         />
         <HomeKpiCard
-          icon={CalendarDays}
-          title="Last data refresh"
-          value="3/May/2026"
-          subtitle="Up to date"
+          icon={Coins}
+          title="Starting from"
+          value={isLoading ? '—' : minCostDisplay}
+          subtitle="Lowest yearly program cost"
           accentClass="home-kpi-icon-refresh"
         />
       </section>
@@ -212,90 +270,91 @@ function HomePage() {
       <section className="home-figma-grid">
         <section className="panel home-search-panel">
           <div className="panel-heading">
-            <h2>University Explorer</h2>
-            <p>Search by university name or major across Taiwan, Thailand, and Singapore.</p>
+            <h2>Find a university</h2>
+            <p>Search by university or program.</p>
           </div>
 
-          <div className="home-search-bar">
-            <div className="home-search-badge">
-              <IconImage src={logoSrc} className="home-search-logo" alt="" />
+          {/* Search bar + dropdown — results float as overlay, never push panel height */}
+          <div className="home-search-container" ref={searchRef}>
+            <div className="home-search-bar">
+              <MagnifyingGlass className="home-search-icon" size={18} weight="regular" aria-hidden="true" />
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === 'Escape' && setSearchTerm('')}
+                placeholder="Search university or program"
+                aria-label="Search university or program"
+              />
             </div>
-            <input
-              type="search"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search university or major"
-              aria-label="Search university or major"
-            />
+
+            {searchTerm.trim() ? (
+              <div className="home-search-dropdown" role="listbox" aria-label="Search results">
+                {searchResults.length ? (
+                  searchResults.map((program) => (
+                    <Link
+                      key={program.program_id}
+                      className="home-search-result"
+                      to={`/programs/${program.program_id}`}
+                      onClick={() => { saveSearch(searchTerm); setSearchTerm('') }}
+                      role="option"
+                    >
+                      <span className="home-search-result-name">{program.university_name}</span>
+                      <span className="home-search-result-meta">
+                        {program.major_name} · {program.degree_level} · {COUNTRY_NAMES[program.country_id] ?? program.country_id}
+                      </span>
+                    </Link>
+                  ))
+                ) : (
+                  <p className="home-search-empty">No results for &ldquo;{searchTerm.trim()}&rdquo;</p>
+                )}
+              </div>
+            ) : null}
           </div>
 
           {error ? <p className="error-text">{error}</p> : null}
 
-          {!searchTerm.trim() ? (
-            <>
-              {recentSearches.length ? (
-                <div className="recent-searches">
-                  <p className="home-mini-label">Recent searches</p>
-                  <div className="recent-search-chips">
-                    {recentSearches.map((term) => (
-                      <button
-                        key={term}
-                        className="recent-search-chip"
-                        onClick={() => setSearchTerm(term)}
-                        type="button"
-                      >
-                        {term}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-              <p className="muted-text">
-                {programs.length
-                  ? `${programs.length} programs loaded — type a university or major to search.`
-                  : 'Loading program data…'}
-              </p>
-            </>
-          ) : searchResults.length ? (
-            <div className="search-results">
-              {searchResults.map((program) => (
-                <Link
-                  key={program.program_id}
-                  className="search-result-card"
-                  to={`/programs/${program.program_id}`}
-                  onClick={() => saveSearch(searchTerm)}
-                >
-                  <strong>{program.university_name}</strong>
-                  <span>{program.major_name}</span>
-                  <span>{`${program.degree_level} • ${program.instruction_language} • ${COUNTRY_NAMES[program.country_id] ?? program.country_id}`}</span>
-                </Link>
-              ))}
+          {/* Static content — always visible, never changes when typing */}
+          {recentSearches.length ? (
+            <div className="recent-searches">
+              <p className="home-mini-label">Recent searches</p>
+              <div className="recent-search-chips">
+                {recentSearches.map((term) => (
+                  <button
+                    key={term}
+                    className="recent-search-chip"
+                    onClick={() => setSearchTerm(term)}
+                    type="button"
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
             </div>
-          ) : (
-            <p className="empty-state">
-              No programs match &ldquo;{searchTerm.trim()}&rdquo; — try a different university or major name.
-            </p>
-          )}
+          ) : null}
+          <p className="muted-text">
+            {programs.length ? `${programs.length} programs — type to search.` : 'Loading…'}
+          </p>
         </section>
 
         <section className="panel home-actions-panel">
           <div className="panel-heading">
             <h2>Where to start</h2>
-            <p>Not sure which university fits? Let the tools guide you.</p>
+            <p>Pick a tool to get started.</p>
           </div>
 
           <nav className="home-action-cards">
             <Link className="home-action-card" to="/decision-hub/recommendation">
               <span className="home-action-card-title">Get a recommendation</span>
-              <span className="home-action-card-desc">Answer a few questions and get matched to programs that fit your budget and grades.</span>
+              <span className="home-action-card-desc">Answer a few questions, get matched.</span>
             </Link>
             <Link className="home-action-card" to="/decision-hub/compare">
               <span className="home-action-card-title">Compare programs</span>
-              <span className="home-action-card-desc">Side-by-side view of costs, entry requirements, and language of instruction.</span>
+              <span className="home-action-card-desc">Side-by-side costs and requirements.</span>
             </Link>
             <Link className="home-action-card" to="/decision-hub/cost-calculator">
               <span className="home-action-card-title">Check costs</span>
-              <span className="home-action-card-desc">Calculate realistic yearly expenses including tuition, living, and insurance.</span>
+              <span className="home-action-card-desc">Estimate tuition, living, insurance.</span>
             </Link>
           </nav>
         </section>
@@ -303,32 +362,89 @@ function HomePage() {
         <aside className="panel home-leaderboard-panel">
           <div className="panel-heading">
             <h2>Best Value Universities</h2>
-            <p>Ranked by cost, GPA, and IELTS accessibility. Lower on all three = higher score.</p>
+            <p>Lower cost · GPA · IELTS = higher score.</p>
           </div>
 
           {valueLeaderboard.length ? (
             <div className="value-leaderboard">
-              {valueLeaderboard.map((item, index) => (
-                <div key={item.university_id} className="value-leaderboard-row">
-                  <span className="value-leaderboard-rank">{index + 1}</span>
-                  <div className="value-leaderboard-info">
-                    <span className="value-leaderboard-name">{item.university_name}</span>
-                    <span className="value-leaderboard-meta">
-                      {formatLeaderboardCost(item.yearly_cost, item.currency, displayCurrency)}
-                      {' · GPA '}
-                      {item.min_gpa === 0 ? '—' : item.min_gpa}
-                      {' · IELTS '}
-                      {item.ielts_min === 0 ? '—' : item.ielts_min}
-                    </span>
-                  </div>
-                  <span className="value-leaderboard-score">{item.value_score}</span>
-                </div>
-              ))}
+              {valueLeaderboard.map((item, index) => {
+                const website = universityMap[item.university_id]?.official_website
+                return website ? (
+                  <a
+                    key={item.university_id}
+                    className="value-leaderboard-row"
+                    href={website}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <span className="value-leaderboard-rank">{index + 1}</span>
+                    <div className="value-leaderboard-info">
+                      <span className="value-leaderboard-name">{item.university_name}</span>
+                      <span className="value-leaderboard-meta">
+                        {formatLeaderboardCost(item.yearly_cost, item.currency, displayCurrency)}
+                        {' · GPA '}
+                        {item.min_gpa === 0 ? '—' : item.min_gpa}
+                        {' · IELTS '}
+                        {item.ielts_min === 0 ? '—' : item.ielts_min}
+                      </span>
+                    </div>
+                    <span className="value-leaderboard-score">{item.value_score}</span>
+                  </a>
+                ) : (
+                  <Link
+                    key={item.university_id}
+                    className="value-leaderboard-row"
+                    to={`/programs/${item.program_id}`}
+                  >
+                    <span className="value-leaderboard-rank">{index + 1}</span>
+                    <div className="value-leaderboard-info">
+                      <span className="value-leaderboard-name">{item.university_name}</span>
+                      <span className="value-leaderboard-meta">
+                        {formatLeaderboardCost(item.yearly_cost, item.currency, displayCurrency)}
+                        {' · GPA '}
+                        {item.min_gpa === 0 ? '—' : item.min_gpa}
+                        {' · IELTS '}
+                        {item.ielts_min === 0 ? '—' : item.ielts_min}
+                      </span>
+                    </div>
+                    <span className="value-leaderboard-score">{item.value_score}</span>
+                  </Link>
+                )
+              })}
             </div>
           ) : (
             <p className="empty-state">Value ranking will appear after data loads.</p>
           )}
         </aside>
+
+        {/* Row 2 — Deadlines */}
+        <section className="panel home-deadlines-panel">
+          <div className="panel-heading">
+            <h2>Deadlines</h2>
+            <p>Application windows, closest first.</p>
+          </div>
+          {upcomingDeadlines.length ? (
+            <div className="home-deadline-list">
+              {upcomingDeadlines.map((p) => {
+                const isPast = new Date(p.application_deadline + 'T00:00:00') < new Date()
+                return (
+                  <Link key={p.program_id} className="home-deadline-row" to={`/programs/${p.program_id}`}>
+                    <div className="home-deadline-info">
+                      <span className="home-deadline-name">{p.major_name}</span>
+                      <span className="home-deadline-uni">{p.university_name}</span>
+                    </div>
+                    <span className={`home-deadline-badge ${isPast ? 'home-deadline-badge-past' : 'home-deadline-badge-upcoming'}`}>
+                      {formatDeadlineRelative(p.application_deadline)}
+                    </span>
+                  </Link>
+                )
+              })}
+            </div>
+          ) : (
+            <p className="empty-state">Deadline data loading…</p>
+          )}
+        </section>
+
 
       </section>
     </div>

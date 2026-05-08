@@ -1,4 +1,4 @@
-import { BadgeCheck, DollarSign, Landmark } from 'lucide-react'
+import { Bank, SealCheck, CurrencyDollar } from '@phosphor-icons/react'
 
 const phases = [
   {
@@ -43,17 +43,17 @@ const sourceCards = [
   {
     title: 'Official Sources',
     description: 'University websites, government portals, and regulatory bodies.',
-    icon: Landmark,
+    icon: Bank,
   },
   {
     title: 'Rankings',
     description: 'QS and THE rankings and accreditation databases.',
-    icon: BadgeCheck,
+    icon: SealCheck,
   },
   {
     title: 'Exchange Rates',
     description: 'Verified FX providers for accurate USD conversions.',
-    icon: DollarSign,
+    icon: CurrencyDollar,
   },
 ]
 

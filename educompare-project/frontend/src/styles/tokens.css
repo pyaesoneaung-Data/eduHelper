@@ -1,0 +1,189 @@
+/* ─── UniMatch Design Tokens ─────────────────────────────────────────────────
+   Single source of truth for all design decisions.
+   All other CSS files reference these variables — no raw values elsewhere.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* ─── Typography ─────────────────────────────────────────────────────────── */
+:root {
+  --font-base: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --text-2xl:  28px;
+  --text-xl:   22px;
+  --text-lg:   18px;
+  --text-md:   15px;
+  --text-base: 14px;
+  --text-sm:   13px;
+  --text-xs:   12px;
+  --text-2xs:  11px;
+
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  --leading-tight:  1.2;
+  --leading-snug:   1.4;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.6;
+}
+
+/* ─── Spacing (4px base grid) ────────────────────────────────────────────── */
+:root {
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+}
+
+/* ─── Border Radius ──────────────────────────────────────────────────────── */
+:root {
+  --radius-xs:   4px;
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+  --radius-pill: 999px;
+}
+
+/* ─── Shadows ────────────────────────────────────────────────────────────── */
+:root {
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.10);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.10);
+}
+
+/* ─── Sidebar anatomy ────────────────────────────────────────────────────── */
+:root {
+  --sidebar-width:          210px;
+  --sidebar-width-collapsed: 76px;
+  --sidebar-inset:          20px;
+  --sidebar-padding-x:      6px;
+  --sidebar-padding-top:    22px;
+  --sidebar-padding-bottom: 18px;
+  --sidebar-brand-px:       20px;
+  --sidebar-brand-gap:      10px;
+  --sidebar-gap:            16px;
+  --sidebar-nav-gap:        8px;
+  --sidebar-link-height:    46px;
+  --sidebar-link-px:        14px;
+  --sidebar-icon-size:      26px;
+  --sidebar-icon-label-gap: 12px;
+  --sidebar-sub-indent:     54px;
+  --sidebar-sub-gap:        2px;
+  --sidebar-sub-link-height: 34px;
+  --sidebar-sub-link-px:    10px;
+  --sidebar-footer-gap:     4px;
+  --sidebar-chevron-size:   16px;
+  --flyout-offset:          10px;
+}
+
+/* ─── Transitions ────────────────────────────────────────────────────────── */
+:root {
+  --transition-sidebar: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-label:   150ms ease;
+  --transition-chevron: 150ms ease;
+  --transition-group:   200ms ease;
+  --transition-ui:      150ms ease;
+}
+
+/* ─── Icon sizes ─────────────────────────────────────────────────────────── */
+:root {
+  --icon-sm: 16px;
+  --icon-md: 20px;
+  --icon-lg: 24px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* LIGHT MODE — color tokens                                                   */
+/* ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Surfaces */
+  --color-bg-base:     #e0e0e0;
+  --color-bg-surface:  #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-subtle:   #f2f2f2;
+
+  /* Text */
+  --color-text-primary:   #121212;
+  --color-text-secondary: #3a3a3a;
+  --color-text-muted:     #555555;
+  --color-text-disabled:  #a0a0a0;
+  --color-text-inverse:   #ffffff;
+
+  /* Borders */
+  --color-border-default: #d1d1d1;
+  --color-border-subtle:  #e5e5e5;
+  --color-border-strong:  #b0b0b0;
+
+  /* Primary action (placeholder — palette TBD) */
+  --color-primary:       #2d6aa0;
+  --color-primary-hover: #255a8a;
+  --color-primary-active: #1e4d78;
+  --color-primary-text:  #ffffff;
+  --color-primary-soft:  #e7f0f7;
+
+  /* Status */
+  --color-success: #2e7d4f;
+  --color-warning: #b45309;
+  --color-danger:  #bf4949;
+  --color-info:    #2d6aa0;
+
+  /* Sidebar — glass (light) */
+  --sidebar-bg:        rgba(255, 255, 255, 0.48);
+  --sidebar-border:    rgba(255, 255, 255, 1.0);
+  --sidebar-shadow:    0 16px 56px rgba(0, 0, 0, 0.18), 0 2px 10px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1.0), inset 1px 0 0 rgba(255, 255, 255, 0.60);
+  --sidebar-blur:      blur(20px) saturate(200%);
+  --sidebar-link-active-bg: rgba(0, 0, 0, 0.06);
+  --sidebar-link-hover-bg:  rgba(0, 0, 0, 0.04);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* DARK MODE — color tokens                                                    */
+/* ─────────────────────────────────────────────────────────────────────────── */
+:root[data-theme='dark'] {
+  /* Surfaces */
+  --color-bg-base:     #111111;
+  --color-bg-surface:  #1a1a1a;
+  --color-bg-elevated: #222222;
+  --color-bg-subtle:   #252525;
+
+  /* Text */
+  --color-text-primary:   #f3f3f3;
+  --color-text-secondary: #d0d0d0;
+  --color-text-muted:     #b1b1b1;
+  --color-text-disabled:  #555555;
+  --color-text-inverse:   #121212;
+
+  /* Borders */
+  --color-border-default: #313131;
+  --color-border-subtle:  #272727;
+  --color-border-strong:  #484848;
+
+  /* Primary action */
+  --color-primary:       #75a8d3;
+  --color-primary-hover: #8ab8de;
+  --color-primary-active: #5e96c4;
+  --color-primary-text:  #0d1f2d;
+  --color-primary-soft:  #1a2e3f;
+
+  /* Status */
+  --color-success: #5ab07a;
+  --color-warning: #f0a030;
+  --color-danger:  #ef9a9a;
+  --color-info:    #75a8d3;
+
+  /* Sidebar — solid elevated panel (dark, no glass) */
+  --sidebar-bg:        #1e1e1e;
+  --sidebar-border:    rgba(255, 255, 255, 0.06);
+  --sidebar-shadow:    0 8px 32px rgba(0, 0, 0, 0.40);
+  --sidebar-blur:      none;
+  --sidebar-link-active-bg: rgba(255, 255, 255, 0.07);
+  --sidebar-link-hover-bg:  rgba(255, 255, 255, 0.05);
+}

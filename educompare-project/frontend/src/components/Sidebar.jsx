@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { BarChart2, ChevronLeft, ChevronRight, Compass, House, Info, Scale, Settings, ShieldAlert } from 'lucide-react'
+import {
+  House,
+  Compass,
+  ChartBar,
+  Scales,
+  ShieldWarning,
+  Gear,
+  Info,
+  CaretRight,
+  CaretLeft,
+} from '@phosphor-icons/react'
 import { useAppShell } from '../context/AppShellContext'
 import logoLight from '../assets/logo/logo_light_without_text.svg'
 import logoDark from '../assets/logo/logo_dark_without_text.svg'
@@ -32,7 +42,7 @@ const navConfig = [
     key: 'analytics',
     type: 'group',
     label: 'Analytics',
-    icon: BarChart2,
+    icon: ChartBar,
     basePath: '/analytics',
     defaultTo: '/analytics',
     children: [
@@ -47,20 +57,20 @@ const navConfig = [
     type: 'link',
     to: '/legal',
     label: 'Legal Info',
-    icon: Scale,
+    icon: Scales,
   },
   {
     key: 'red-flags',
     type: 'link',
     to: '/red-flags',
     label: 'Red Flag Guide',
-    icon: ShieldAlert,
+    icon: ShieldWarning,
   },
 ]
 
 const footerLinks = [
-  { to: '/settings', label: 'Settings', icon: Settings },
-  { to: '/about', label: 'About', icon: Info },
+  { to: '/settings', label: 'Settings', icon: Gear },
+  { to: '/about',    label: 'About',    icon: Info },
 ]
 
 function Sidebar() {
@@ -79,7 +89,6 @@ function Sidebar() {
     return initial
   })
 
-  // Auto-expand group when navigating to a child path externally
   useEffect(() => {
     navConfig.forEach((item) => {
       if (item.type === 'group' && location.pathname.startsWith(item.basePath)) {
@@ -96,11 +105,7 @@ function Sidebar() {
   function toggleGroup(key) {
     setOpenGroups((prev) => {
       const next = new Set(prev)
-      if (next.has(key)) {
-        next.delete(key)
-      } else {
-        next.add(key)
-      }
+      next.has(key) ? next.delete(key) : next.add(key)
       return next
     })
   }
@@ -114,11 +119,14 @@ function Sidebar() {
     }
   }
 
-  function getLinkClass(to, end) {
-    const isActive = end
+  function isLinkActive(to, end) {
+    return end
       ? location.pathname === to
       : location.pathname === to || location.pathname.startsWith(`${to}/`)
-    return isActive ? 'sidebar-link sidebar-link-active' : 'sidebar-link'
+  }
+
+  function getLinkClass(to, end) {
+    return isLinkActive(to, end) ? 'sidebar-link sidebar-link-active' : 'sidebar-link'
   }
 
   return (
@@ -131,6 +139,7 @@ function Sidebar() {
       <nav className="sidebar-nav" aria-label="Primary navigation">
         {navConfig.map((item) => {
           if (item.type === 'link') {
+            const active = isLinkActive(item.to, item.end)
             const Icon = item.icon
             return (
               <NavLink
@@ -142,16 +151,16 @@ function Sidebar() {
                 onClick={closeSidebar}
                 className={() => getLinkClass(item.to, item.end)}
               >
-                <Icon className="sidebar-link-icon" aria-hidden="true" />
+                <Icon className="sidebar-link-icon" weight={active ? 'fill' : 'regular'} aria-hidden="true" />
                 <span className="sidebar-link-label">{item.label}</span>
               </NavLink>
             )
           }
 
           if (item.type === 'group') {
-            const Icon = item.icon
             const isOpen = openGroups.has(item.key)
             const isActive = location.pathname.startsWith(item.basePath)
+            const Icon = item.icon
 
             return (
               <div key={item.key} className="sidebar-group">
@@ -162,9 +171,9 @@ function Sidebar() {
                   aria-expanded={isOpen && !isSidebarCollapsed}
                   title={item.label}
                 >
-                  <Icon className="sidebar-link-icon" aria-hidden="true" />
+                  <Icon className="sidebar-link-icon" weight={isActive ? 'fill' : 'regular'} aria-hidden="true" />
                   <span className="sidebar-link-label">{item.label}</span>
-                  <ChevronRight
+                  <CaretRight
                     className={`sidebar-group-chevron${isOpen ? ' sidebar-group-chevron-open' : ''}`}
                     aria-hidden="true"
                   />
@@ -179,9 +188,7 @@ function Sidebar() {
                         end={child.end}
                         onClick={closeSidebar}
                         className={({ isActive: childActive }) =>
-                          childActive
-                            ? 'sidebar-sub-link sidebar-sub-link-active'
-                            : 'sidebar-sub-link'
+                          childActive ? 'sidebar-sub-link sidebar-sub-link-active' : 'sidebar-sub-link'
                         }
                       >
                         {child.label}
@@ -190,7 +197,6 @@ function Sidebar() {
                   </div>
                 ) : null}
 
-                {/* Fly-out panel — only visible in collapsed mode on hover (CSS-driven) */}
                 <div className="sidebar-flyout" aria-hidden="true">
                   <p className="sidebar-flyout-title">{item.label}</p>
                   <div className="sidebar-flyout-divider" />
@@ -201,9 +207,7 @@ function Sidebar() {
                       end={child.end}
                       onClick={closeSidebar}
                       className={({ isActive: childActive }) =>
-                        childActive
-                          ? 'sidebar-flyout-link sidebar-flyout-link-active'
-                          : 'sidebar-flyout-link'
+                        childActive ? 'sidebar-flyout-link sidebar-flyout-link-active' : 'sidebar-flyout-link'
                       }
                     >
                       {child.label}
@@ -220,6 +224,7 @@ function Sidebar() {
 
       <div className="sidebar-footer">
         {footerLinks.map((link) => {
+          const active = isLinkActive(link.to, false)
           const Icon = link.icon
           return (
             <NavLink
@@ -230,7 +235,7 @@ function Sidebar() {
               onClick={closeSidebar}
               className={() => getLinkClass(link.to, false)}
             >
-              <Icon className="sidebar-link-icon" aria-hidden="true" />
+              <Icon className="sidebar-link-icon" weight={active ? 'fill' : 'regular'} aria-hidden="true" />
               <span className="sidebar-link-label">{link.label}</span>
             </NavLink>
           )
@@ -243,8 +248,8 @@ function Sidebar() {
           title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isSidebarCollapsed
-            ? <ChevronRight className="sidebar-collapse-icon" aria-hidden="true" />
-            : <ChevronLeft className="sidebar-collapse-icon" aria-hidden="true" />
+            ? <CaretRight className="sidebar-collapse-icon" aria-hidden="true" />
+            : <CaretLeft  className="sidebar-collapse-icon" aria-hidden="true" />
           }
           <span className="sidebar-link-label">Collapse</span>
         </button>

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { translations } from '../i18n/translations'
 
 const THEME_STORAGE_KEY = 'unimatch-theme'
@@ -56,6 +56,12 @@ export function AppShellProvider({ children }) {
     window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(isSidebarCollapsed))
   }, [isSidebarCollapsed])
 
+  // Stable references — must not be recreated when isSidebarOpen changes,
+  // otherwise the useEffect in LayoutFrame (which has closeSidebar in its deps)
+  // would fire every time the sidebar opens and immediately close it again.
+  const closeSidebar = useCallback(() => setIsSidebarOpen(false), [])
+  const toggleSidebar = useCallback(() => setIsSidebarOpen((current) => !current), [])
+
   const value = useMemo(
     () => ({
       theme,
@@ -69,14 +75,14 @@ export function AppShellProvider({ children }) {
       cycleLanguage: () =>
         setLanguage((current) => (current === 'en' ? 'zh' : 'en')),
       isSidebarOpen,
-      closeSidebar: () => setIsSidebarOpen(false),
-      toggleSidebar: () => setIsSidebarOpen((current) => !current),
+      closeSidebar,
+      toggleSidebar,
       isSidebarCollapsed,
       toggleSidebarCollapsed: () => setIsSidebarCollapsed((current) => !current),
       isAdmin,
       t: (key, fallback = key) => getTranslationValue(language, key) ?? fallback,
     }),
-    [theme, language, currency, isSidebarOpen, isSidebarCollapsed, isAdmin],
+    [theme, language, currency, isSidebarOpen, isSidebarCollapsed, isAdmin, closeSidebar, toggleSidebar],
   )
 
   return <AppShellContext.Provider value={value}>{children}</AppShellContext.Provider>

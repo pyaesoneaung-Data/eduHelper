@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { getProgramDetail } from '../api/api'
 import { useAppShell } from '../context/AppShellContext'
 import { convertCurrency } from '../utils/currency'
@@ -215,9 +215,9 @@ function ProgramDetailPage() {
 
       {data ? (
         <div className="program-detail-actions">
-          <Link to="/decision-hub/recommend" className="btn-secondary">← Back to recommendations</Link>
+          <Link to="/decision-hub/recommendation" className="btn-secondary">← Back to recommendations</Link>
           <Link to="/decision-hub/compare" className="btn-secondary">Compare programs →</Link>
-          <Link to="/decision-hub/calculator" className="btn-secondary">Cost calculator →</Link>
+          <Link to="/decision-hub/cost-calculator" className="btn-secondary">Cost calculator →</Link>
         </div>
       ) : null}
     </div>

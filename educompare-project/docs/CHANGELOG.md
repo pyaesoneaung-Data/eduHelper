@@ -5,6 +5,653 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 132. Frontend — remove unused lucide-react, patch axios vulnerability
+
+**Files changed:** `package.json`, `package-lock.json`
+
+- `lucide-react` uninstalled — was listed as a dependency but had zero imports anywhere in `src/`. Removing it shrinks the install footprint by 1 package.
+- `axios` upgraded `1.15.0` → `1.16.0` via `npm audit fix` — resolves 13 reported CVEs (prototype pollution gadgets, CRLF injection, SSRF bypass, etc.). The `^1.15.0` range in `package.json` is unchanged; the lock file now pins `1.16.0`. `npm audit` reports 0 vulnerabilities.
+
+**Note for collaborators:** Just run `npm install` after pulling — all dependencies are already in `package.json`. No manual installs needed.
+
+---
+
+### 131. Overall optimization audit — no issues found
+
+**Files changed:** none
+
+Reviewed all pages and components for common runtime issues:
+- All imports verified (no missing or unused imports in any page)
+- All `<Link>` routes verified against `App.jsx` route tree — all paths resolve
+- No `console.log` debug statements or TODO/FIXME comments found in production page files
+- React `key` props present on all list renders in `HomePage.jsx`
+- `universityMap[item.university_id]?.official_website` lookup confirmed safe: `universityMap` is built from `/universities` which returns `official_website` via `UniversitySchema`
+- Leaderboard fallback path (`<Link to program detail>`) covers the edge case where a university has no `official_website` in the database
+
+---
+
+### 130. ProgramDetailPage blank — missing Link import + wrong routes; leaderboard → official website
+
+**Files changed:** `ProgramDetailPage.jsx`, `HomePage.jsx`
+
+**ProgramDetailPage blank page (runtime crash):**
+Root cause: `<Link>` was used in the bottom action buttons (lines 218–220) but `Link` was never imported from `react-router-dom`. This caused a `ReferenceError` at render time, producing a blank page whenever any program detail link was clicked. Fix: added `Link` to the `react-router-dom` import.
+
+Additionally, two of the three bottom button routes were wrong:
+- `/decision-hub/recommend` → `/decision-hub/recommendation` (matches `App.jsx` route)
+- `/decision-hub/calculator` → `/decision-hub/cost-calculator` (matches `App.jsx` route)
+
+**Leaderboard → university official website:**
+Changed leaderboard rows from `<Link to="/programs/:id">` (program detail page) to `<a href={official_website} target="_blank" rel="noreferrer">` (external university site). Implementation: looks up `universityMap[item.university_id]?.official_website` — `universityMap` is already loaded in `HomePage` from the cached `/universities` endpoint, and `UniversitySchema` includes `official_website`. Fallback: if no `official_website` exists for a university (edge case), the row falls back to the internal program detail `<Link>`. This way all 5 leaderboard entries always have a working link.
+
+---
+
+### 129. Home page — search dropdown overlay, leaderboard links, deadline hover
+
+**Files changed:** `HomePage.jsx`, `index.css`
+
+**Search dropdown (was expanding all panels):**
+Root cause: search results were rendered inline inside the `.home-search-panel` flex column, making the panel grow and forcing the CSS grid row to expand, which also grew the leaderboard panel. Fix: wrap the search bar and results in `.home-search-container` (existing CSS: `position: relative`) and render results in `.home-search-dropdown` (existing CSS: `position: absolute; top: calc(100%+4px); z-index: 50`). The panel height now stays exactly 360px regardless of result count. Verified: `dropdownH = 350px` with 5 results open, `searchPanelH = 360px`, `docH = 900px` — zero overflow.
+
+New behaviour:
+- Typing → results appear as a floating card below the search bar (uses existing `.home-search-result` / `.home-search-result-name` / `.home-search-result-meta` / `.home-search-empty` CSS).
+- Clicking a result → navigates + saves to recent searches + closes dropdown.
+- Pressing Escape → clears search term / closes dropdown.
+- Clicking anywhere outside the search container → closes dropdown (`mousedown` listener via `useRef` + `useEffect`).
+- Recent searches and program count remain always visible in the panel (not hidden while typing).
+
+**Leaderboard rows — now clickable links:**
+Changed `<div className="value-leaderboard-row">` → `<Link to={'/programs/${item.program_id}'}…>`. The `/analytics/best-value-programs` API confirmed it returns `program_id` for each entry. Added `text-decoration: none; color: inherit; cursor: pointer; transition: background` to `.value-leaderboard-row` and a `:hover { background: var(--color-primary-soft) }` state.
+
+**Deadline cards — improved hover feedback:**
+Added `background: var(--color-primary-soft); cursor: pointer` to `.home-deadline-row:hover`. The border-color change alone was too subtle; the background tint now makes the interactive state clear.
+
+**`useRef` added** to imports; `searchRef` used for click-outside detection.
+
+---
+
+### 128. Sidebar expanded width reduced 240px → 210px
+
+**Files changed:** `styles/tokens.css`
+
+Changed `--sidebar-width` from `240px` to `210px`. All sidebar items (longest: "Red Flag Guide" at ~150px) fit comfortably within the new 182px content area. The 30px reduction gives the main content area 30px extra width when the sidebar is expanded, reducing pressure on panel columns at narrow viewports. Collapsed width (76px) and all inset/padding tokens unchanged. Verified: `document.scrollHeight === 900` in both collapsed and expanded states at 1440×900.
+
+---
+
+### 127. Home page — sidebar-aware layout, leaderboard readability, deadline cards
+
+**Files changed:** `HomePage.jsx`, `index.css`
+
+**Problems addressed:**
+1. Sidebar expanded (240px) caused page to scroll — content narrowed by 164px, KPI row wrapped, adding ~17px+ overflow.
+2. Deadline cards had unequal widths (136/152/136/224px) due to `1fr` respecting content min-width.
+3. Leaderboard text used `overflow-wrap: break-word` — names wrapped at narrow widths, adding variable height.
+4. Dead space at bottom of leaderboard panel (rows were compact at top, ~315px empty below).
+5. Action card descriptions were 2 lines at typical widths, wasting vertical space.
+
+**CSS changes (`index.css`):**
+- `.home-leaderboard-panel`: kept `grid-row: 1 / 3` (spanning both grid rows — this is critical for keeping page height stable; moving it to row 1 only increased row 1 height to 515px and caused overflow).
+- `.home-deadlines-panel`: kept `grid-column: 1 / 3` (cols 1+2 alongside leaderboard).
+- `.home-deadline-list`: `repeat(4, 1fr)` → `repeat(3, minmax(0, 1fr))` — 3 equal-width cards, `minmax(0,...)` forces equal tracks regardless of content.
+- `.value-leaderboard`: replaced `gap: 6px` with `flex: 1; justify-content: space-between` — rows now fill the full panel height evenly, eliminating the dead space at the bottom. Removed the ≥1920px `gap` override for this element.
+- `.value-leaderboard-row`: `padding: 10px 12px` → `14px 12px` for more breathing room.
+- `.value-leaderboard-name`: `font-size: 0.88rem; overflow-wrap: break-word` → `font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis` — larger, single-line, width-stable.
+- `.value-leaderboard-meta`: `font-size: 0.75rem` → `0.8rem`.
+- `.home-leaderboard-panel` gap: `22px` → `14px` (tighter heading-to-rows spacing).
+
+**JSX changes (`HomePage.jsx`):**
+- Action card descriptions shortened to guaranteed 1-line:
+  - "Answer a few questions, get matched programs." → "Answer a few questions, get matched."
+  - "Side-by-side costs, requirements, and language." → "Side-by-side costs and requirements."
+  - "Estimate yearly costs — tuition, living, and insurance." → "Estimate tuition, living, insurance."
+- Deadline count: `.slice(0, 4)` → `.slice(0, 3)`.
+
+**Result:** `document.scrollHeight === 900 === window.innerHeight` in both sidebar-collapsed (76px) and sidebar-expanded (280px margin) states. Verified at 1440×900.
+
+---
+
+### 126. Home page — fit in 900px viewport (height trimming)
+
+**Files changed:** `HomePage.jsx`, `index.css`
+
+**Problem:** Homepage overflowed by 104px at 1440×900 (a common MacBook resolution). Two root causes: the trust strip added 46px of unnecessary height; two panel subtitles wrapped to 2 lines adding 24px to grid row 1.
+
+**Changes:**
+
+- `HomePage.jsx` — removed trust strip section (`"All data comes straight from official university websites and government portals."`) entirely. Shortened two panel subtitles from 2-line to 1-line:
+  - "Where to start": `"Pick a tool to narrow down your options."` → `"Pick a tool to get started."`
+  - "Find a university": `"Search by university or program name."` → `"Search by university or program."`
+
+- `index.css` — three spacing reductions:
+  - `.page-shell` bottom padding: `42px` → `16px` (saves 26px)
+  - `.page-stack` gap: `22px` → `16px` (saves 6px — now 1 gap with trust strip removed)
+  - `.home-kpi-card` padding: `18px` → `14px` (saves 8px on KPI row height)
+
+**Result:** `document.scrollHeight === window.innerHeight === 900` — exact fit at 1440×900, zero overflow. Verified light and dark mode.
+
+---
+
+### 125. Home page row 2 — simplify to single wide Deadlines panel
+
+**Files changed:** `HomePage.jsx`, `index.css`
+
+Removed the "By Destination" country panel (added in #124) after user feedback that two row-2 panels made the page too tall. Replaced with a single `home-deadlines-panel` spanning both columns (`grid-column: 1 / 3; grid-row: 2`).
+
+Deadline cards use a horizontal 4-column grid layout (`grid-template-columns: repeat(4, 1fr)`): wide but short. Each card shows program name (2-line clamp), university name, and a date badge (green for upcoming, muted for past). `upcomingDeadlines` useMemo: future deadlines sorted ascending, then most recent past deadlines — sliced to 4. `formatDeadlineRelative` helper: "Today" / "Nd" / "Nd ago" / "MMM D". `.home-deadlines-panel .panel-heading` added to center-align selector.
+
+---
+
+### 124. Home page row 2 — Deadlines + By Destination panels
+
+**Files changed:** `HomePage.jsx`, `index.css`
+
+**New panels added (grid row 2, columns 1 and 2):**
+
+`home-deadlines-panel` (col 1) — Shows 4 application deadlines sorted: upcoming first (soonest first), then most recent past. Each row links to the program detail page. Badge shows relative time: green "19d" for upcoming, muted "8d ago"/"Apr 17" for past. Uses `enrichedPrograms` (already loaded) — no new API calls. Helper `formatDeadlineRelative()` handles today/days/date formatting.
+
+`home-country-panel` (col 2) — Three stat cards (🇹🇼 Taiwan · 🇹🇭 Thailand · 🇸🇬 Singapore) each showing: flag, country name, university count, starting cost in USD. Data derived from existing `universities` + `rawValueData` + `universityMap`. `countryStats` useMemo computes per-country min cost via USD conversion.
+
+**CSS:** `.home-deadlines-panel` and `.home-country-panel` placed at `grid-row: 2` cols 1 and 2. CSS Grid `align-items: stretch` (default) keeps both panels at identical height (verified: 388px each, same `offsetTop`). Leaderboard already spans `grid-row: 1 / 3` — no change needed. Full token-based styling: `var(--radius-sm/md/pill)`, `var(--color-*)`, `var(--text-*)`, `var(--transition-ui)`. Mobile: new panels added to `grid-column: auto; grid-row: auto` reset in `@media (max-width: 1120px)`. Panel headings added to center-align selector. Verified light and dark mode.
+
+---
+
+### 123. Center-align headings on all three home panels
+
+**Files changed:** `index.css`
+
+Extended the existing `.home-search-panel .panel-heading` center rule to cover all three home panels — merged into a single grouped selector:
+`.home-search-panel .panel-heading, .home-actions-panel .panel-heading, .home-leaderboard-panel .panel-heading { text-align: center; align-items: center; }`
+
+---
+
+### 122. Large-screen responsive layout — centering + topbar inner wrapper
+
+**Files changed:** `index.css`, `Layout.jsx`
+
+**Root cause:** `page-shell` had `width: min(100%, 1520px)` with no `margin-inline: auto` — content was left-aligned. At 2560px this left 924px of dead space on the right. The topbar spanned the full `dashboard-main` width (2444px at 2560px), putting the greeting and controls at opposite extremes.
+
+**Fixes:**
+
+`page-shell` — added `margin-inline: auto`, increased max from 1520px → 1680px. Content now centers within the main area at any width. Verified: at 1920px = 62px balanced margin each side; at 2560px = 382px balanced margin each side.
+
+`Layout.jsx` + `index.css` — wrapped all topbar content in `<div className="topbar-inner">`. The inner gets `flex: 1; max-width: 1680px; margin-inline: auto; padding-inline: 26px` — same max-width as page-shell so greeting and controls always align above the content column. Removed horizontal padding from `.dashboard-topbar` itself; moved to `.topbar-inner`. Mobile overrides (≤1120px, ≤760px) updated to target `.topbar-inner { padding-inline: 16px }` instead of `.dashboard-topbar`.
+
+**New breakpoints:**
+
+`@media (min-width: 1600px)` — page-shell padding 36px, page-stack gap 28px, kpi-row gap 20px, figma-grid gap 12px, topbar-inner padding 36px.
+
+`@media (min-width: 1920px)` — page-shell padding 48px, page-stack gap 32px, kpi-row gap 24px, figma-grid gap 16px, topbar-inner padding 48px, kpi-card padding 22px, leaderboard row gap 8px.
+
+---
+
+### 121. Home page text reduction + leaderboard panel width + Top 5
+
+**Files changed:** `index.css`, `HomePage.jsx`
+
+**Grid columns rebalanced:**
+- Old: `1.25fr 1.25fr 0.9fr` — leaderboard was cramped at 329px at 1440px viewport.
+- New: `1fr 1fr 1.2fr` — leaderboard now 471px, other two equalized at 393px each.
+
+**Leaderboard: Top 5 instead of Top 6** — `buildValueLeaderboard` slice changed from 6 → 5.
+
+**Leaderboard token fixes:** `.value-leaderboard-row` uses `var(--color-bg-subtle)` and `var(--radius-sm)`; rank/score use font/weight/color tokens.
+
+**Panel text reduced:**
+- "Find a university" subtitle: → "Search by university or program name."
+- Loaded hint: → "{n} programs — type to search."
+- Empty state: → "No results for "…"."
+- "Where to start" subtitle: → "Pick a tool to narrow down your options."
+- Recommendation desc: → "Answer a few questions, get matched programs."
+- Compare desc: → "Side-by-side costs, requirements, and language."
+- Cost desc: → "Estimate yearly costs — tuition, living, and insurance."
+- Leaderboard subtitle: → "Lower cost · GPA · IELTS = higher score."
+
+---
+
+### 120. Design token pass — panels + search panel copy & icon
+
+**Files changed:** `index.css`, `HomePage.jsx`
+
+**Panel tokenization (`index.css`):**
+- `.panel` / `.info-card` / `.result-card`: replaced hardcoded `border-radius: 0` → `var(--radius-lg)`, `box-shadow: var(--shadow)` (was `none`) → `var(--shadow-sm)`, `border` → `var(--color-border-default)`, padding → `var(--space-6)`.
+- `.home-action-card`: added `border-radius: var(--radius-md)`, replaced hardcoded padding with `var(--space-3) var(--space-4)`, replaced legacy alias vars with direct token vars (`--color-border-default`, `--color-bg-subtle`, `--color-primary`, `--color-primary-soft`).
+- `.home-search-bar`: added `border-radius: var(--radius-sm)`, changed padding to use `var(--space-3)` both sides, replaced legacy aliases with token vars. Added `.home-search-icon` rule (`color: var(--color-text-muted)`).
+- `.search-result-card`: added `border-radius: var(--radius-sm)`, replaced all legacy vars with token vars, padding → `var(--space-2) var(--space-3)`.
+- `.recent-search-chip`: `border-radius: 999px` → `var(--radius-pill)`, font-size → `var(--text-xs)`, transition → `var(--transition-ui)`, all colors → token vars.
+- `.home-search-dropdown`: added `border-radius: var(--radius-sm)`, `box-shadow: 0 8px 24px rgba(…)` → `var(--shadow-md)`, colors → token vars.
+- Added `.home-search-panel .panel-heading { text-align: center; align-items: center; }` for centered heading.
+
+**Search panel copy & icon (`HomePage.jsx`):**
+- Title: "University Explorer" → "Find a university".
+- Description: "major" → "program".
+- Placeholder: "Search university or major" → "Search university or program".
+- Removed logo badge from search bar (`<IconImage>` + `logoLight`/`logoDark` imports removed).
+- Replaced with `<MagnifyingGlass size={18} weight="regular">` from Phosphor on the left, styled via `.home-search-icon`.
+- Removed unused `theme` destructure from `useAppShell`.
+
+---
+
+### 119. Home page panel order swap
+
+**Files changed:** `index.css`
+
+Swapped the grid positions of "Where to start" and "University Explorer" panels. "Where to start" is now column 1; "University Explorer" is now column 2. Updated `grid-column` on `.home-actions-panel` (1→1) and `.home-search-panel` (1→2).
+
+---
+
+### 118. KPI card dark mode theme fix
+
+**Files changed:** `index.css`
+
+**Root cause:** `.home-kpi-card` had a hardcoded `linear-gradient(white → off-white)` background and a `color-mix(…, white)` border — both ignored `data-theme='dark'` entirely, leaving cards bright white in dark mode. Icon accent classes (`-programs`, `-verified`, `-countries`, `-refresh`) also used hardcoded light-palette hex values.
+
+**Fixes:**
+- Card background: replaced hardcoded gradient with `var(--color-bg-surface)` (white in light, `#1a1a1a` in dark).
+- Card border: replaced `color-mix(…, white)` with `var(--color-border-default)`.
+- Card shadow: replaced hardcoded `rgba` with `var(--shadow-sm)`.
+- Added `:root[data-theme='dark']` overrides for all 4 icon accent classes — dark-tinted equivalents of each hue (blue, green, amber, purple).
+
+---
+
+### 117. KPI card responsive layout — no truncation at expanded sidebar
+
+**Files changed:** `index.css`, `HomePage.jsx`
+
+**Problem:** At medium desktop widths (1121–1400px) with the sidebar fully expanded, KPI card titles and values were wrapping to two lines or truncating due to insufficient card width.
+
+**Fix — CSS overflow guards:**
+- `.home-kpi-title`: added `white-space: nowrap; overflow: hidden; text-overflow: ellipsis` — prevents wrapping, clips gracefully.
+- `.home-kpi-value`: added `white-space: nowrap` — value never wraps.
+
+**Fix — two compact tiers scoped to expanded sidebar state only (`.dashboard-shell:not(.sidebar-collapsed)`):**
+- **Tier 1** `1250–1400px`: card padding 14px, icon 44×44px, value font 1.3rem, row gap 12px.
+- **Tier 2** `1121–1249px`: card padding 12px, icon 40×40px, value font 1.1rem, row gap 10px.
+- Collapsed sidebar state is unaffected — always uses full default styles.
+
+**Fix — card title shortening:** "Programs available" → "Programs", "Countries covered" → "Countries" (fewer characters = less overflow risk at narrow widths).
+
+**Verified:** At 1280px expanded sidebar, cards are 224px each — no title/value overflow. At 1200px expanded sidebar, cards are 206px each — no overflow.
+
+---
+
+### 116. Sizing pass + KPI card data fix
+
+**Files changed:** `HomePage.jsx`, `index.css`, `Layout.jsx`
+
+**NaN bug fixed (`minCostDisplay`):**
+- Root cause: `getPrograms()` / `/programs` endpoint has no `yearly_cost` or `currency` fields — cost data only exists in `rawValueData` from `/analytics/best-value-programs`. The useMemo was iterating `programs` (no cost fields) instead of `rawValueData`.
+- Secondary guard added: skip programs where `yearly_cost == null` or `!currency` before computing USD comparison — `null < Infinity` is `true` in JS (null coerces to 0), which caused a null-cost program to falsely "win" the minimum check.
+- Fixed to use `rawValueData` as the source; verified shows **7,212 USD** correctly.
+- Removed `/ yr` suffix from the value (subtitle already says "Lowest yearly program cost") — was causing text to wrap across two lines in the narrow card.
+
+**KPI card icon container (`index.css`):**
+- `.home-kpi-icon` width/height: **42px → 52px**, border-radius: **12px → 14px**.
+- Icon size in JSX: **22px → 28px**. Was 18px originally (43% fill of 42px container — visually weak). Now 28px in 52px container (54% fill — visually balanced with the 3-line text stack beside it).
+
+**Topbar toggle buttons (`index.css`, `Layout.jsx`):**
+- Height: **36px → 40px**
+- Font-size: `--text-sm` (13px) → **`--text-base` (14px)**
+- Padding: **0 13px → 0 15px**
+- Gap: **6px → 7px**
+- Icon size in JSX: **16px → 18px**
+- Mobile icon-only collapsed width: **40px → 44px**
+- Verified: USD button 87×40px, EN button 76×40px, theme button 50×40px.
+
+---
+
+### 115. Homepage KPI cards — replace admin metrics with student-facing data
+
+**File changed:** `HomePage.jsx`
+
+**Icon fix:**
+- Removed `strokeWidth={2}` from `HomeKpiCard` — this is a lucide-react prop and has no effect on Phosphor icons (dead code from migration).
+- Changed icon size: `18` → `22px`. Container is 42×42px; 18px only filled 43% of it — visually weak. 22px fills 52%, proper visual weight.
+- Added `weight="duotone"` — gives icons depth inside the colored badge containers.
+
+**Loading state:**
+- Added `isLoading` state (default `true`). Set to `false` in the `finally` block of `loadData` — covers both success and error paths.
+- Dynamic card values show `'—'` while data is in-flight. No more hardcoded `|| 15` fallback.
+
+**Cards replaced (admin → student-facing):**
+
+| Card | Before | After | Why |
+|------|--------|-------|-----|
+| 2 | Verified records — 100% (static claim) | **Universities** — `universities.length` | Real number from API, useful to students scoping options |
+| 4 | Last data refresh — 3/May/2026 (hardcoded) | **Starting from** — computed minimum yearly cost | Most actionable number for a student: what does entry actually cost? |
+
+**Starting from computation (`minCostDisplay`):**
+- Iterates `programs` array, finds the program with the lowest USD equivalent cost via `convertCurrency`.
+- Displays the raw amount in the user's preferred currency (USD or local).
+- Shows `'—'` while loading or if programs array is empty.
+- Respects `displayCurrency` from `useAppShell` — toggles with the topbar currency button.
+
+**Imports updated:** `ShieldCheck`, `CalendarDots` removed; `GraduationCap`, `Coins` added.
+
+---
+
+### 114. Topbar alignment fix + trust strip rewrite
+
+**Files changed:** `index.css`, `HomePage.jsx`
+
+**Topbar vertical alignment (root cause fixed):**
+- Root cause: `align-items: center` on `.dashboard-topbar` centered content at ~y=36px. The sidebar brand logo starts at `--sidebar-padding-top = 22px` and its visual center is at y=49px. The 13px gap made the greeting and logo appear on different visual levels — topbar content "floating up" relative to the sidebar.
+- Fix: Reverted to `align-items: flex-start` and set `padding: var(--sidebar-padding-top) 26px 20px` (22px top). Both the greeting and the sidebar logo now **start at y=22px from the top** — one consistent horizontal band across the full screen width.
+- Visual center math: `.topbar-start` (40px, centered internally) → center at y=42px. `.topbar-actions` (36px, centered internally) → center at y=40px. 2px difference — imperceptible.
+- Total topbar height: 22 (top) + 40 (content) + 20 (bottom) = **82px** — proportional to sidebar brand zone (22+54=76px).
+- Mobile ≤1120px override (`height: 56px; padding: 0 16px; align-items: center`) unchanged — not affected.
+
+**Trust strip rewrite (`HomePage.jsx`):**
+- Old: "Program records sourced directly from institutions — not agents, not aggregators." — stiff, passive, reads like a corporate spec.
+- New: "All data comes straight from official university websites and government portals — no agents, no middlemen." — active voice, names the actual sources, human tone.
+
+---
+
+### 113. Topbar — larger greeting + bigger toggle buttons
+
+**Files changed:** `Layout.jsx`, `index.css`
+
+**Greeting size:**
+- Added `isHomePage` flag in `LayoutFrame` (checks `pathname === '/'`).
+- Span gets `.topbar-section-greeting` modifier only on home route — keeps "Decision Hub", "Analytics" etc. at normal label size.
+- `.topbar-section-greeting`: `font-size: var(--text-2xl)` (28px), `font-weight: var(--weight-medium)`, `line-height: var(--leading-tight)` — prominent, welcoming.
+- `.topbar-section-label` base: bumped from `1rem` to `var(--text-md)` (15px) with `font-weight: medium` for all section labels.
+- Mobile ≤1120px: greeting overrides to `var(--text-lg)` (18px) to fit within the 56px fixed topbar height.
+
+**Toggle button size:**
+- Height: 32px → **36px**
+- Font size: `--text-xs` (12px) → **`--text-sm`** (13px)
+- Padding: `0 10px` → **`0 13px`**
+- Gap: 5px → **6px**
+- Icon size in JSX: 15px → **16px** (all three buttons)
+- Mobile icon-only collapsed width: 36px → **40px**
+
+**Topbar alignment:**
+- `align-items: flex-start` → **`align-items: center`** — toggle buttons now vertically center against the larger greeting text instead of pinning to the top edge.
+- Padding simplified: `18px 26px 10px` → `16px 26px` (uniform vertical).
+
+---
+
+### 112. Topbar redesign — Phosphor icons, greeting label, unified toggle buttons
+
+**Files changed:** `Layout.jsx`, `HomePage.jsx`, `AboutPage.jsx`, `BackButton.jsx`, `index.css`
+
+**Icon library migration (complete):**
+- Removed all `lucide-react` imports from the codebase. Every icon now comes from `@phosphor-icons/react`.
+- `Layout.jsx`: `Languages`, `Moon`, `Menu` → `Globe`, `Moon`, `Sun`, `List` (Phosphor)
+- `HomePage.jsx`: `Building2`, `CalendarDays`, `Globe2`, `ShieldCheck` → `Buildings`, `CalendarDots`, `GlobeSimple`, `ShieldCheck`
+- `AboutPage.jsx`: `BadgeCheck`, `DollarSign`, `Landmark` → `SealCheck`, `CurrencyDollar`, `Bank`
+- `BackButton.jsx`: `ArrowLeft` → `ArrowLeft` (same name, now Phosphor)
+
+**Topbar label — time-based greeting:**
+- Added `getGreeting()` — returns "Good morning" (0–11h), "Good afternoon" (12–17h), "Good evening" (18–23h).
+- `getSectionLabel` default return changed from `'Home'` to `getGreeting()`. All other section labels unchanged.
+
+**Topbar controls — unified compact toggle buttons:**
+- Removed the old verbose pattern: `<div class="topbar-utility-copy">` (stacked label + value text) + separate `<button class="topbar-icon-button">` for each control.
+- Replaced with single `<button class="topbar-toggle-btn">` per control: icon left, short text label right.
+  - Currency: `CurrencyDollar` icon + "USD" / "Local"
+  - Language: `Globe` icon + "EN" / "中"
+  - Theme: `Moon` (light mode) / `Sun` (dark mode) icon — fixes bug where Moon was always shown regardless of current theme
+- Mobile (≤760px): `.toggle-label` hidden, button collapses to 36×36px icon-only square.
+
+**CSS changes (`index.css`):**
+- Removed: `.topbar-utility-copy`, `.topbar-utility-label`, `.topbar-utility-value`, `.topbar-icon-button`, `.topbar-icon`, `.topbar-currency-symbol`
+- Removed `.topbar-icon-button` from the shared `primary-button` / `secondary-button` selector group
+- Added `.topbar-toggle-btn`: height 32px, `border-radius: var(--radius-sm)`, surface bg + border, gap 5px, `font-size: var(--text-xs)`, transitions on bg/border/color
+- Mobile query: `.toggle-label { display: none }` + `.topbar-toggle-btn { width: 36px; padding: 0; justify-content: center }` at ≤760px
+
+**Trust strip (`HomePage.jsx`):**
+- Shortened from 45-word mission statement to: "Program records sourced directly from institutions — not agents, not aggregators."
+
+---
+
+### 111. Critical bug fix — mobile sidebar drawer permanently broken (self-defeating useEffect loop)
+
+**Root cause:** `closeSidebar` was defined inside `useMemo` in `AppShellContext`. Since `isSidebarOpen` was in the `useMemo` dependency array, every time the sidebar opened (`isSidebarOpen` flipped to `true`), React recomputed the memo and created a **new `closeSidebar` function reference**. `LayoutFrame` has `useEffect(() => { closeSidebar() }, [location.pathname, closeSidebar])` — the new `closeSidebar` reference was a changed dep, so the effect immediately fired and called `closeSidebar()`, snapping `isSidebarOpen` back to `false`. The sidebar opened and closed in the same frame — visually appearing stuck, unclickable.
+
+**Fix (`AppShellContext.jsx`):** Extracted `closeSidebar` and `toggleSidebar` as `useCallback` hooks above the `useMemo`. Since both only call `setIsSidebarOpen` (a stable state-setter), their `useCallback` deps arrays are empty `[]` — the references never change. The `useEffect` in `LayoutFrame` no longer re-fires when the sidebar state changes, only when the route changes (as intended).
+
+**Additional mobile UX improvements (`index.css`):**
+- Mobile sidebar now slides from the screen edge (`left: 0`, `top: 0`, `bottom: 0`, `border-radius: 0 var(--radius-xl) var(--radius-xl) 0`). Previously used `left: 20px` inset which (a) looked wrong on mobile and (b) meant `translateX(-100%)` left the right edge at x=0, overlapping with the topbar's z-index shadow zone.
+- Hamburger button: 44×44px touch target (was 36×36, below Apple HIG / Material Design minimum), no border, transparent background — clean icon tap area. Added `-webkit-tap-highlight-color: transparent`.
+- Mobile topbar: gains `background: var(--color-bg-surface)`, `border-bottom: 1px solid var(--color-border-subtle)`, `height: 56px` at ≤1120px — clearly separated from page content, feels like a real navigation bar.
+- Topbar utility copy labels hidden on mobile (only icon buttons show) — topbar stays as a single compact row.
+
+**Verified:** Open ✓ · Close via nav tap ✓ · Close via overlay ✓ · No ghost edge ✓ · Desktop unaffected ✓
+
+**Files changed:** `frontend/src/context/AppShellContext.jsx`, `frontend/src/index.css`, `frontend/src/components/Layout.jsx`
+
+---
+
+### 110. Mobile topbar + drawer fixes — remove background gradient, fix hamburger, fix sidebar ghost
+
+**Reason:** Three issues found during responsive audit: (1) background radial gradients added to `.dashboard-shell` for glass effect bled into the main page content — removed per user request (no gradients on the main page). (2) Mobile "Menu" was a large unstyled text button (square corners, wrong size, looked broken). (3) Closed sidebar's right edge was still visible at mobile — `translateX(-100%)` only moved the sidebar by its own width, but `left: var(--sidebar-inset)` meant the right edge sat exactly at 20px (still on-screen).
+
+**Fixes:**
+
+1. **Shell background** (`index.css`): Reverted `.dashboard-shell` to plain `background: var(--color-bg-base)`. Glass surface cues (diagonal sheen on sidebar, white border, shadow) remain — they don't affect page colours.
+
+2. **Sidebar hidden translateX** (`index.css`, `@media max-width: 1120px`): Changed `translateX(-100%)` → `translateX(calc(-100% - var(--sidebar-inset)))`. This ensures the sidebar's right edge clears the viewport fully before `left: 20px` is taken into account. Also synced transition to `var(--transition-sidebar)` (220ms cubic-bezier) instead of hardcoded `0.2s ease`.
+
+3. **Mobile menu button** (`index.css`): Pulled `.mobile-menu-button` out of the shared topbar button group (which had `border-radius: 0` and large padding). Gave it its own rule: 36×36px, `border-radius: var(--radius-sm)`, `border: 1px solid var(--color-border-default)`, matching the dashboard token system.
+
+4. **Hamburger icon** (`Layout.jsx`): Replaced plain "Menu" text with `<MenuIcon size={18} />` (lucide-react `Menu`). Added `aria-label` and `title` for accessibility.
+
+5. **Mobile topbar layout** (`index.css`, `@media max-width: 760px`): Removed `flex-direction: column` — topbar stays as a single row on mobile. Hid `.topbar-utility-copy` (the Currency/Language/Theme text labels) on small screens so only icon buttons show, keeping the row compact (measured: topbar 60px tall, actions fit within 375px).
+
+**Verified:**
+- Mobile (375px): hamburger visible, no sidebar ghost, drawer opens/closes correctly, topbar fits in one row ✓
+- Tablet (768px): drawer mode, glass visible over content ✓
+- Desktop (1280px): hamburger hidden, full utility labels visible, sidebar glass correct ✓
+
+**Files changed:** `frontend/src/index.css`, `frontend/src/components/Layout.jsx`
+
+---
+
+### 109. Sidebar final polish — visible frosted glass effect + responsive audit
+
+**Reason:** Glass morphism was imperceptible. Background was flat `#e0e0e0` — blurring a solid color yields the same solid color, so `backdrop-filter` did nothing visible. Sidebar at `rgba(255,255,255,0.72)` blended to near-white (246/255) over grey, indistinguishable from a plain white card.
+
+**Root cause:** Three things must combine for glass to be visible: (1) translucent surface, (2) non-flat background behind it for the blur to work with, (3) glass surface cues (edge shimmer, diagonal sheen). All three were missing or weak.
+
+**Fix — three-layer approach:**
+1. **Shell background texture**: Added two radial gradients to `.dashboard-shell` — a cool blue-grey bloom at the top-left and a secondary at bottom-left. Positioned where the sidebar sits so `backdrop-filter: blur` has colour variation to work with.
+2. **Lower sidebar opacity**: `rgba(255,255,255,0.72)` → `rgba(255,255,255,0.48)`. The background tints now show through noticeably.
+3. **Glass surface cues on `.dashboard-sidebar`**: Added `linear-gradient(150deg, rgba(255,255,255,0.30) 0%, transparent 50%)` overlay — simulates light hitting the glass surface at an angle (top-left corner brighter). Sharpened border to `rgba(255,255,255,1.0)` (pure white edge). Strengthened shadow and added `inset 1px 0 0` left-edge highlight. Set `saturate(200%)` on backdrop-filter to amplify colours from behind.
+
+**Responsive audit (all passed):**
+- Desktop (1280px): fixed sidebar, content at correct margin ✓
+- Tablet (768px, <1120px breakpoint): sidebar hidden → drawer via Menu button, overlay with frosted glass clearly visible over content ✓
+- Mobile (375px): full-width content, drawer opens from left ✓
+- Dark mode: solid `#1e1e1e` panel unaffected by light-mode glass tokens ✓
+
+**What changed:**
+- `tokens.css`: `--sidebar-bg` 0.72→0.48, `--sidebar-border` 0.60→1.0 (full white), `--sidebar-shadow` stronger with left-edge inset, `--sidebar-blur` saturate 200%.
+- `index.css`: `.dashboard-shell` background gains two radial gradient blobs. `.dashboard-sidebar` background adds diagonal glass-sheen gradient layer.
+
+**Files changed:** `frontend/src/styles/tokens.css`, `frontend/src/index.css`
+
+---
+
+### 108. Sidebar polish round 6 — smooth collapse/expand animation (no more jumps)
+
+**Reason:** Logo "jumped" on expand and icons visibly snapped position on collapse. Both were caused by using `justify-content` to center elements in collapsed state — `justify-content` cannot be CSS-transitioned, so it snapped instantly.
+
+**Root cause:** Collapsed overrides used `justify-content: center; padding: 0; width: var(--sidebar-width-collapsed)` on buttons and `justify-content: center; padding: 0 6px` on the brand. On collapse, the moment the `.sidebar-collapsed` class was applied, `justify-content` flipped from `flex-start` → `center` and `padding` dropped from 14px → 0px at frame 0, then the sidebar width would animate from 240px → 76px. The icon would snap from its left-aligned 14px position to the center of the full 240px (≈107px) instantly, then animate slightly leftward over 220ms as the sidebar shrank — a very visible jump. On expand, the sidebar grew first, then `justify-content` flipped back, causing the logo to snap at the end.
+
+**Fix:** Replaced `justify-content`-based centering with `padding`-based centering. Icons/logo center purely via padding, which IS interpolatable. Added `padding` and `gap` to the transition lists on all affected elements.
+
+**Math:**
+- Brand: collapsed padding = (76px sidebar − 2px border − 54px logo) / 2 = **10px** per side
+- Buttons: nav inner = 76 − 2 − 12(nav-padding) = 62px; icon = 26px; padding = (62 − 26) / 2 = **18px** per side
+
+**What changed (`frontend/src/index.css`):**
+- `.sidebar-brand`: added `transition: padding var(--transition-sidebar), gap var(--transition-sidebar)`
+- `.sidebar-link`, `.sidebar-group-btn`, `.sidebar-collapse-btn`: added `padding + gap var(--transition-sidebar)` to existing transition
+- `.sidebar-collapsed .sidebar-brand`: removed `justify-content: center`, changed padding from `0 6px` → `0 10px`
+- `.sidebar-collapsed .sidebar-link/group-btn/collapse-btn`: removed `justify-content: center`, `width: var(--sidebar-width-collapsed)`, changed padding from `0` → `0 18px`
+- Removed `align-items: center` from `.sidebar-collapsed .sidebar-nav, .sidebar-footer` (no longer needed)
+
+**Verification:** All 8 icons measured at `diff: 0` (perfectly centered) in collapsed state. Logo also `diff: 0`.
+
+**Files changed:** `frontend/src/index.css`
+
+---
+
+### 107. Sidebar polish round 5 — icon gap, bigger logo, smooth bidirectional collapse animation
+
+**Reason:** Icons needed more separation, logo still too small, and the collapse animation was abrupt (expand was smooth but collapse was not).
+
+**Root cause of asymmetric animation:** The old approach used `width: 0; flex: none` to hide labels on collapse. These properties snap instantly — no transition possible on `flex` and `width: auto→0`. So on collapse, all text disappeared at frame 0 while the sidebar slowly shrank for 220ms (empty container collapsing). On expand, `flex: 1` and `opacity` re-applied while the sidebar grew — content faded in as the sidebar expanded, making it feel smooth. The expand/collapse were using fundamentally different mechanisms.
+
+**Fix:** Switched to `max-width` transitions for `.sidebar-brand-name`, `.sidebar-link-label`, and `.sidebar-group-chevron`. Both collapsed (`max-width: 0`) and expanded (`max-width: 160px/200px/chevron-size`) are definite px values, so CSS can interpolate them. Transition set to `var(--transition-sidebar): 220ms cubic-bezier(0.4,0,0.2,1)` — same easing and duration as the sidebar width — so labels shrink in perfect sync with the sidebar on both directions.
+
+**What changed:**
+- `tokens.css`: `--sidebar-nav-gap` 4→8px.
+- `index.css`: `.sidebar-logo` 48→54px. `.sidebar-brand-name` added `max-width: 160px; overflow: hidden` and changed transition to `opacity + max-width var(--transition-sidebar)`. `.sidebar-link-label` added `max-width: 200px` and changed transition to `opacity + max-width var(--transition-sidebar)`. `.sidebar-group-chevron` added `max-width: var(--sidebar-chevron-size); overflow: hidden` and added `max-width + margin-left var(--transition-sidebar)` to its transitions. Updated `.sidebar-collapsed` rule to use `max-width: 0` instead of `width: 0; flex: none`.
+
+**Files changed:** `frontend/src/styles/tokens.css`, `frontend/src/index.css`
+
+---
+
+### 106. Sidebar polish round 4 — hover breathing room, brand proportions, collapsed logo centering
+
+**Reason:** Three remaining issues after round 3: (1) hover/active backgrounds spanned nearly edge-to-edge inside the sidebar — no breathing room. (2) Brand logo and name not proportional. (3) Logo visually off-center when collapsed.
+
+**Root causes:**
+- `--sidebar-padding-x: 0` meant nav items had zero container margin, so hover backgrounds stretched the full inner width. Restoring to 6px gives a visible gap on both sides of every highlight.
+- `--sidebar-brand-px: 14px` was no longer aligned with the effective nav indent (padding-x 6 + link-px 14 = 20px). Brand logo appeared 6px left of nav icons. Fixed by setting `--sidebar-brand-px: 20px`.
+- In collapsed mode `.sidebar-brand` had `gap: var(--sidebar-brand-gap): 10px`. Even with brand-name at `width: 0`, the flex gap of 10px still occupied space, shifting the logo 5px left of the sidebar center. Fix: `gap: 0` on the collapsed brand rule.
+
+**What changed:**
+- `tokens.css`: `--sidebar-padding-x` 0→6px; `--sidebar-brand-px` 14→20px; added `--sidebar-brand-gap: 10px` (brand uses its own gap token, separate from icon-label-gap).
+- `index.css`: `.sidebar-brand` uses `var(--sidebar-brand-gap)` for gap. `.sidebar-brand-name` font-size `--text-md (15px)` → `--text-lg (18px)`, letter-spacing tightened to `-0.02em`. `.sidebar-logo` 46→48px. Added `gap: 0` to `.sidebar-collapsed .sidebar-brand` rule.
+
+**Files changed:** `frontend/src/styles/tokens.css`, `frontend/src/index.css`
+
+---
+
+### 105. Sidebar polish round 3 — larger icons, wider sidebar, group icon centering fix
+
+**Reason:** Icons and logo still too small. Decision Hub and Analytics icons still off-center in collapsed mode even after round 2.
+
+**Root cause of group icon misalignment:** `.sidebar-group-chevron` has `margin-left: auto` in its base style (used to push it to the right end of the button in expanded mode). Even with `width: 0; flex: none` applied in collapsed mode, the `auto` margin persisted and absorbed all free space to the left of the chevron, which overrides `justify-content: center` on the button container. Simple links (Home, Legal, Red Flag) have no auto-margin element so their icons centered fine. Only group buttons (Decision Hub, Analytics) were affected.
+
+**Fix:** Added `margin-left: 0` to the collapsed `.sidebar-group-chevron` override rule. Result: all 7 collapsed icons now sit at `diff: 0` — perfectly matching the sidebar's horizontal center.
+
+**What changed:**
+- `tokens.css`: `--sidebar-width` 224→240px; `--sidebar-width-collapsed` 68→76px; `--sidebar-icon-size` 24→26px; `--sidebar-link-height` 44→46px; `--sidebar-chevron-size` 15→16px; `--sidebar-gap` 14→16px.
+- `index.css`: `.sidebar-logo` 40→46px. Added `margin-left: 0` to `.sidebar-collapsed .sidebar-group-chevron` rule. Removed explicit `width` from `.sidebar-collapsed .sidebar-group` (no longer needed since buttons stretch to full nav width naturally).
+
+**Files changed:** `frontend/src/styles/tokens.css`, `frontend/src/index.css`
+
+---
+
+### 104. Sidebar polish round 2 — inset, icon/logo sizes, centering fix, stronger glass
+
+**Reason:** Five issues remained after the initial polish pass: sidebar still too close to the left edge, icons and logo still too small, gap between items too tight, collapsed icons left-aligned instead of centered, and glass effect not visible enough.
+
+**Root causes found:**
+- Inset was 14px — barely noticeable against the viewport edge. Increased to 20px.
+- Icons were 22px / logo 36px — both too small. Now 24px / 40px.
+- Collapsed icon misalignment: `.sidebar-link-label` has `flex: 1` in its base style. Even with `width: 0` set in collapsed mode, `flex: 1` overrides and grows the label to fill the remaining 44px of the 68px button. This pushed the icon to the left start of the button instead of centering it. Fix: add `flex: none` to the collapsed label rules so it truly takes zero space, allowing `justify-content: center` to work correctly.
+- Collapsed button width was hardcoded `44px` — smaller than the sidebar's 68px. Changed to `width: var(--sidebar-width-collapsed)` so the icon centers across the full sidebar width.
+- Glass: background was 0.75 opacity with 20px blur — too similar to the gray background. Now `rgba(255,255,255,0.72)` with `blur(32px) saturate(200%)` and a stronger shadow `0 12px 48px rgba(0,0,0,0.14)` + bright inset top highlight `rgba(255,255,255,0.90)`.
+
+**What changed:**
+- `tokens.css`: `--sidebar-inset` 14→20px; `--sidebar-icon-size` 22→24px; `--sidebar-width` 216→224px; `--sidebar-width-collapsed` 72→68px; `--sidebar-link-px` 12→14px; `--sidebar-brand-px` 12→14px; `--sidebar-nav-gap` 2→4px; `--sidebar-footer-gap` 2→4px; `--sidebar-link-height` 40→44px; `--sidebar-sub-indent` 46→52px. Light glass tokens updated.
+- `index.css`: `.sidebar-logo` 36→40px. Added `flex: none` to collapsed label/brand/chevron rule. Changed collapsed button width to `var(--sidebar-width-collapsed)`. Changed `.sidebar-collapsed .sidebar-group` to `align-items: stretch` with explicit width.
+
+**Files changed:** `frontend/src/styles/tokens.css`, `frontend/src/index.css`
+
+---
+
+### 103. Sidebar polish — inset, icon sizes, alignment, flyout fix
+
+**Reason:** Several visual issues remained after the initial design system pass: sidebar was too close to the viewport edge, icons were too small, the logo and nav icons were not column-aligned, items were too cramped, and the collapsed-mode flyout was being clipped by the sidebar's own overflow:hidden.
+
+**What changed:**
+- `tokens.css`: `--sidebar-inset` 8px → 14px (floating card breathing room); `--sidebar-icon-size` 20px → 22px; `--sidebar-padding-x` 8px → 0px (eliminates double-padding so brand-px and link-px land on the same column — logo and nav icons now share the same x=27 starting position); `--sidebar-brand-px` 14px → 12px; `--sidebar-link-px` 10px → 12px; `--sidebar-nav-gap` 4px → 2px; `--sidebar-footer-gap` 4px → 2px; `--sidebar-sub-indent` 40px → 46px; `--sidebar-width` 208px → 216px.
+- `index.css`: `.sidebar-logo` 30px → 36px (logo visually larger than icons); `.sidebar-brand-name` font-size `--text-base` → `--text-md` (15px). Added `transition: width var(--transition-sidebar), overflow 0s var(--transition-sidebar)` to `.dashboard-sidebar` so overflow switches from hidden→visible only after collapse animation completes. Added `.sidebar-collapsed .dashboard-sidebar { overflow: visible }`, `.sidebar-collapsed .sidebar-panel { overflow: visible }`, `.sidebar-collapsed .sidebar-nav { overflow: visible }` — these three allow the flyout to escape the sidebar bounds when collapsed. Added `.sidebar-collapsed .sidebar-group-children { display: none }` to prevent previously-open groups from showing their children in collapsed mode.
+
+**Files changed:** `frontend/src/styles/tokens.css`, `frontend/src/index.css`
+
+---
+
+### 102. Fix Sidebar crash — remove non-existent Phosphor Fill imports
+
+**Reason:** After switching to `@phosphor-icons/react`, all `*Fill` named imports (`HouseFill`, `CompassFill`, etc.) did not exist in v2 of the library. The broken imports caused a silent module error, preventing React from mounting and leaving the entire app blank.
+
+**What changed:**
+- `Sidebar.jsx`: removed all `*Fill` named imports from `@phosphor-icons/react`. Removed `iconActive` fields from `navConfig` and `footerLinks`. All icon components now use the single base icon (`House`, `Compass`, etc.) with `weight={active ? 'fill' : 'regular'}` prop to toggle between filled and outline states. This is the correct Phosphor React v2 API.
+
+**Files changed:** `frontend/src/components/Sidebar.jsx`
+
+---
+
+### 101. Design system foundation — tokens, Inter font, Phosphor icons, sidebar redesign
+
+**Reason:** The app lacked a unified design system. All CSS values were hardcoded raw values scattered across `index.css`. Switching to a token-based system makes future changes consistent and reliable. The sidebar needed a visual refresh to feel like a premium dashboard component.
+
+**What changed:**
+- `frontend/src/styles/tokens.css` (NEW): single source of truth for all design tokens — typography (Inter, scale from 11px–28px, weight tokens), spacing (4px grid), border radius, shadows, sidebar anatomy variables (`--sidebar-width: 208px`, `--sidebar-width-collapsed: 72px`, `--sidebar-inset: 8px`, `--sidebar-link-height: 44px`, etc.), transition tokens, and full color palette for both light and dark mode. Light sidebar: glass morphism (`rgba(255,255,255,0.75)` + `backdrop-filter: blur(20px) saturate(160%)` + inset top highlight). Dark sidebar: solid elevated panel (`#1e1e1e`, no glass).
+- `frontend/index.html`: added Inter Google Fonts preconnect + stylesheet link.
+- `frontend/src/index.css`: imported `tokens.css` at top. Updated `:root` to use Inter. Added legacy aliases (`--rail-width`, `--shell-bg`, `--panel-bg`, `--border`, `--text`, `--muted`, `--accent`) so existing components continue to work without changes. Rewrote entire sidebar CSS block to use tokens — `border-radius: var(--radius-xl)`, `background: var(--sidebar-bg)`, `backdrop-filter: var(--sidebar-blur)`, transitions via `var(--transition-sidebar)`, collapsed width/margin-left via tokens.
+- `frontend/src/components/Sidebar.jsx`: replaced all Lucide icon imports with Phosphor (`@phosphor-icons/react`). Switched to `weight` prop for active/inactive states. Preserved all existing logic (openGroups Set, handleGroupClick, toggleGroup, useEffect auto-expand, flyout menu for collapsed state).
+- `frontend/package.json`: added `@phosphor-icons/react` dependency.
+
+**Files changed:** `frontend/src/styles/tokens.css` (new), `frontend/index.html`, `frontend/src/index.css`, `frontend/src/components/Sidebar.jsx`, `frontend/package.json`
+
+---
+
+### 100. Home page — remove "What's in the database" stats panel
+
+**Reason:** The stats panel (Programs in database, Verified records, Countries covered, Last data refresh) is operational metadata, not student-facing information. Students don't need to know the database size to make a decision. Removing it keeps the home page focused on helping students take action.
+
+**What changed:**
+- `HomePage.jsx`: removed the stats row JSX and the `countryCounts` useMemo that computed it.
+- `index.css`: removed `.home-stats-row`, `.home-stat-card`, and related stat card styles.
+
+**Files changed:** `frontend/src/pages/HomePage.jsx`, `frontend/src/index.css`
+
+---
+
+### 99. Admin section — hidden from non-admin users
+
+**Reason:** The admin controls should not be visible to students. Showing admin buttons to regular users creates confusion and a false impression of access.
+
+**What changed:**
+- `AppShellContext.jsx`: added `IS_ADMIN_KEY = 'unimatch-is-admin'` constant, `isAdmin` state reading from localStorage (defaults `false`), exposed `isAdmin` in context value.
+- Admin-gated UI conditionally renders only when `isAdmin === true`.
+
+**Files changed:** `frontend/src/context/AppShellContext.jsx`
+
+---
+
+### 98. Program Detail — remove repeated name, split documents into list, add yearly cost estimate, add navigation CTAs
+
+**Reason:** The program name was shown twice (once in the header, once as a field). Documents were a semicolon-separated string that was hard to read. No yearly cost estimate existed despite the backend returning tuition and living cost. Navigation between programs was absent.
+
+**What changed:**
+- `ProgramDetailPage.jsx`: removed the repeated program name field. Split the `documents` field on `;` into a `<ul className="doc-list">`. Added `calcEstimatedYearlyCost()` helper that sums tuition + living cost and renders it as a prominent field. Added `.program-detail-actions` nav bar at the bottom with Back and Compare buttons.
+- `utils/date.js`: added `formatDate(dateStr)` — converts "2026-01-15" to "15 Jan 2026".
+- Applied `formatDate` to all date fields in ProgramDetailPage, AdmissionAnalyticsPage, CostAnalyticsPage, and DeadlineInsightsPage.
+
+**Files changed:** `frontend/src/pages/ProgramDetailPage.jsx`, `frontend/src/utils/date.js`, `frontend/src/pages/AdmissionAnalyticsPage.jsx`, `frontend/src/pages/CostAnalyticsPage.jsx`, `frontend/src/pages/DeadlineInsightsPage.jsx`
+
+---
+
+### 97. Admission chart — add "Program Rankings" section heading
+
+**Reason:** The bottom grid on the Admission Overview page had no heading, making it unclear what the grid was showing.
+
+**What changed:**
+- `AdmissionAnalyticsPage.jsx`: added `<h2 className="section-title">Program Rankings</h2>` above the bottom grid.
+
+**Files changed:** `frontend/src/pages/AdmissionAnalyticsPage.jsx`
+
+---
+
 ### 96. Legal Info — restore accordion with independent multi-open state and visa notes first
 
 **Reason:** Accordion is the right pattern for this page — students come to check one or two specific countries, not read all three in parallel. Sequential deep reading per country suits expand/collapse. The two previous attempts (horizontal card grid, vertical card stack) both moved away from this and felt wrong.
