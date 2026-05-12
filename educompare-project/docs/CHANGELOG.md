@@ -5,6 +5,29 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 134. Database — re-seed Neon DB with Singapore data
+
+**Action:** Ran `python seed.py` from `backend/`. Seed uses `db.merge()` (upsert by primary key) so all existing Taiwan and Thailand rows were preserved and the 5 Singapore rows were inserted/updated.
+
+**Result:**
+- `country_rules` — 3 rows (Taiwan, Thailand, Singapore)
+- `universities` — 15 rows (5 per country)
+- `programs` — 15 rows (5 per country)
+- `requirements` — 15 rows (5 per country)
+- `cost_and_finance` — 15 rows (5 per country, Singapore in SGD)
+
+Singapore data had been present in the CSV files since 2026-04-21 but had not been pushed to the Neon cloud DB since its addition.
+
+---
+
+### 133. App.jsx — remove dead AnalyticsPlaceholderPage import
+
+**Files changed:** `App.jsx`
+
+`AnalyticsPlaceholderPage` was imported on line 8 but never referenced in any route or component — confirmed by full-codebase grep. Removed the import. The file itself (`AnalyticsPlaceholderPage.jsx`) is kept in place as it may be used as a utility component in future analytics sections.
+
+---
+
 ### 132. Frontend — remove unused lucide-react, patch axios vulnerability
 
 **Files changed:** `package.json`, `package-lock.json`
