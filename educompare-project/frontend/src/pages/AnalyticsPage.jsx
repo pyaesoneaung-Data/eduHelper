@@ -206,9 +206,9 @@ function CountryCostPie({ selectedCountries, countryData }) {
 const TOOLTIP_STYLE = {
   background: 'var(--panel-bg)',
   border: '1px solid var(--border)',
-  borderRadius: '4px',
+  borderRadius: 'var(--radius-xs)',
   color: 'var(--text)',
-  fontSize: '0.82rem',
+  fontSize: 'var(--text-sm)',
 }
 
 const TOOLTIP_LABEL_STYLE = { color: 'var(--text)', fontWeight: 600, marginBottom: 2 }
@@ -259,7 +259,7 @@ function TuitionVsLivingBar({ selectedCountries, countryData }) {
             iconSize={10}
             verticalAlign="top"
             align="right"
-            wrapperStyle={{ fontSize: '0.8rem', paddingBottom: '8px' }}
+            wrapperStyle={{ fontSize: 'var(--text-sm)', paddingBottom: 'var(--space-2)' }}
           />
           <Bar name="Tuition" stackId="a" dataKey="tuition" fill="var(--accent)" radius={0} />
           <Bar name="Living Cost" stackId="a" dataKey="living" fill="#c9a071" radius={[0, 2, 2, 0]} />
@@ -349,7 +349,7 @@ function ExchangeRateCard({ displayCurrency }) {
           <span className="exchange-rate-value">{FROM_USD.SGD.toFixed(4)} SGD</span>
         </div>
       </div>
-      <p className="muted-text" style={{ marginTop: '10px' }}>
+      <p className="muted-text exchange-rate-note">
         All costs on this page are converted to USD using these rates. Verify current rates at{' '}
         <a className="text-link" href="https://www.xe.com" target="_blank" rel="noreferrer">
           XE.com
@@ -462,7 +462,7 @@ function MonthlyRealityCheck({ selectedCountries, countryData, rulesMap, display
               <div className="reality-row-head">
                 <strong>{COUNTRY_LABEL[key]}</strong>
                 {workHourLimit ? (
-                  <span className="muted-text" style={{ fontSize: '0.8rem' }}>
+                  <span className="muted-text reality-hrs-label">
                     max {workHourLimit} hrs/wk
                   </span>
                 ) : null}
@@ -496,9 +496,9 @@ function MonthlyRealityCheck({ selectedCountries, countryData, rulesMap, display
                     style={{ color: gapDisplay > 0 ? 'var(--muted)' : 'var(--accent)' }}
                   >
                     {gapDisplay > 0
-                      ? `${Math.round(coveragePct)}% covered — ~${Math.round(gapDisplay).toLocaleString()} ${curr}/month still needed`
+                      ? `${Math.round(coveragePct)}% covered, ~${Math.round(gapDisplay).toLocaleString()} ${curr}/month still needed`
                       : surplusDisplay > 0
-                        ? `Fully covered — ~${Math.round(surplusDisplay).toLocaleString()} ${curr}/month left over`
+                        ? `Fully covered, ~${Math.round(surplusDisplay).toLocaleString()} ${curr}/month left over`
                         : 'Fully covered'}
                   </p>
                   {(gapDisplay > 0 || surplusDisplay > 0) ? (
@@ -515,7 +515,7 @@ function MonthlyRealityCheck({ selectedCountries, countryData, rulesMap, display
         )}
       </div>
 
-      <p className="muted-text" style={{ marginTop: '16px', fontSize: '0.78rem' }}>
+      <p className="muted-text reality-check-note">
         Estimates based on minimum wage × legal hour limit. Actual earnings vary.
       </p>
 
@@ -826,7 +826,7 @@ function AnalyticsPage() {
               countryData={countryData}
             />
           </div>
-          <p className="muted-text" style={{ fontSize: '0.78rem', margin: '-10px 0 0' }}>
+          <p className="muted-text analytics-viz-note">
             Excludes application and insurance fees. Use the Cost Calculator for a full per-program estimate.
           </p>
 

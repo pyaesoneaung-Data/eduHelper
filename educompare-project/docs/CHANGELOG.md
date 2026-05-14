@@ -5,6 +5,88 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 156. Collapsed sidebar flyout — fix hover gap timing
+
+**Files changed:** `index.css`
+
+Problem: flyout used `display: none` → `display: flex` toggle. Moving the mouse from the sidebar icon to the flyout sub-links crossed a 10px gap (`--flyout-offset`), briefly losing the CSS `:hover` and instantly collapsing the menu before the user could reach the links.
+
+Fix: switched from `display` toggling (not transitionable) to `opacity + pointer-events`:
+- Flyout layout/position styles are now always applied (position: absolute keeps it out of flow)
+- Hidden state: `opacity: 0; pointer-events: none` with `transition: opacity 100ms ease 120ms` — the 120ms delay gives the cursor time to cross the gap before the fade starts
+- Shown state: `opacity: 1; pointer-events: auto` with `transition: opacity 80ms ease 0ms` — appears quickly on hover
+- `pointer-events` transitions on the same delay (`0s linear 220ms` to hide, `0s linear 0ms` to show) so links stay clickable during the crossing window
+
+---
+
+### 155. All analytics pages — rounded corners on all table shells
+
+**Files changed:** `index.css`
+
+Added `border-radius: var(--radius-md)` to the base `.table-shell` class so all table components across the analytics group get consistent rounded corners:
+- Cost Overview: 3 table shells (cheapest programs per country)
+- Deadline Insights: 2 table shells (upcoming + passed)
+- Ranking Insights: 1 table shell (QS rankings)
+- Admission Overview: 2 table shells (program rankings, already covered by admission-table-shell override)
+
+---
+
+### 154. Admission Overview — fix program table column clipping
+
+**Files changed:** `index.css`
+
+Reverted bad `overflow: hidden` on `.admission-table-shell` that was clipping GPA/IELTS columns.
+Changed to `overflow-x: auto; -webkit-overflow-scrolling: touch` to match the base `table-shell` pattern.
+Added `border-radius: var(--radius-md)` on the inner table shell (outer card radius handles the visual frame).
+
+---
+
+### 153. Admission Overview — rounded corners, flag snap-fit, token font sizes
+
+**Files changed:** `index.css`, `pages/AdmissionAnalyticsPage.jsx`
+
+Border radius:
+- `.admission-overview-card`, `.admission-snapshot-section`, `.admission-snapshot-country` → `border-radius: var(--radius-lg)`
+- `.admission-table-shell` → `border-radius: var(--radius-lg)` + `overflow: hidden`
+- `.admission-snapshot-checkbox`, `.admission-snapshot-flag` → `border-radius: var(--radius-xs)`
+
+Flag snap-fit:
+- `.admission-snapshot-flag`: removed `inline-flex` centering and `background: var(--panel-bg)` — was bleeding 1px white gap; changed to `display: block; overflow: hidden; flex-shrink: 0`
+- `ReactCountryFlag` inline style: `width: '34px', height: '22px'` → `width: '100%', height: '100%'` so flag fills container edge-to-edge
+
+Token compliance:
+- `.admission-card-head h3`, `.admission-snapshot-head h3`, `.admission-snapshot-country-head h4`: raw `font-size: 1rem` → `var(--text-base)`
+- `.admission-snapshot-status`: `font-size: 0.85rem` → `var(--text-sm)`, `font-weight: 500` → `var(--weight-medium)`
+- `.admission-snapshot-checkbox`: `font-size: 0.78rem` → `var(--text-2xs)`
+
+---
+
+### 152. Analytics pages — em dash removal, token tooltip styles, inline style cleanup
+
+**Files changed:** `pages/AnalyticsPage.jsx`, `pages/AdmissionAnalyticsPage.jsx`, `pages/DeadlineInsightsPage.jsx`, `pages/RankingInsightsPage.jsx`, `index.css`
+
+Em dash removal:
+- `AnalyticsPage`: reality verdict strings `covered — ~` → `covered, ~` and `Fully covered — ~` → `Fully covered, ~`
+- `AdmissionAnalyticsPage`: freshness note `April 2026 — sourced` → `April 2026, sourced`
+- `DeadlineInsightsPage`: `{date} &mdash; {daysLeft}` → `{date}, {daysLeft}`
+- `RankingInsightsPage`: InfoCard title `${country} — QS World Rankings` → `${country}: QS World Rankings`; pending tag `{c} — pending` → `{c}: pending`
+
+Tooltip token compliance:
+- `TOOLTIP_STYLE` and `ADMISSION_TOOLTIP_STYLE`: `borderRadius: '4px'` → `'var(--radius-xs)'`; `fontSize: '0.82rem'` → `'var(--text-sm)'`
+- Recharts `Legend wrapperStyle`: `fontSize: '0.8rem'` → `'var(--text-sm)'`; `paddingBottom: '8px'` → `'var(--space-2)'` (both analytics pages)
+
+Inline style → CSS class replacements:
+- `style={{ fontSize: '0.8rem' }}` on hrs/wk span → `.reality-hrs-label`
+- `style={{ marginTop: '16px', fontSize: '0.78rem' }}` on reality check note → `.reality-check-note`
+- `style={{ fontSize: '0.78rem', margin: '-10px 0 0' }}` on viz footnote → `.analytics-viz-note`
+- `style={{ marginTop: '10px' }}` on exchange rate note → `.exchange-rate-note`
+- `style={{ fontSize: '0.78rem' }}` on GPA/IELTS scale note → `.admission-scale-note`
+- `style={{ marginBottom: 0 }}`, `style={{ fontSize: '1rem', margin: 0 }}`, `style={{ margin: 0 }}` on program rankings heading → `.admission-program-rankings-heading`
+
+Added 8 new utility CSS classes to `index.css` under "Analytics token-based utility classes".
+
+---
+
 ### 151. Legal Info + Red Flag Guide — double title fix, token CSS, text cleanup
 
 **Files changed:** `components/Layout.jsx`, `pages/LegalGuardrailPage.jsx`, `pages/RedFlagGuidePage.jsx`, `index.css`

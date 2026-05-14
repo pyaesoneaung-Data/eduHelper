@@ -411,10 +411,7 @@ img {
 
 /* ─── Fly-out (collapsed hover) ──────────────────────────────────────────── */
 .sidebar-flyout {
-  display: none;
-}
-
-.sidebar-collapsed .sidebar-group:hover .sidebar-flyout {
+  /* Layout always applied — position: absolute keeps it out of flow */
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
@@ -428,6 +425,16 @@ img {
   padding: var(--space-2);
   z-index: 100;
   box-shadow: var(--shadow-md);
+  /* Hidden by default — 120ms buffer before hide so cursor can cross the gap */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 100ms ease 120ms, pointer-events 0s linear 220ms;
+}
+
+.sidebar-collapsed .sidebar-group:hover .sidebar-flyout {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 80ms ease 0ms, pointer-events 0s linear 0ms;
 }
 
 .sidebar-flyout-title {
@@ -1304,6 +1311,7 @@ select {
 
 .table-shell {
   border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -1346,6 +1354,7 @@ select {
   gap: 18px;
   padding: 24px;
   border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   background: var(--panel-bg);
   box-shadow: none;
 }
@@ -1358,7 +1367,7 @@ select {
 
 .admission-card-head h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--text-base);
 }
 
 .admission-comparison-card,
@@ -1381,8 +1390,11 @@ select {
 
 .admission-table-shell {
   border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   background: var(--panel-bg);
   box-shadow: none;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admission-programs-table th,
@@ -2646,6 +2658,7 @@ select {
   gap: 18px;
   padding: 24px;
   border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   background: var(--panel-bg);
 }
 
@@ -2657,7 +2670,7 @@ select {
 
 .admission-snapshot-head h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--text-base);
 }
 
 .admission-snapshot-grid {
@@ -2673,6 +2686,7 @@ select {
   min-height: 170px;
   padding: 20px;
   border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   background: var(--panel-soft);
 }
 
@@ -2684,26 +2698,25 @@ select {
 
 .admission-snapshot-country-head h4 {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--text-base);
 }
 
 .admission-snapshot-flag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   width: 36px;
   height: 24px;
   border: 1px solid var(--border);
-  background: var(--panel-bg);
+  border-radius: var(--radius-xs);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .admission-snapshot-status {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
 }
 
 .admission-snapshot-checkbox {
@@ -2713,8 +2726,9 @@ select {
   width: 18px;
   height: 18px;
   border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
   background: var(--panel-bg);
-  font-size: 0.78rem;
+  font-size: var(--text-2xs);
   line-height: 1;
 }
 
@@ -3235,3 +3249,13 @@ select {
   padding: 4px 10px;
   border-radius: 4px;
 }
+
+/* Analytics token-based utility classes (replaces inline styles) */
+.analytics-viz-note { margin-top: -0.5rem; font-size: var(--text-xs); }
+.reality-hrs-label { font-size: var(--text-sm); }
+.reality-check-note { margin-top: var(--space-4); font-size: var(--text-xs); }
+.exchange-rate-note { margin-top: var(--space-3); }
+.admission-scale-note { font-size: var(--text-xs); }
+.admission-program-rankings-heading { margin-bottom: 0; }
+.admission-program-rankings-heading h3 { font-size: var(--text-base); margin: 0; }
+.admission-program-rankings-heading p { margin: 0; }

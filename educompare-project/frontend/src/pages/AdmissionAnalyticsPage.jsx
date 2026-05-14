@@ -49,9 +49,9 @@ function formatMetric(value) {
 const ADMISSION_TOOLTIP_STYLE = {
   background: 'var(--panel-bg)',
   border: '1px solid var(--border)',
-  borderRadius: '4px',
+  borderRadius: 'var(--radius-xs)',
   color: 'var(--text)',
-  fontSize: '0.82rem',
+  fontSize: 'var(--text-sm)',
 }
 
 function AdmissionComparisonChart({ countryKeys, countryData }) {
@@ -97,13 +97,13 @@ function AdmissionComparisonChart({ countryKeys, countryData }) {
             iconSize={10}
             verticalAlign="top"
             align="right"
-            wrapperStyle={{ fontSize: '0.8rem', paddingBottom: '8px' }}
+            wrapperStyle={{ fontSize: 'var(--text-sm)', paddingBottom: 'var(--space-2)' }}
           />
           <Bar name="GPA" dataKey="gpa" fill="var(--accent)" radius={[3, 3, 0, 0]} />
           <Bar name="IELTS" dataKey="ielts" fill="#5a9e7a" radius={[3, 3, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
-      <p className="muted-text" style={{ fontSize: '0.78rem' }}>
+      <p className="muted-text admission-scale-note">
         GPA: 0–4.0 scale · IELTS: 0–9.0 scale
       </p>
     </section>
@@ -255,7 +255,7 @@ function AdmissionAnalyticsPage() {
       </div>
 
       <p className="data-freshness-note">
-        Dataset verified April 2026 — sourced from official university and government websites.
+        Dataset verified April 2026, sourced from official university and government websites.
         Figures reflect the admission requirements recorded at that time.
       </p>
 
@@ -284,7 +284,7 @@ function AdmissionAnalyticsPage() {
                           <ReactCountryFlag
                             countryCode={COUNTRY_CODE[key]}
                             svg
-                            style={{ width: '34px', height: '22px', display: 'block' }}
+                            style={{ width: '100%', height: '100%', display: 'block' }}
                             title={COUNTRY_LABEL[key] ?? key}
                           />
                         ) : null}
@@ -339,9 +339,9 @@ function AdmissionAnalyticsPage() {
             </section>
           </div>
 
-          <div className="section-heading" style={{ marginBottom: 0 }}>
-            <h3 style={{ fontSize: '1rem', margin: 0 }}>Program Rankings</h3>
-            <p style={{ margin: 0 }}>Top 5 easiest and most competitive programs by GPA and IELTS thresholds.</p>
+          <div className="section-heading admission-program-rankings-heading">
+            <h3>Program Rankings</h3>
+            <p>Top 5 easiest and most competitive programs by GPA and IELTS thresholds.</p>
           </div>
           <div className="admission-bottom-grid">
             <ProgramsTable title="Easiest Programs to Enter" programs={easiestPrograms} />

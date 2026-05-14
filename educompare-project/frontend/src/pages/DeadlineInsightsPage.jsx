@@ -110,7 +110,7 @@ function DeadlineInsightsPage() {
               </Link>
             </p>
             <p className="muted-text">{nextDeadline.university_name}</p>
-            <p>{formatDate(nextDeadline.application_deadline)} &mdash; {formatDaysLeft(daysUntil(nextDeadline.application_deadline))}</p>
+            <p>{formatDate(nextDeadline.application_deadline)}, {formatDaysLeft(daysUntil(nextDeadline.application_deadline))}</p>
           </InfoCard>
         ) : (
           <InfoCard title="No upcoming deadlines" tone="muted">

@@ -117,7 +117,7 @@ function RankingInsightsPage() {
           </InfoCard>
 
           {rankedCountries.map((country) => (
-            <InfoCard key={country} title={`${country} — QS World Rankings`}>
+            <InfoCard key={country} title={`${country}: QS World Rankings`}>
               <RankingTable universities={byCountry[country]} />
             </InfoCard>
           ))}
@@ -131,7 +131,7 @@ function RankingInsightsPage() {
               <div className="pending-country-tags">
                 {PENDING_COUNTRIES.map((c) => (
                   <span key={c} className="pending-country-tag">
-                    {c} — pending
+                    {c}: pending
                   </span>
                 ))}
               </div>
