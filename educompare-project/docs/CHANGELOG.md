@@ -5,6 +5,43 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 158. tokens.css — Apple-scale border-radius values
+
+**Files changed:** `styles/tokens.css`
+
+Updated all radius token values to follow Apple design proportions — larger, softer, more consistent across all element sizes. Because the entire codebase was already on tokens (from entry 157), this single change cascades to every card, panel, button, input, chip, and badge in the app.
+
+| Token | Before | After |
+|---|---|---|
+| --radius-xs | 4px | 6px |
+| --radius-sm | 6px | 10px |
+| --radius-md | 10px | 14px |
+| --radius-lg | 14px | 20px |
+| --radius-xl | 20px | 28px |
+| --radius-pill | 999px | 999px (unchanged) |
+
+---
+
+### 157. index.css — replace all hardcoded border-radius with tokens
+
+**Files changed:** `index.css`
+
+Audited all `border-radius` values in index.css. Converted every hardcoded pixel value to the matching token from `tokens.css`:
+- `4px` → `var(--radius-xs)` — icon-fallback, inputs/selects, cost columns grid, pending-country-tag
+- `6px` → `var(--radius-sm)` — btn-secondary, filter buttons, exchange-rate-converted
+- `10px` → `var(--radius-md)` — responsive KPI icon (media query)
+- `14px` / `16px` → `var(--radius-lg)` — home-kpi-card, home-kpi-icon base size
+- `12px` → `var(--radius-md)` — home-kpi-icon responsive step-down
+- `999px` → `var(--radius-pill)` — country-pill, reality-not-permitted, reality-track-shell, reality-fill
+- `0 4px 4px 0` → `0 var(--radius-xs) var(--radius-xs) 0` — aside/quote element partial radius
+
+Kept as-is (no token equivalent):
+- `border-radius: 0` — intentional sharp corners
+- `border-radius: 50%` — circular elements
+- `border-radius: 2px` / `3px` — micro progress track elements
+
+---
+
 ### 156. Collapsed sidebar flyout — fix hover gap timing
 
 **Files changed:** `index.css`
