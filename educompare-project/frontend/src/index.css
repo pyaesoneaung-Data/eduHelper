@@ -828,6 +828,12 @@ label,
   line-height: 1.2;
 }
 
+.section-heading h2 {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
 .eyebrow,
 .section-label,
 .home-mini-label {
@@ -1620,79 +1626,115 @@ select {
 
 /* About Page */
 
+.about-hero {
+  display: grid;
+  gap: var(--space-3);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--border);
+}
+
+.about-hero-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.about-hero-logo {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.about-hero-name {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.about-hero-tagline {
+  margin: 0;
+  font-size: var(--text-md);
+  color: var(--muted);
+  line-height: var(--leading-relaxed);
+  max-width: 64ch;
+}
+
 .about-section-block {
   display: grid;
-  gap: 16px;
-  padding-top: 4px;
+  gap: var(--space-4);
+  padding-top: var(--space-1);
 }
 
 .about-section-head {
   display: grid;
-  gap: 4px;
-  padding-bottom: 10px;
+  gap: var(--space-1);
+  padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--border);
 }
 
 .about-section-head h3 {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
   color: var(--text);
 }
 
 .about-prose {
   margin: 0;
-  line-height: 1.7;
+  font-size: var(--text-md);
+  line-height: var(--leading-relaxed);
   color: var(--text);
-  font-size: 0.92rem;
   max-width: 72ch;
 }
 
 .about-stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .about-stat {
   display: grid;
-  gap: 4px;
-  padding: 14px 16px;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
   background: var(--panel-bg);
   border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
 }
 
 .about-stat-value {
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
   color: var(--text);
-  line-height: 1.2;
+  line-height: var(--leading-tight);
 }
 
 .about-stat-label {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--muted);
-  line-height: 1.4;
+  line-height: var(--leading-snug);
 }
 
 .about-two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: var(--space-3);
 }
 
 .about-feature-card {
   display: grid;
-  gap: 12px;
-  padding: 18px;
+  gap: var(--space-3);
+  padding: var(--space-5);
   background: var(--panel-bg);
   border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
 }
 
 .about-feature-card h4 {
   margin: 0;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
   color: var(--text);
 }
 
@@ -1705,27 +1747,28 @@ select {
 }
 
 .about-feature-list li {
-  font-size: 0.875rem;
-  line-height: 1.5;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
 }
 
 .about-phase-list {
   display: grid;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .about-phase-card {
   display: grid;
-  gap: 8px;
-  padding: 16px 20px;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
   background: var(--panel-bg);
   border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
 }
 
 .about-phase-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .about-phase-number {
@@ -1734,43 +1777,44 @@ select {
   justify-content: center;
   width: 22px;
   height: 22px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--accent);
   color: #fff;
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
   flex-shrink: 0;
 }
 
 .about-phase-title {
   margin: 0;
-  font-size: 0.92rem;
-  font-weight: 600;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
   color: var(--text);
 }
 
 .about-phase-desc {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: var(--text-base);
   color: var(--muted);
-  line-height: 1.65;
+  line-height: var(--leading-relaxed);
   padding-left: 34px;
 }
 
 .about-sources-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  gap: var(--space-3);
 }
 
 .about-source-card {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 14px;
+  gap: var(--space-3);
   align-items: start;
-  padding: 16px 18px;
+  padding: var(--space-4) var(--space-5);
   background: var(--panel-bg);
   border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
 }
 
 .about-source-icon {
@@ -1779,47 +1823,68 @@ select {
 }
 
 .about-source-card h4 {
-  margin: 0 0 4px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
   color: var(--text);
 }
 
 .about-source-card p {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   color: var(--muted);
-  line-height: 1.5;
+  line-height: var(--leading-normal);
+}
+
+.about-footnote {
+  font-size: var(--text-sm);
+  color: var(--muted);
 }
 
 .about-team-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .about-team-card {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 20px;
+  gap: var(--space-5);
   align-items: center;
-  padding: 20px;
+  padding: var(--space-5);
   background: var(--panel-bg);
   border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
 }
 
 .about-avatar {
-  width: 76px;
-  height: 76px;
-  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-pill);
   background: var(--panel-soft);
   border: 1px solid var(--border);
   flex-shrink: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  user-select: none;
 }
 
 .about-builder-info {
   display: grid;
-  gap: 6px;
+  gap: var(--space-1);
+}
+
+.about-builder-info h4 {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
 }
 
 .about-builder-info h4 {
@@ -2372,9 +2437,12 @@ select {
 
   .about-two-col,
   .about-sources-row,
-  .about-stats-row,
   .about-team-grid {
     grid-template-columns: 1fr;
+  }
+
+  .about-stats-row {
+    grid-template-columns: 1fr 1fr;
   }
 
   .page-shell {

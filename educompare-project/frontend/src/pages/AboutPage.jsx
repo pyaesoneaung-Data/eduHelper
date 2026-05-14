@@ -1,11 +1,23 @@
 import { Bank, SealCheck, CurrencyDollar } from '@phosphor-icons/react'
+import { useAppShell } from '../context/AppShellContext'
+import IconImage from '../components/IconImage'
+import logoLight from '../assets/logo/logo_light_without_text.svg'
+import logoDark from '../assets/logo/logo_dark_without_text.svg'
+
+function getInitials(name) {
+  return name
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+}
 
 const phases = [
   {
     number: 1,
     title: 'Problem & Scope',
     description:
-      'Identified that students planning to study abroad in the region had no reliable, unbiased source. Most relied on agents or social media — both with clear conflicts of interest. We defined what "verified" means for this project, then scoped the initial 3 countries and core data points: cost, admission requirements, and legal rules.',
+      'Identified that students planning to study abroad in the region had no reliable, unbiased source. Most relied on agents or social media, both of which have clear conflicts of interest. We defined what "verified" means for this project, then scoped the initial 3 countries and core data points: cost, admission requirements, and legal rules.',
   },
   {
     number: 2,
@@ -17,7 +29,7 @@ const phases = [
     number: 3,
     title: 'Cleaning & Structuring',
     description:
-      'Standardised formats across all three countries — currencies, GPA scales, IELTS versus TOEFL thresholds. Data gaps were flagged and documented honestly rather than filled with estimates. Singapore GPA data is one known gap in the current dataset.',
+      'Standardised formats across all three countries: currencies, GPA scales, and IELTS versus TOEFL thresholds. Data gaps were flagged and documented honestly rather than filled with estimates. Singapore GPA data is one known gap in the current dataset.',
   },
   {
     number: 4,
@@ -29,7 +41,7 @@ const phases = [
     number: 5,
     title: 'Frontend & Analytics',
     description:
-      'Built the React dashboard: program comparison view, cost calculator, recommendation engine, and two analytics pages — Cost Overview (tuition vs. living breakdown, monthly commitment) and Admission Overview (average GPA and IELTS thresholds per country with program-level tables).',
+      'Built the React dashboard: program comparison, cost calculator, recommendation engine, and two analytics pages. Cost Overview covers tuition and living cost breakdown with monthly commitment figures. Admission Overview shows average GPA and IELTS thresholds per country with program-level tables.',
   },
   {
     number: 6,
@@ -47,12 +59,12 @@ const sourceCards = [
   },
   {
     title: 'Rankings',
-    description: 'QS and THE rankings and accreditation databases.',
+    description: 'QS and THE world rankings, plus accreditation databases.',
     icon: SealCheck,
   },
   {
     title: 'Exchange Rates',
-    description: 'Verified FX providers for accurate USD conversions.',
+    description: 'Verified exchange rate sources for accurate USD conversions.',
     icon: CurrencyDollar,
   },
 ]
@@ -80,13 +92,19 @@ const stats = [
 ]
 
 function AboutPage() {
+  const { theme } = useAppShell()
+  const logoSrc = theme === 'dark' ? logoDark : logoLight
+
   return (
     <div className="page-stack">
-      <div className="section-heading">
-        <h2>About UniMatch</h2>
-        <p>
-          A student-built platform for comparing universities in Taiwan, Thailand, and Singapore
-          — built on verified data, not marketing.
+      <div className="about-hero">
+        <div className="about-hero-brand">
+          <IconImage src={logoSrc} alt="UniMatch logo" className="about-hero-logo" />
+          <span className="about-hero-name">UniMatch</span>
+        </div>
+        <p className="about-hero-tagline">
+          A student-built platform for comparing universities in Taiwan, Thailand, and Singapore,
+          built on verified data rather than marketing.
         </p>
       </div>
 
@@ -96,8 +114,8 @@ function AboutPage() {
         </div>
         <p className="about-prose">
           UniMatch started from a real problem: students planning to study abroad in the region
-          were relying on agents and social media — both of which have obvious conflicts of
-          interest. We built this to give students a direct source: actual costs, real admission
+          were relying on agents and social media, both of which have obvious conflicts of
+          interest. This platform gives students a direct source with actual costs, real admission
           thresholds, and honest legal information, all collected from official sources and
           structured into tools anyone can use.
         </p>
@@ -120,7 +138,7 @@ function AboutPage() {
             <h4>What it does</h4>
             <ul className="about-feature-list">
               <li>Compare programs across universities</li>
-              <li>Estimate real yearly costs — tuition and living</li>
+              <li>Estimate real yearly costs, including tuition and living</li>
               <li>Review GPA and IELTS admission thresholds</li>
               <li>Understand visa and work permit rules by country</li>
               <li>Identify red flags in university offers</li>
@@ -179,8 +197,8 @@ function AboutPage() {
             )
           })}
         </div>
-        <p className="muted-text" style={{ fontSize: '0.82rem' }}>
-          More countries and institutions will be added over time.
+        <p className="muted-text about-footnote">
+          Additional countries and institutions are planned for future updates.
         </p>
       </section>
 
@@ -192,7 +210,7 @@ function AboutPage() {
         <div className="about-team-grid">
           {builders.map((builder) => (
             <article key={builder.githubName} className="about-team-card">
-              <div className="about-avatar" aria-hidden="true" />
+              <div className="about-avatar" aria-hidden="true">{getInitials(builder.name)}</div>
               <div className="about-builder-info">
                 <h4>{builder.name}</h4>
                 <p className="muted-text">{builder.role}</p>

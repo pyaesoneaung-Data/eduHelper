@@ -66,7 +66,7 @@ function LayoutFrame() {
               >
                 <List size={20} aria-hidden="true" />
               </button>
-              <span className={(isHomePage || isSettingsPage) ? 'topbar-section-label topbar-section-greeting' : 'topbar-section-label'}>
+              <span className={(isHomePage || isSettingsPage || isAboutPage) ? 'topbar-section-label topbar-section-greeting' : 'topbar-section-label'}>
                 {sectionLabel}
               </span>
             </div>

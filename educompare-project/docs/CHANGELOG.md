@@ -5,6 +5,79 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 149. About page — text review, remove all em dashes
+
+**Files changed:** `pages/AboutPage.jsx`
+
+Full text pass with UX mindset. Zero em dashes remain.
+
+- Hero tagline: "...Singapore — built on verified data, not marketing" → "...Singapore, built on verified data rather than marketing"
+- Mission: "relying on agents and social media — both of which..." → "...social media, both of which..." / "We built this to give students" → "This platform gives students"
+- Features list item 2: "Estimate real yearly costs — tuition and living" → "...costs, including tuition and living"
+- Phase 1: "...social media — both with clear conflicts" → "...social media, both of which have clear conflicts"
+- Phase 3: "Standardised formats across all three countries — currencies..." → "...countries: currencies..."
+- Phase 5: "...two analytics pages — Cost Overview (...) and Admission Overview (...)" → split into 3 clean sentences, each named page gets its own sentence
+- Source card Rankings: "QS and THE rankings and accreditation databases" → "QS and THE world rankings, plus accreditation databases"
+- Source card Exchange Rates: "Verified FX providers" → "Verified exchange rate sources" (FX is jargon for this audience)
+- Footnote: "More countries and institutions will be added over time" → "Additional countries and institutions are planned for future updates"
+
+---
+
+### 148. About page — hero section, card border-radius
+
+**Files changed:** `pages/AboutPage.jsx`, `index.css`
+
+Hero section above Mission:
+- Imported `useAppShell` theme, both logo SVGs, and `IconImage` into `AboutPage.jsx`
+- Added `.about-hero` block: logo + "UniMatch" brand name (`var(--text-2xl)/--weight-bold`) + tagline in muted text — gives the page a clear product identity without duplicating the topbar "About" title
+- Hero has a bottom border divider to visually separate it from the section content
+
+Card border-radius — added `border-radius: var(--radius-lg)` to every about card (matches `.panel` / `.info-card` standard used throughout the app):
+- `.about-stat`, `.about-feature-card`, `.about-phase-card`, `.about-source-card`, `.about-team-card`
+
+---
+
+### 147. About page — full token compliance, double title fix, readability pass
+
+**Files changed:** `components/Layout.jsx`, `pages/AboutPage.jsx`, `index.css`
+
+Double title fix (same pattern as Settings):
+- Applied `topbar-section-greeting` class to About page topbar label in `Layout.jsx` — "About" now renders as the large title same as Home/Settings
+- Removed `section-heading` block (`<h2>About UniMatch</h2>` + tagline) from `AboutPage.jsx` — topbar owns the title, no duplication
+
+Token compliance — replaced all raw `rem` font sizes in `about-*` CSS with design tokens:
+- Section headings `h3`: `1rem` → `var(--text-lg)` (18px) — was near-invisible as a heading
+- Prose text: `0.92rem` → `var(--text-md)` (15px) with `var(--leading-relaxed)` 
+- Stat values: `1.2rem` → `var(--text-xl)` (22px) with `var(--weight-bold)`
+- Body copy in all cards: `0.875rem` → `var(--text-base)` (14px)
+- Card headings `h4`: `0.9rem` → `var(--text-md)` (15px)
+- Source/footnote text: `0.85rem` → `var(--text-sm)` (13px)
+- Phase number badge: `0.72rem` → `var(--text-2xs)` (11px)
+- `section-heading h2` (global utility): `1.35rem` → `var(--text-xl)` with `var(--weight-semibold)`
+
+Spacing also moved to tokens (`var(--space-*)`) throughout all about-* blocks. Font weights changed to `var(--weight-semibold)` / `var(--weight-bold)`. Line heights to `var(--leading-*)`.
+
+---
+
+### 146. About page — avatar initials, mobile stats 2×2, inline style removal
+
+**Files changed:** `pages/AboutPage.jsx`, `index.css`
+
+- Added `getInitials()` helper; renders builder initials (PSA / KKL) inside `.about-avatar` instead of blank placeholder circle
+- Resized avatar from 76px → 56px, added inline-flex centering
+- Fixed `.about-stats-row` at ≤760px: `1fr` (4-stack) → `1fr 1fr` (2×2 grid)
+- Replaced inline `style={{ fontSize: '0.82rem' }}` with `.about-footnote` using `var(--text-sm)` token
+
+---
+
+### 145. About page — audit scan (no code changes)
+
+**Files changed:** none
+
+Scanned `AboutPage.jsx` in preview at 1440×900 light/dark and 375×812 mobile. No broken logic; identified issues logged as #146–147.
+
+---
+
 ### 144. Settings — single title via topbar, font sizes bumped to token scale
 
 **Files changed:** `components/Layout.jsx`, `pages/SettingsPage.jsx`, `index.css`
