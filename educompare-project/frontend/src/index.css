@@ -1185,12 +1185,12 @@ select {
 
 .legal-country-toggle-name {
   flex: 1;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
 }
 
 .legal-country-toggle-arrow {
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   color: var(--muted);
   min-width: 16px;
   text-align: right;
@@ -1210,20 +1210,20 @@ select {
 .legal-badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 600;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
   letter-spacing: 0.02em;
 }
 
 .legal-badge--ok {
-  background: #d4edda;
-  color: #1a5c2a;
+  background: rgba(46, 125, 79, 0.12);
+  color: var(--color-success);
 }
 
 .legal-badge--no {
-  background: #f8d7da;
-  color: #721c24;
+  background: rgba(191, 73, 73, 0.12);
+  color: var(--color-danger);
 }
 
 .legal-visa-notes {
@@ -1243,13 +1243,13 @@ select {
 
 .legal-visa-notes p {
   margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.6;
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
   color: var(--text);
 }
 
 .legal-source {
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
 }
 
 .data-freshness-note {

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getCountryRules } from '../api/api'
 import InfoCard from '../components/InfoCard'
-import PageHeader from '../components/PageHeader'
 
 function LegalGuardrailPage() {
   const [rules, setRules] = useState([])
@@ -31,16 +30,14 @@ function LegalGuardrailPage() {
 
   return (
     <div className="page-stack">
-      <PageHeader
-        eyebrow="Legal Info"
-        title="Work and visa rules by country"
-        description="Check part-time work rights, permit requirements, and post-study visa options before trusting any income claims from agents or sales materials."
-      />
+      <p className="page-description">
+        Check part-time work rights, permit requirements, and post-study visa options before trusting any income claims from agents or promotional materials.
+      </p>
 
       {error ? <p className="error-text">{error}</p> : null}
 
       <InfoCard title="Important reminder" eyebrow="Before you decide" tone="muted">
-        <p>Any agent claim about easy part-time income should be verified against the official permit rules and visa conditions for that country before you commit to anything.</p>
+        <p>Any agent claim about easy part-time income should be verified against the official permit rules and visa conditions for that country before making any commitment.</p>
       </InfoCard>
 
       {!rules.length && !error ? <p className="muted-text">Loading country rules...</p> : null}
@@ -93,7 +90,7 @@ function LegalGuardrailPage() {
                           <dt>Part-time work</dt>
                           <dd>
                             {rule.part_time_allowed === true
-                              ? `Yes — up to ${rule.work_hour_limit} hrs/week`
+                              ? `Yes, up to ${rule.work_hour_limit} hrs/week`
                               : rule.part_time_allowed === false
                                 ? 'Not permitted'
                                 : 'Not listed'}
@@ -127,8 +124,8 @@ function LegalGuardrailPage() {
 
       <InfoCard title="Compare countries" eyebrow="Planned feature">
         <p>
-          A dedicated <strong>Compare Countries</strong> tool is planned for the Decision Hub —
-          letting you pick any two countries and see a live side-by-side of visa type, work rights, and post-study options.
+          A dedicated <strong>Compare Countries</strong> tool is planned for the Decision Hub,
+          letting you pick any two countries and see a side-by-side view of visa type, work rights, and post-study options.
         </p>
       </InfoCard>
     </div>

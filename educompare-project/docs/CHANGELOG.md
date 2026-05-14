@@ -5,6 +5,48 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 151. Legal Info + Red Flag Guide — double title fix, token CSS, text cleanup
+
+**Files changed:** `components/Layout.jsx`, `pages/LegalGuardrailPage.jsx`, `pages/RedFlagGuidePage.jsx`, `index.css`
+
+Double title fix (same pattern as Settings/About/Home):
+- Added `isLegalPage` and `isRedFlagPage` to `Layout.jsx`, applied `topbar-section-greeting` to both
+- Removed `PageHeader` import and usage from both pages — topbar now owns the title
+- Replaced with `<p className="page-description">` as the opening subtitle in each page
+
+Legal Info text cleanup:
+- Description: "sales materials" → "promotional materials"
+- InfoCard reminder: "before you commit to anything" → "before making any commitment"
+- Em dash in work hours: `Yes — up to X hrs/week` → `Yes, up to X hrs/week`
+- Em dash in planned feature card: `Decision Hub — letting you` → `Decision Hub, letting you`; "live side-by-side" → "side-by-side view"
+
+Red Flag Guide:
+- Long PageHeader h1 ("Keep warning signs visible before any payment, deposit, or admission promise is accepted.") removed — was rendered at 36px clamp which dominated the page
+- Replaced with a concise muted `page-description`
+- Removed meta-commentary description ("This guide stays inside the dashboard so risk checks...")
+
+CSS token compliance for `legal-*` classes:
+- `legal-country-toggle-name`: `1rem/600` → `var(--text-md)/var(--weight-semibold)`
+- `legal-country-toggle-arrow`: `0.9rem` → `var(--text-sm)`
+- `legal-badge`: `0.72rem/600` → `var(--text-2xs)/var(--weight-semibold)`; `border-radius: 999px` → `var(--radius-pill)`
+- `legal-visa-notes p`: `0.88rem/1.6` → `var(--text-base)/var(--leading-relaxed)`
+- `legal-source`: `0.85rem` → `var(--text-sm)`
+- Badge background colors: hardcoded hex → `rgba(color-success/danger, 0.12)` with `var(--color-success/danger)` text — adapts to dark mode
+
+---
+
+### 150. About page — hero section, card border-radius, text cleanup
+
+**Files changed:** `pages/AboutPage.jsx`, `index.css`
+
+- Hero block: UniMatch logo + product name + tagline above Mission section
+- Card border-radius: `var(--radius-lg)` added to all about-* card types
+- Full text pass: 6 em dashes removed throughout all sections
+- "FX providers" → "exchange rate sources", footnote and mission copy tightened
+- Phase 5 description restructured from one long em-dash sentence into 3 clean sentences
+
+---
+
 ### 149. About page — text review, remove all em dashes
 
 **Files changed:** `pages/AboutPage.jsx`

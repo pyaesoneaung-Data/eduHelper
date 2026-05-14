@@ -1,14 +1,11 @@
 import InfoCard from '../components/InfoCard'
-import PageHeader from '../components/PageHeader'
 
 function RedFlagGuidePage() {
   return (
     <div className="page-stack">
-      <PageHeader
-        eyebrow="Red Flag Guide"
-        title="Keep warning signs visible before any payment, deposit, or admission promise is accepted."
-        description="This guide stays inside the dashboard so risk checks are part of the same decision flow as cost, comparison, and legal review."
-      />
+      <p className="page-description">
+        Review these warning signs before any payment, deposit, or admission commitment. Risk checks should happen alongside cost, comparison, and legal review.
+      </p>
 
       <div className="card-grid">
         <InfoCard title="Guaranteed admission fee" eyebrow="Red flag 1">

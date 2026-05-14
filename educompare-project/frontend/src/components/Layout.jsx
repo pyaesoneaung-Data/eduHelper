@@ -33,6 +33,8 @@ function LayoutFrame() {
   const isSettingsPage = location.pathname.startsWith('/settings')
   const isCostOverviewPage = location.pathname === '/analytics'
   const isAboutPage = location.pathname.startsWith('/about')
+  const isLegalPage = location.pathname.startsWith('/legal')
+  const isRedFlagPage = location.pathname.startsWith('/red-flags')
 
   useEffect(() => {
     closeSidebar()
@@ -66,7 +68,7 @@ function LayoutFrame() {
               >
                 <List size={20} aria-hidden="true" />
               </button>
-              <span className={(isHomePage || isSettingsPage || isAboutPage) ? 'topbar-section-label topbar-section-greeting' : 'topbar-section-label'}>
+              <span className={(isHomePage || isSettingsPage || isAboutPage || isLegalPage || isRedFlagPage) ? 'topbar-section-label topbar-section-greeting' : 'topbar-section-label'}>
                 {sectionLabel}
               </span>
             </div>
