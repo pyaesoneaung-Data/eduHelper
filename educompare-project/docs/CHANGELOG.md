@@ -5,6 +5,150 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 144. Settings — single title via topbar, font sizes bumped to token scale
+
+**Files changed:** `components/Layout.jsx`, `pages/SettingsPage.jsx`, `index.css`
+
+- Removed duplicate `<h2>Settings</h2>` from page body — the topbar already provides the title via `getSectionLabel`
+- Applied `topbar-section-greeting` class to the Settings topbar label (same as Home), so "Settings" renders large and bold matching the greeting treatment
+- Bumped `.settings-row-label` from `--text-base` (14px) → `--text-md` (15px)
+- Bumped `.settings-row-note` from `--text-sm` (13px) → `--text-base` (14px)
+- All sizes remain within the token system defined in `styles/tokens.css`
+
+---
+
+### 143. Sidebar — full Chinese translation for all nav labels
+
+**Files changed:** `components/Sidebar.jsx`, `i18n/translations.js`
+
+The sidebar had every label hardcoded in English — `navConfig` used static strings and never called `t()`. Added `labelKey` to every nav item and footer link, wired `t` from `useAppShell` into the Sidebar component, and updated all render paths to use `t(item.labelKey, item.label)`.
+
+Expanded `translations.js` with all missing nav keys for both `en` and `zh`:
+- Sub-items: `recommendation`, `compare`, `costCalculator`
+- Sub-items: `costOverview`, `admissionOverview`, `deadlineInsights`, `rankingInsights`
+- Footer: `about`, `collapse`
+
+Chinese values: 课程推荐, 课程比较, 费用计算器, 费用概览, 入学概览, 截止日期, 排名洞察, 关于, 收起. English fallback preserved on every `t()` call so the sidebar still works if a key is missing.
+
+---
+
+### 142. Settings — row-list layout with section groups
+
+**Files changed:** `pages/SettingsPage.jsx`, `index.css`
+
+Replaced the InfoCard-per-setting structure with a proper settings page layout: settings are rows inside a unified panel, label + note on the left, segmented control on the right. Related settings grouped under small-caps section labels (APPEARANCE, DATA). This is the standard pattern used by Linear, macOS, Notion — no redundant card boxing around each individual preference.
+
+New CSS: `.settings-group`, `.settings-group-label`, `.settings-panel`, `.settings-row`, `.settings-row-info`, `.settings-row-label`, `.settings-row-note`. Responsive at ≤520px: rows stack vertically. Removed `InfoCard` import from SettingsPage since it's no longer needed.
+
+---
+
+### 141. Settings — segmented control for preference toggles
+
+**Files changed:** `pages/SettingsPage.jsx`, `index.css`
+
+Replaced the full-width stacked button layout with a segmented control pattern: a pill-shaped track containing both options, active option gets an elevated background, inactive stays transparent. This is the standard UX pattern for binary preferences (iOS, macOS, most modern dashboards) — compact, immediately readable, not stretched to fill the card.
+
+New CSS classes: `.settings-toggle` (track), `.settings-toggle-btn`, `.settings-toggle-btn-active`. Dark mode override flips the elevation direction — active pill uses `--color-bg-elevated` (#222222) against `--color-bg-base` (#111111) track, so active reads as raised in both themes.
+
+---
+
+### 140. Settings page — UX overhaul
+
+**Files changed:** `pages/SettingsPage.jsx`, `components/Layout.jsx`, `index.css`, `i18n/translations.js`
+
+**Problems fixed:**
+- `PageHeader` card was redundant and heavy for a preferences page — replaced with lightweight `section-heading` matching Decision Hub sub-pages
+- "Settings" eyebrow + "Settings" title was the same word twice — eyebrow removed
+- Description was developer-facing ("foundations for the future multi-language dashboard") — changed to user-facing in both `en` and `zh` translations
+- Option buttons stacked full-width (column flex) — changed `option-group` to `flex-direction: row; flex-wrap: wrap` so Theme/Language/Currency buttons sit side-by-side
+- `option-button` had `border-radius: 0` and `justify-content: flex-start` — updated to `border-radius: var(--radius-sm)`, centered, `flex: 1` for equal-width pairs
+- Topbar language toggle showed `ZH` (ISO code, unrecognizable) — changed to `中文` using a lookup map
+- Chinese button in Settings showed `"Chinese"` (English label, unhelpful if already switched) — hardcoded to `中文` so it's always readable
+
+---
+
+### 139. RecommendationPage — fix budget label unit on separate line
+
+**Files changed:** `pages/RecommendationPage.jsx`
+
+The `<label>` element uses `display: flex; flex-direction: column`, so any inline sibling becomes its own flex item. `Maximum yearly budget` was one flex item and `<span className="label-unit"> (USD)</span>` was a second — causing the currency unit to render on its own line below the label text. Wrapped both in an outer `<span>` so they stay inline.
+
+---
+
+### 138. Light mode — warm white surface tokens
+
+**Files changed:** `styles/tokens.css`
+
+Shifted light mode surfaces from cold white/gray to warm off-white. Dark mode tokens untouched.
+
+| Token | Before | After |
+|---|---|---|
+| `--color-bg-base` | `#e0e0e0` | `#e8e4df` |
+| `--color-bg-surface` | `#ffffff` | `#faf8f5` |
+| `--color-bg-elevated` | `#ffffff` | `#fdfcfa` |
+| `--color-bg-subtle` | `#f2f2f2` | `#f2efea` |
+| `--color-border-default` | `#d1d1d1` | `#d4cfc9` |
+| `--color-border-subtle` | `#e5e5e5` | `#e8e4df` |
+
+The shift is subtle — a slight beige-cream warmth that removes the cold blue-gray from panel surfaces. Keeps the product feeling professional without clinical white. All pages inherit via CSS variables, no per-page changes needed.
+
+---
+
+### 137. Sidebar — rethink active state: drop bar, use neutral tint + fill icon
+
+**Files changed:** `index.css`, `styles/tokens.css`
+
+**Rationale:** The left-border bar pattern belongs to developer tools (VS Code, Linear). UniMatch's frosted glass sidebar in light mode and the student target audience don't fit that pattern. The bar created visual misalignment — a hard geometric edge on a soft glass surface. Dropped entirely.
+
+**New active state approach — both themes:**
+- Background: `--sidebar-link-active-bg` (updated token — see below)
+- Icon: `fill` weight (already wired in JSX via `weight={active ? 'fill' : 'regular'}`)
+- Text: `--weight-semibold` + `--color-text-primary`
+- No left bar, no coloured icon in light
+
+**Dark mode only:** active icon gets `color: var(--color-primary)` (`#75a8d3`) — subtle blue tint that reads well on the solid dark panel without looking jarring.
+
+**Sub-link active:** `color: var(--color-text-primary)` instead of primary blue — muted → primary text jump is sufficient hierarchy signal.
+
+**Token changes (`tokens.css`):**
+- Light `--sidebar-link-active-bg`: `rgba(0,0,0,0.06)` → `rgba(0,0,0,0.09)` — slightly more visible neutral tint on the glass
+- Dark `--sidebar-link-active-bg`: `rgba(255,255,255,0.07)` → `rgba(255,255,255,0.10)` — same principle on dark
+
+Verified in browser: light and dark both show clean, harmonious active state. Collapsed icon-only mode also works — filled icon communicates active without any bar.
+
+---
+
+### 136. Sidebar — fix dark gradient bleed, refine active state per theme
+
+**Files changed:** `index.css`
+
+**Dark mode gradient bleed:** `.dashboard-sidebar` always applied `linear-gradient(150deg, rgba(255,255,255,0.30) …)` — visible as a white glow in the top-left corner in dark mode. Fixed with `[data-theme='dark'] .dashboard-sidebar { background: var(--sidebar-bg) }` override that strips the gradient, leaving the solid dark panel untouched.
+
+**Active bar thickness:** `inset 3px` → `inset 4px` on both `.sidebar-link-active` and `.sidebar-group-btn-active` — 1px wider, more readable in light mode without being heavy.
+
+**Active icon colour — dark only:** `.sidebar-link-active .sidebar-link-icon` and `.sidebar-group-btn-active .sidebar-link-icon` scoped to `[data-theme='dark']`. In light mode the 4px blue bar + `--color-primary-soft` background is sufficient signal; adding a blue icon on top created visual misalignment. Dark mode keeps the subtle icon colour tint (works well on the dark panel).
+
+---
+
+### 135. Sidebar — active state clarity, icon colour, collapse divider
+
+**Files changed:** `index.css`
+
+**Problem:** Active sidebar items were nearly invisible in both themes — light used `rgba(0,0,0,0.06)` and dark used `rgba(255,255,255,0.07)`, both barely distinguishable from hover. In collapsed (icon-only) mode the active item was completely undetectable. The collapse button was visually identical to the footer nav links.
+
+**Changes:**
+
+1. **Active link/group — light + dark:**
+   - `background` → `var(--color-primary-soft)` — theme-aware tint (`#e7f0f7` light / `#1a2e3f` dark)
+   - `box-shadow: inset 3px 0 0 var(--color-primary)` — left accent bar, rounded with the link's `border-radius`
+   - Active icon colour → `var(--color-primary)` via `.sidebar-link-active .sidebar-link-icon` and `.sidebar-group-btn-active .sidebar-link-icon` — works in both expanded and collapsed mode
+
+2. **Active sub-links:** removed background — sub-links now show `color: var(--color-primary)` only. This creates a clear hierarchy: parent active = bg + bar + icon colour, child active = text colour only.
+
+3. **Collapse button separator:** added `margin-top: var(--space-3)` + `::before` pseudo-element drawing a 1px `--color-border-subtle` line between the footer nav links and the collapse button. No JSX changes required.
+
+---
+
 ### 134. Database — re-seed Neon DB with Singapore data
 
 **Action:** Ran `python seed.py` from `backend/`. Seed uses `db.merge()` (upsert by primary key) so all existing Taiwan and Thailand rows were preserved and the 5 Singapore rows were inserted/updated.

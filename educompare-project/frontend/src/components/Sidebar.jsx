@@ -22,40 +22,44 @@ const navConfig = [
     type: 'link',
     to: '/',
     end: true,
+    labelKey: 'nav.home',
     label: 'Home',
     icon: House,
   },
   {
     key: 'decision-hub',
     type: 'group',
+    labelKey: 'nav.decisionHub',
     label: 'Decision Hub',
     icon: Compass,
     basePath: '/decision-hub',
     defaultTo: '/decision-hub/recommendation',
     children: [
-      { label: 'Recommendation', to: '/decision-hub/recommendation' },
-      { label: 'Compare', to: '/decision-hub/compare' },
-      { label: 'Cost Calculator', to: '/decision-hub/cost-calculator' },
+      { labelKey: 'nav.recommendation', label: 'Recommendation', to: '/decision-hub/recommendation' },
+      { labelKey: 'nav.compare',        label: 'Compare',         to: '/decision-hub/compare' },
+      { labelKey: 'nav.costCalculator', label: 'Cost Calculator', to: '/decision-hub/cost-calculator' },
     ],
   },
   {
     key: 'analytics',
     type: 'group',
+    labelKey: 'nav.analytics',
     label: 'Analytics',
     icon: ChartBar,
     basePath: '/analytics',
     defaultTo: '/analytics',
     children: [
-      { label: 'Cost Overview', to: '/analytics', end: true },
-      { label: 'Admission Overview', to: '/analytics/admission' },
-      { label: 'Deadline Insights', to: '/analytics/deadlines' },
-      { label: 'Ranking Insights', to: '/analytics/ranking' },
+      { labelKey: 'nav.costOverview',       label: 'Cost Overview',       to: '/analytics',            end: true },
+      { labelKey: 'nav.admissionOverview',  label: 'Admission Overview',  to: '/analytics/admission' },
+      { labelKey: 'nav.deadlineInsights',   label: 'Deadline Insights',   to: '/analytics/deadlines' },
+      { labelKey: 'nav.rankingInsights',    label: 'Ranking Insights',    to: '/analytics/ranking' },
     ],
   },
   {
     key: 'legal',
     type: 'link',
     to: '/legal',
+    labelKey: 'nav.legal',
     label: 'Legal Info',
     icon: Scales,
   },
@@ -63,18 +67,19 @@ const navConfig = [
     key: 'red-flags',
     type: 'link',
     to: '/red-flags',
+    labelKey: 'nav.redFlags',
     label: 'Red Flag Guide',
     icon: ShieldWarning,
   },
 ]
 
 const footerLinks = [
-  { to: '/settings', label: 'Settings', icon: Gear },
-  { to: '/about',    label: 'About',    icon: Info },
+  { to: '/settings', labelKey: 'nav.settings', label: 'Settings', icon: Gear },
+  { to: '/about',    labelKey: 'nav.about',    label: 'About',    icon: Info },
 ]
 
 function Sidebar() {
-  const { closeSidebar, isSidebarCollapsed, toggleSidebarCollapsed, theme } = useAppShell()
+  const { closeSidebar, isSidebarCollapsed, toggleSidebarCollapsed, theme, t } = useAppShell()
   const logoSrc = theme === 'dark' ? logoDark : logoLight
   const location = useLocation()
   const navigate = useNavigate()
@@ -138,6 +143,8 @@ function Sidebar() {
 
       <nav className="sidebar-nav" aria-label="Primary navigation">
         {navConfig.map((item) => {
+          const itemLabel = t(item.labelKey, item.label)
+
           if (item.type === 'link') {
             const active = isLinkActive(item.to, item.end)
             const Icon = item.icon
@@ -146,13 +153,13 @@ function Sidebar() {
                 key={item.to}
                 to={item.to}
                 end={item.end}
-                title={item.label}
-                aria-label={item.label}
+                title={itemLabel}
+                aria-label={itemLabel}
                 onClick={closeSidebar}
                 className={() => getLinkClass(item.to, item.end)}
               >
                 <Icon className="sidebar-link-icon" weight={active ? 'fill' : 'regular'} aria-hidden="true" />
-                <span className="sidebar-link-label">{item.label}</span>
+                <span className="sidebar-link-label">{itemLabel}</span>
               </NavLink>
             )
           }
@@ -169,10 +176,10 @@ function Sidebar() {
                   className={`sidebar-group-btn${isActive ? ' sidebar-group-btn-active' : ''}`}
                   onClick={() => handleGroupClick(item)}
                   aria-expanded={isOpen && !isSidebarCollapsed}
-                  title={item.label}
+                  title={itemLabel}
                 >
                   <Icon className="sidebar-link-icon" weight={isActive ? 'fill' : 'regular'} aria-hidden="true" />
-                  <span className="sidebar-link-label">{item.label}</span>
+                  <span className="sidebar-link-label">{itemLabel}</span>
                   <CaretRight
                     className={`sidebar-group-chevron${isOpen ? ' sidebar-group-chevron-open' : ''}`}
                     aria-hidden="true"
@@ -191,14 +198,14 @@ function Sidebar() {
                           childActive ? 'sidebar-sub-link sidebar-sub-link-active' : 'sidebar-sub-link'
                         }
                       >
-                        {child.label}
+                        {t(child.labelKey, child.label)}
                       </NavLink>
                     ))}
                   </div>
                 ) : null}
 
                 <div className="sidebar-flyout" aria-hidden="true">
-                  <p className="sidebar-flyout-title">{item.label}</p>
+                  <p className="sidebar-flyout-title">{itemLabel}</p>
                   <div className="sidebar-flyout-divider" />
                   {item.children.map((child) => (
                     <NavLink
@@ -210,7 +217,7 @@ function Sidebar() {
                         childActive ? 'sidebar-flyout-link sidebar-flyout-link-active' : 'sidebar-flyout-link'
                       }
                     >
-                      {child.label}
+                      {t(child.labelKey, child.label)}
                     </NavLink>
                   ))}
                 </div>
@@ -226,17 +233,18 @@ function Sidebar() {
         {footerLinks.map((link) => {
           const active = isLinkActive(link.to, false)
           const Icon = link.icon
+          const linkLabel = t(link.labelKey, link.label)
           return (
             <NavLink
               key={link.to}
               to={link.to}
-              title={link.label}
-              aria-label={link.label}
+              title={linkLabel}
+              aria-label={linkLabel}
               onClick={closeSidebar}
               className={() => getLinkClass(link.to, false)}
             >
               <Icon className="sidebar-link-icon" weight={active ? 'fill' : 'regular'} aria-hidden="true" />
-              <span className="sidebar-link-label">{link.label}</span>
+              <span className="sidebar-link-label">{linkLabel}</span>
             </NavLink>
           )
         })}
@@ -244,14 +252,14 @@ function Sidebar() {
           type="button"
           className="sidebar-collapse-btn"
           onClick={toggleSidebarCollapsed}
-          aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={isSidebarCollapsed ? 'Expand sidebar' : t('nav.collapse', 'Collapse')}
+          title={isSidebarCollapsed ? 'Expand sidebar' : t('nav.collapse', 'Collapse')}
         >
           {isSidebarCollapsed
             ? <CaretRight className="sidebar-collapse-icon" aria-hidden="true" />
             : <CaretLeft  className="sidebar-collapse-icon" aria-hidden="true" />
           }
-          <span className="sidebar-link-label">Collapse</span>
+          <span className="sidebar-link-label">{t('nav.collapse', 'Collapse')}</span>
         </button>
       </div>
     </div>

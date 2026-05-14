@@ -66,7 +66,7 @@ function LayoutFrame() {
               >
                 <List size={20} aria-hidden="true" />
               </button>
-              <span className={isHomePage ? 'topbar-section-label topbar-section-greeting' : 'topbar-section-label'}>
+              <span className={(isHomePage || isSettingsPage) ? 'topbar-section-label topbar-section-greeting' : 'topbar-section-label'}>
                 {sectionLabel}
               </span>
             </div>
@@ -93,7 +93,7 @@ function LayoutFrame() {
                   title={t('ui.language', 'Language')}
                 >
                   <Globe size={18} aria-hidden="true" />
-                  <span className="toggle-label">{language.toUpperCase()}</span>
+                  <span className="toggle-label">{{ en: 'EN', zh: '中文' }[language] ?? language.toUpperCase()}</span>
                 </button>
                 <button
                   className="topbar-toggle-btn"

@@ -7,10 +7,19 @@ export const translations = {
     nav: {
       home: 'Home',
       decisionHub: 'Decision Hub',
+      recommendation: 'Recommendation',
+      compare: 'Compare',
+      costCalculator: 'Cost Calculator',
       analytics: 'Analytics',
+      costOverview: 'Cost Overview',
+      admissionOverview: 'Admission Overview',
+      deadlineInsights: 'Deadline Insights',
+      rankingInsights: 'Ranking Insights',
       legal: 'Legal Info',
       redFlags: 'Red Flag Guide',
       settings: 'Settings',
+      about: 'About',
+      collapse: 'Collapse',
       logout: 'Logout',
     },
     ui: {
@@ -27,7 +36,7 @@ export const translations = {
     },
     settings: {
       title: 'Settings',
-      description: 'Control theme and language foundations for the future multi-language dashboard.',
+      description: 'Adjust display, language, and cost preferences.',
     },
   },
   zh: {
@@ -38,10 +47,19 @@ export const translations = {
     nav: {
       home: '首页',
       decisionHub: '决策中心',
+      recommendation: '课程推荐',
+      compare: '课程比较',
+      costCalculator: '费用计算器',
       analytics: '数据分析',
+      costOverview: '费用概览',
+      admissionOverview: '入学概览',
+      deadlineInsights: '截止日期',
+      rankingInsights: '排名洞察',
       legal: '法律信息',
       redFlags: '风险提醒',
       settings: '设置',
+      about: '关于',
+      collapse: '收起',
       logout: '退出',
     },
     ui: {
@@ -58,7 +76,7 @@ export const translations = {
     },
     settings: {
       title: '设置',
-      description: '为后续多语言仪表盘准备主题与语言基础结构',
+      description: '调整显示语言与费用偏好设置。',
     },
   },
 }

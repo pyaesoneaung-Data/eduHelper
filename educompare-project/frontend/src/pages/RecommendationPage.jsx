@@ -198,8 +198,7 @@ function RecommendationPage() {
           </label>
 
           <label>
-            Maximum yearly budget
-            {budgetCurrencyLabel ? <span className="label-unit"> ({budgetCurrencyLabel})</span> : null}
+            <span>Maximum yearly budget{budgetCurrencyLabel ? <span className="label-unit"> ({budgetCurrencyLabel})</span> : null}</span>
             <input
               type="number"
               name="max_budget"

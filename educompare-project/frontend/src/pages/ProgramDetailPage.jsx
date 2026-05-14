@@ -137,7 +137,7 @@ function ProgramDetailPage() {
             </dl>
           </InfoCard>
 
-          <InfoCard title="Admission requirements">
+          <InfoCard title="Requirements">
             {data.requirements?.length ? (
               <dl className="detail-grid">
                 <div>
@@ -185,7 +185,10 @@ function ProgramDetailPage() {
                   {calcEstimatedYearlyCost(data.cost) !== null ? (
                     <div>
                       <dt>Estimated yearly cost</dt>
-                      <dd>{formatCost(calcEstimatedYearlyCost(data.cost), data.cost.currency, displayCurrency)} <span className="muted-text" style={{ fontWeight: 400, fontSize: '0.8rem' }}>(tuition ×2 + living ×12)</span></dd>
+                      <dd>
+                        {formatCost(calcEstimatedYearlyCost(data.cost), data.cost.currency, displayCurrency)}
+                        <span className="muted-text" style={{ display: 'block', fontWeight: 400, fontSize: '0.8rem', marginTop: '2px' }}>tuition ×2 + living ×12</span>
+                      </dd>
                     </div>
                   ) : null}
                   <div>
@@ -215,9 +218,9 @@ function ProgramDetailPage() {
 
       {data ? (
         <div className="program-detail-actions">
-          <Link to="/decision-hub/recommendation" className="btn-secondary">← Back to recommendations</Link>
-          <Link to="/decision-hub/compare" className="btn-secondary">Compare programs →</Link>
-          <Link to="/decision-hub/cost-calculator" className="btn-secondary">Cost calculator →</Link>
+          <Link to="/decision-hub/recommendation" className="btn-secondary">Recommendation</Link>
+          <Link to="/decision-hub/compare" className="btn-secondary">Compare programs</Link>
+          <Link to="/decision-hub/cost-calculator" className="btn-secondary">Cost calculator</Link>
         </div>
       ) : null}
     </div>

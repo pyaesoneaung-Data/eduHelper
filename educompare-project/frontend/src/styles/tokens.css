@@ -105,10 +105,10 @@
 /* ─────────────────────────────────────────────────────────────────────────── */
 :root {
   /* Surfaces */
-  --color-bg-base:     #e0e0e0;
-  --color-bg-surface:  #ffffff;
-  --color-bg-elevated: #ffffff;
-  --color-bg-subtle:   #f2f2f2;
+  --color-bg-base:     #e8e4df;
+  --color-bg-surface:  #faf8f5;
+  --color-bg-elevated: #fdfcfa;
+  --color-bg-subtle:   #f2efea;
 
   /* Text */
   --color-text-primary:   #121212;
@@ -118,8 +118,8 @@
   --color-text-inverse:   #ffffff;
 
   /* Borders */
-  --color-border-default: #d1d1d1;
-  --color-border-subtle:  #e5e5e5;
+  --color-border-default: #d4cfc9;
+  --color-border-subtle:  #e8e4df;
   --color-border-strong:  #b0b0b0;
 
   /* Primary action (placeholder — palette TBD) */
@@ -140,7 +140,7 @@
   --sidebar-border:    rgba(255, 255, 255, 1.0);
   --sidebar-shadow:    0 16px 56px rgba(0, 0, 0, 0.18), 0 2px 10px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1.0), inset 1px 0 0 rgba(255, 255, 255, 0.60);
   --sidebar-blur:      blur(20px) saturate(200%);
-  --sidebar-link-active-bg: rgba(0, 0, 0, 0.06);
+  --sidebar-link-active-bg: rgba(0, 0, 0, 0.09);
   --sidebar-link-hover-bg:  rgba(0, 0, 0, 0.04);
 }
 
@@ -184,6 +184,6 @@
   --sidebar-border:    rgba(255, 255, 255, 0.06);
   --sidebar-shadow:    0 8px 32px rgba(0, 0, 0, 0.40);
   --sidebar-blur:      none;
-  --sidebar-link-active-bg: rgba(255, 255, 255, 0.07);
+  --sidebar-link-active-bg: rgba(255, 255, 255, 0.10);
   --sidebar-link-hover-bg:  rgba(255, 255, 255, 0.05);
 }
