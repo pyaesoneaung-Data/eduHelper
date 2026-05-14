@@ -2,12 +2,15 @@ import { useEffect, useMemo, useState } from 'react'
 import { getProgramDetail, getPrograms, getUniversities } from '../api/api'
 import CompareTable from '../components/CompareTable'
 import FormSection from '../components/FormSection'
+import PageState from '../components/PageState'
+import { useAppShell } from '../context/AppShellContext'
 
 const COUNTRY_NAMES = { C001: 'Taiwan', C002: 'Thailand', C003: 'Singapore' }
 const COUNTRY_ORDER = ['C001', 'C002', 'C003']
 const SESSION_KEY = 'unimatch_compare'
 
 function CompareProgramsPage() {
+  const { t } = useAppShell()
   const [programs, setPrograms] = useState([])
   const [universities, setUniversities] = useState([])
   const [programIds, setProgramIds] = useState({ first: '', second: '' })
@@ -138,7 +141,7 @@ function CompareProgramsPage() {
   return (
     <div className="page-stack">
       <div className="section-heading">
-        <h2>Compare Programs</h2>
+        <h2>{t('nav.compare', 'Compare Programs')}</h2>
         <p>Select two programs to compare tuition, living costs, GPA and IELTS requirements, and deadlines side by side.</p>
       </div>
 
@@ -171,7 +174,7 @@ function CompareProgramsPage() {
         </div>
       </form>
 
-      {error ? <p className="error-text">{error}</p> : null}
+      <PageState error={error} />
       <CompareTable rows={rows} />
     </div>
   )

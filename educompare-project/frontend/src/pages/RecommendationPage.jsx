@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getCountryRules, getPrograms, getRecommendations } from '../api/api'
+import PageState from '../components/PageState'
 import { useAppShell } from '../context/AppShellContext'
 import { convertCurrency } from '../utils/currency'
 import FormSection from '../components/FormSection'
@@ -36,7 +37,7 @@ function formatBudgetPreview(rawValue, isUSD, countryId) {
 const SESSION_KEY = 'unimatch_recommendation'
 
 function RecommendationPage() {
-  const { currency: displayCurrency, toggleCurrency } = useAppShell()
+  const { currency: displayCurrency, toggleCurrency, t } = useAppShell()
   const [programs, setPrograms] = useState([])
   const [countries, setCountries] = useState([])
   const [results, setResults] = useState([])
@@ -153,7 +154,7 @@ function RecommendationPage() {
   return (
     <div className="page-stack">
       <div className="section-heading">
-        <h2>Program Recommendations</h2>
+        <h2>{t('nav.recommendation', 'Program Recommendations')}</h2>
         <p>
           Enter your profile to find programs that match your background and budget.
           Country, degree level, and language narrow the results. Budget, GPA, and IELTS rank them by how well they fit you.
@@ -268,11 +269,11 @@ function RecommendationPage() {
         </div>
       </form>
 
-      {error ? <p className="error-text">{error}</p> : null}
+      <PageState error={error} />
 
       <section className="results-block">
         <div className="section-heading">
-          <h2>Recommendation results</h2>
+          <h2>{t('pages.recommendationResults', 'Recommendation results')}</h2>
           <p>Programs ranked by how well they match your profile. Review costs and requirements before deciding.</p>
         </div>
 

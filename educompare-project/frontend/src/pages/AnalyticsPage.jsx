@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
 import { getCostOverviewAnalytics, getCountryRules } from '../api/api'
 import InfoCard from '../components/InfoCard'
+import PageState from '../components/PageState'
 import {
   convertCurrency,
   FROM_USD,
   EXCHANGE_RATE_DATE,
 } from '../utils/currency'
+import { useAppShell } from '../context/AppShellContext'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -708,6 +710,7 @@ function CheapestProgramsTable({ selectedCountries, countryData, displayCurrency
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 function AnalyticsPage() {
+  const { t } = useAppShell()
   const displayCurrency = 'USD'
 
   const [data, setData] = useState(null)
@@ -792,7 +795,7 @@ function AnalyticsPage() {
     <div className="page-stack">
       <div className="section-heading">
         <div className="section-heading-title-row">
-          <h2>Cost Overview</h2>
+          <h2>{t('nav.costOverview', 'Cost Overview')}</h2>
           <span className="page-currency-badge">All values in USD</span>
         </div>
         <p>
@@ -805,8 +808,7 @@ function AnalyticsPage() {
         Data verified April 2026 · sourced from official university and government websites.
       </p>
 
-      {error ? <p className="error-text">{error}</p> : null}
-      {!data && !error ? <p className="muted-text">Loading cost data…</p> : null}
+      <PageState loading={!data && !error} error={error} />
 
       {data ? (
         <>

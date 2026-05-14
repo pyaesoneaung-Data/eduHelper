@@ -4,31 +4,31 @@ import { AppShellProvider, useAppShell } from '../context/AppShellContext'
 import { Moon, Sun, Globe, CurrencyDollar, List } from '@phosphor-icons/react'
 import Sidebar from './Sidebar'
 
-function getGreeting() {
+function getGreeting(t) {
   const hour = new Date().getHours()
-  if (hour < 12) return 'Good morning'
-  if (hour < 18) return 'Good afternoon'
-  return 'Good evening'
+  if (hour < 12) return t('greeting.morning', 'Good morning')
+  if (hour < 18) return t('greeting.afternoon', 'Good afternoon')
+  return t('greeting.evening', 'Good evening')
 }
 
-function getSectionLabel(pathname) {
-  if (pathname.startsWith('/decision-hub')) return 'Decision Hub'
-  if (pathname.startsWith('/analytics')) return 'Analytics'
-  if (pathname.startsWith('/legal')) return 'Legal Info'
-  if (pathname.startsWith('/red-flags')) return 'Red Flag Guide'
-  if (pathname.startsWith('/settings')) return 'Settings'
-  if (pathname.startsWith('/logout')) return 'Logout'
-  if (pathname.startsWith('/about')) return 'About'
+function getSectionLabel(pathname, t) {
+  if (pathname.startsWith('/decision-hub')) return t('nav.decisionHub', 'Decision Hub')
+  if (pathname.startsWith('/analytics')) return t('nav.analytics', 'Analytics')
+  if (pathname.startsWith('/legal')) return t('nav.legal', 'Legal Info')
+  if (pathname.startsWith('/red-flags')) return t('nav.redFlags', 'Red Flag Guide')
+  if (pathname.startsWith('/settings')) return t('nav.settings', 'Settings')
+  if (pathname.startsWith('/logout')) return t('nav.logout', 'Logout')
+  if (pathname.startsWith('/about')) return t('nav.about', 'About')
   if (pathname.startsWith('/admin')) return 'Admin'
-  if (pathname.startsWith('/programs')) return 'Program Detail'
-  return getGreeting()
+  if (pathname.startsWith('/programs')) return t('nav.programDetail', 'Program Detail')
+  return getGreeting(t)
 }
 
 function LayoutFrame() {
   const location = useLocation()
   const { closeSidebar, isSidebarOpen, isSidebarCollapsed, language, theme, currency, cycleLanguage, toggleTheme, toggleCurrency, toggleSidebar, t } =
     useAppShell()
-  const sectionLabel = getSectionLabel(location.pathname)
+  const sectionLabel = getSectionLabel(location.pathname, t)
   const isHomePage = location.pathname === '/'
   const isSettingsPage = location.pathname.startsWith('/settings')
   const isCostOverviewPage = location.pathname === '/analytics'

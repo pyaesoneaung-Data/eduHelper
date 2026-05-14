@@ -5,6 +5,24 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 160. Loading and error states — PageState component + skeleton + error banner
+
+**Files changed:** `components/PageState.jsx` (new), `index.css`, `pages/AnalyticsPage.jsx`, `pages/AdmissionAnalyticsPage.jsx`, `pages/DeadlineInsightsPage.jsx`, `pages/RankingInsightsPage.jsx`, `pages/RecommendationPage.jsx`, `pages/CostCalculatorPage.jsx`, `pages/CompareProgramsPage.jsx`
+
+Added `PageState` component that renders a skeleton card (4 pulsing rows, CSS keyframe animation) when `loading=true` and an error banner (left border accent, `--color-danger`) when `error` is non-empty. Added `page-loader`, `skeleton-row`, `skeleton-pulse` keyframe, and `error-banner` CSS to `index.css` — all values on tokens. Replaced every bare `<p className="error-text">` and `<p className="muted-text">Loading...` across all 7 pages with `<PageState>`. Added explicit `loading` state to `DeadlineInsightsPage` (previously used an empty array with no loading signal).
+
+---
+
+### 159. i18n — wire all page titles and topbar greeting through t() for EN/ZH
+
+**Files changed:** `i18n/translations.js`, `components/Layout.jsx`, `pages/AnalyticsPage.jsx`, `pages/AdmissionAnalyticsPage.jsx`, `pages/DeadlineInsightsPage.jsx`, `pages/RankingInsightsPage.jsx`, `pages/RecommendationPage.jsx`, `pages/CostCalculatorPage.jsx`, `pages/CompareProgramsPage.jsx`
+
+Added `greeting` keys (morning/afternoon/evening) and `pages.recommendationResults` to both `en` and `zh` in `translations.js`. Updated `getGreeting()` and `getSectionLabel()` in `Layout.jsx` to accept `t` and use translation keys instead of hardcoded strings. Added `useAppShell` import and `t` destructure to the five analytics/decision-hub pages that lacked it. Updated all page-level `<h2>` titles to use `t()` with existing `nav.*` keys. Switching to 中文 now translates the topbar greeting, all section labels, sidebar nav, and every main page heading.
+
+Thai (TH) support dropped — EN and ZH only.
+
+---
+
 ### 158. tokens.css — Apple-scale border-radius values
 
 **Files changed:** `styles/tokens.css`

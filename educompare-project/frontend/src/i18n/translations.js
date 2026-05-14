@@ -1,5 +1,13 @@
 export const translations = {
   en: {
+    greeting: {
+      morning: 'Good morning',
+      afternoon: 'Good afternoon',
+      evening: 'Good evening',
+    },
+    pages: {
+      recommendationResults: 'Recommendation results',
+    },
     app: {
       name: 'UniMatch / EduCompare',
       tagline: 'Study-abroad decisions built on verified data.',
@@ -40,6 +48,14 @@ export const translations = {
     },
   },
   zh: {
+    greeting: {
+      morning: '早上好',
+      afternoon: '下午好',
+      evening: '晚上好',
+    },
+    pages: {
+      recommendationResults: '推荐结果',
+    },
     app: {
       name: 'UniMatch / EduCompare',
       tagline: '以已验证数据支持留学决策的平台',

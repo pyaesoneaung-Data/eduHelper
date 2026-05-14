@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { getRankingOverview } from '../api/api'
 import InfoCard from '../components/InfoCard'
+import PageState from '../components/PageState'
+import { useAppShell } from '../context/AppShellContext'
 
 const COUNTRY_ORDER = ['Singapore', 'Taiwan', 'Thailand']
 
@@ -58,6 +60,7 @@ function RankingTable({ universities }) {
 }
 
 function RankingInsightsPage() {
+  const { t } = useAppShell()
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
 
@@ -87,12 +90,11 @@ function RankingInsightsPage() {
   return (
     <div className="page-stack">
       <div className="section-heading">
-        <h2>Ranking Insights</h2>
+        <h2>{t('nav.rankingInsights', 'Ranking Insights')}</h2>
         <p>World university rankings for institutions in our dataset, sourced from QS World University Rankings.</p>
       </div>
 
-      {error ? <p className="error-text">{error}</p> : null}
-      {!data && !error ? <p className="muted-text">Loading ranking data...</p> : null}
+      <PageState loading={!data && !error} error={error} />
 
       {data ? (
         <>

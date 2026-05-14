@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import ReactCountryFlag from 'react-country-flag'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { getAdmissionAnalytics } from '../api/api'
+import PageState from '../components/PageState'
+import { useAppShell } from '../context/AppShellContext'
 
 const COUNTRY_LABEL = {
   taiwan: 'Taiwan',
@@ -212,6 +214,7 @@ function mergeRankedPrograms(countryData, direction = 'asc') {
 }
 
 function AdmissionAnalyticsPage() {
+  const { t } = useAppShell()
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
 
@@ -250,7 +253,7 @@ function AdmissionAnalyticsPage() {
   return (
     <div className="page-stack">
       <div className="section-heading">
-        <h2>Admission Overview</h2>
+        <h2>{t('nav.admissionOverview', 'Admission Overview')}</h2>
         <p>Compare GPA and IELTS admission thresholds across Taiwan, Thailand, and Singapore.</p>
       </div>
 
@@ -259,9 +262,7 @@ function AdmissionAnalyticsPage() {
         Figures reflect the admission requirements recorded at that time.
       </p>
 
-      {error ? <p className="error-text">{error}</p> : null}
-
-      {!data && !error ? <p className="muted-text">Loading admission data...</p> : null}
+      <PageState loading={!data && !error} error={error} />
 
       {data ? (
         <>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getCostSummary, getPrograms, getUniversities } from '../api/api'
+import PageState from '../components/PageState'
 import { useAppShell } from '../context/AppShellContext'
 import { convertCurrency } from '../utils/currency'
 import FormSection from '../components/FormSection'
@@ -19,7 +20,7 @@ function formatCost(value, nativeCurrency, displayCurrency) {
 }
 
 function CostCalculatorPage() {
-  const { currency: displayCurrency, toggleCurrency } = useAppShell()
+  const { currency: displayCurrency, toggleCurrency, t } = useAppShell()
   const [programs, setPrograms] = useState([])
   const [universities, setUniversities] = useState([])
   const [programId, setProgramId] = useState('')
@@ -98,7 +99,7 @@ function CostCalculatorPage() {
   return (
     <div className="page-stack">
       <div className="section-heading">
-        <h2>Cost Calculator</h2>
+        <h2>{t('nav.costCalculator', 'Cost Calculator')}</h2>
         <p>See the full yearly cost picture — tuition, living costs, fees — not just the headline tuition figure agents usually show.</p>
       </div>
 
@@ -146,7 +147,7 @@ function CostCalculatorPage() {
         </div>
       </form>
 
-      {error ? <p className="error-text">{error}</p> : null}
+      <PageState error={error} />
 
       {summary ? (
         <InfoCard title="Cost summary">

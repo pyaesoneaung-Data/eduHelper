@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getPrograms, getUniversities } from '../api/api'
 import InfoCard from '../components/InfoCard'
+import PageState from '../components/PageState'
 import { formatDate, getTodayAtStartOfDay, parseISODateOnly } from '../utils/date'
+import { useAppShell } from '../context/AppShellContext'
 
 const COUNTRY_NAMES = {
   C001: 'Taiwan',
@@ -34,8 +36,10 @@ function formatDaysSince(n) {
 }
 
 function DeadlineInsightsPage() {
+  const { t } = useAppShell()
   const [programs, setPrograms] = useState([])
   const [universities, setUniversities] = useState([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -49,6 +53,8 @@ function DeadlineInsightsPage() {
         setUniversities(universityData)
       } catch {
         setError('Deadline data could not be loaded from the backend.')
+      } finally {
+        setLoading(false)
       }
     }
     load()
@@ -82,14 +88,14 @@ function DeadlineInsightsPage() {
   return (
     <div className="page-stack">
       <div className="section-heading">
-        <h2>Deadline Insights</h2>
+        <h2>{t('nav.deadlineInsights', 'Deadline Insights')}</h2>
         <p>
           Application deadlines from the current dataset, split into upcoming and passed.
           Upcoming programs are sorted soonest first.
         </p>
       </div>
 
-      {error ? <p className="error-text">{error}</p> : null}
+      <PageState loading={loading} error={error} />
 
       <div className="card-grid">
         <InfoCard title="Upcoming deadlines">
