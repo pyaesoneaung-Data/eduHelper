@@ -12,8 +12,8 @@ import {
   CaretLeft,
 } from '@phosphor-icons/react'
 import { useAppShell } from '../context/AppShellContext'
-import logoLight from '../assets/logo/logo_light_without_text.svg'
-import logoDark from '../assets/logo/logo_dark_without_text.svg'
+import logoLight from '../assets/logo/logo_nexa_light.png'
+import logoDark from '../assets/logo/logo_nexa_dark.png'
 import IconImage from './IconImage'
 
 const navConfig = [
@@ -137,8 +137,7 @@ function Sidebar() {
   return (
     <div className="sidebar-panel">
       <Link to="/" className="sidebar-brand" onClick={closeSidebar} aria-label="Go to home page">
-        <IconImage src={logoSrc} className="sidebar-logo" alt="UniMatch logo" />
-        <span className="sidebar-brand-name">UniMatch</span>
+        <IconImage src={logoSrc} className="sidebar-logo sidebar-logo-nexa" alt="NexA Education logo" />
       </Link>
 
       <nav className="sidebar-nav" aria-label="Primary navigation">

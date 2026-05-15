@@ -170,7 +170,7 @@ function RecommendationPage() {
         </p>
       </div>
 
-      <form className="recommendation-form" onSubmit={handleSubmit}>
+      <form className="recommendation-form" onSubmit={handleSubmit} autoComplete="off">
         <section className="recommendation-profile-card">
           <div className="recommendation-card-header">
             <span className="recommendation-icon-tile" aria-hidden="true">
@@ -278,6 +278,10 @@ function RecommendationPage() {
                   value={formData.max_budget}
                   onChange={handleChange}
                   placeholder={isUSD ? 'e.g. 5,000' : 'e.g. 200,000'}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
                 />
                 <span className="recommendation-control-caret" aria-hidden="true" />
               </span>
@@ -304,6 +308,10 @@ function RecommendationPage() {
                   value={formData.user_gpa}
                   onChange={handleChange}
                   placeholder="e.g. 3.2"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
                 />
                 <span className="recommendation-control-caret" aria-hidden="true" />
               </span>
@@ -327,6 +335,10 @@ function RecommendationPage() {
                   value={formData.user_ielts}
                   onChange={handleChange}
                   placeholder="e.g. 6.0"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
                 />
                 <span className="recommendation-control-caret" aria-hidden="true" />
               </span>

@@ -142,6 +142,16 @@ img {
   flex-shrink: 0;
 }
 
+.sidebar-logo-nexa {
+  width: 150px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+[data-theme='dark'] .sidebar-logo-nexa {
+  mix-blend-mode: screen;
+}
+
 /* ─── Nav ────────────────────────────────────────────────────────────────── */
 .sidebar-nav {
   display: flex;
@@ -381,6 +391,10 @@ img {
 .sidebar-collapsed .sidebar-brand {
   padding: 0 10px;
   gap: 0;
+}
+
+.sidebar-collapsed .sidebar-logo-nexa {
+  width: 54px;
 }
 
 .sidebar-collapsed .sidebar-brand-name,
@@ -2878,6 +2892,8 @@ select {
   font-size: var(--text-md);
   font-weight: var(--weight-medium);
   line-height: var(--leading-snug);
+  text-decoration: none;
+  border-bottom: 0;
 }
 
 .recommendation-info-label img {
@@ -2885,6 +2901,18 @@ select {
   height: 24px;
   flex: 0 0 24px;
   object-fit: contain;
+}
+
+.recommendation-info-label span {
+  display: inline-flex;
+  align-items: center;
+  line-height: var(--leading-snug);
+  text-decoration: none;
+  border-bottom: 0;
+}
+
+.recommendation-field-row:not(.recommendation-field-row-top) .recommendation-info-label {
+  margin-top: calc(24px + var(--space-3));
 }
 
 .recommendation-helper-text {
@@ -3081,6 +3109,33 @@ select {
   margin: 0;
   font-size: var(--text-md);
   font-weight: var(--weight-regular);
+}
+
+[data-theme='dark'] .recommendation-page .recommendation-control-icon,
+[data-theme='dark'] .recommendation-page .recommendation-info-label img,
+[data-theme='dark'] .recommendation-page .recommendation-clear-button img {
+  filter: brightness(0) invert(1);
+  opacity: 0.85;
+}
+
+[data-theme='dark'] .recommendation-page .recommendation-clear-button {
+  color: var(--color-text-primary);
+}
+
+[data-theme='dark'] .recommendation-page select {
+  color-scheme: dark;
+  background-color: var(--color-bg-subtle);
+  color: var(--color-text-primary);
+}
+
+[data-theme='dark'] .recommendation-page select option,
+[data-theme='dark'] .recommendation-page select optgroup {
+  background-color: var(--color-bg-subtle);
+  color: var(--color-text-primary);
+}
+
+[data-theme='dark'] .recommendation-page .recommendation-empty-state img {
+  opacity: 0.72;
 }
 
 @media (max-width: 1180px) {
