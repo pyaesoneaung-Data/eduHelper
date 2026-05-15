@@ -235,7 +235,7 @@ function HomePage() {
   }, [rawValueData, displayCurrency])
 
   return (
-    <div className="page-stack">
+    <div className="page-stack home-page">
       <section className="home-kpi-row" aria-label="Home summary metrics">
         <HomeKpiCard
           icon={Buildings}
