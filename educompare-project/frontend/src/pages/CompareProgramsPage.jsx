@@ -139,13 +139,13 @@ function CompareProgramsPage() {
   }
 
   return (
-    <div className="page-stack">
-      <div className="section-heading">
-        <h2>{t('nav.compare', 'Compare Programs')}</h2>
+    <div className="page-stack compare-page">
+      <div className="section-heading compare-page-heading">
+        <h2>{t('nav.compare', 'Compare')}</h2>
         <p>Select two programs to compare tuition, living costs, GPA and IELTS requirements, and deadlines side by side.</p>
       </div>
 
-      <form className="page-stack" onSubmit={handleSubmit}>
+      <form className="page-stack compare-form" onSubmit={handleSubmit}>
         <FormSection
           title="Comparison inputs"
           description="Choose any two programs from the list. All costs, requirements, and deadlines are pulled from the live database."
@@ -154,14 +154,13 @@ function CompareProgramsPage() {
           {programSelect('second')}
         </FormSection>
 
-        <div className="action-row">
-          <button className="primary-button" type="submit" disabled={loading}>
+        <div className="action-row compare-actions">
+          <button className="primary-button compare-primary-button" type="submit" disabled={loading}>
             {loading ? 'Loading comparison...' : 'Compare programs'}
           </button>
           <button
             type="button"
-            className="secondary-button"
-            disabled={!programIds.first && !programIds.second && !rows.length}
+            className="secondary-button compare-secondary-button"
             onClick={() => {
               setProgramIds({ first: '', second: '' })
               setRows([])

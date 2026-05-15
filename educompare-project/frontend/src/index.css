@@ -2647,6 +2647,687 @@ select {
   margin: 0;
 }
 
+/* ── Recommendation page ───────────────────────────────────────────────── */
+.recommendation-page {
+  gap: var(--space-6);
+}
+
+.recommendation-page-heading {
+  align-items: center;
+  max-width: 720px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.recommendation-page-heading h1 {
+  margin: 0;
+  font-size: clamp(var(--text-2xl), 1.9vw, 34px);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  color: var(--color-text-primary);
+}
+
+.recommendation-page-heading p {
+  display: none;
+}
+
+.recommendation-form {
+  display: block;
+}
+
+.recommendation-profile-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  overflow: hidden;
+  width: 100%;
+  margin-inline: auto;
+  padding: var(--space-6);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--panel-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.recommendation-profile-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--color-primary);
+}
+
+.recommendation-card-header,
+.recommendation-results-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.recommendation-card-header h2,
+.recommendation-results-header h2,
+.recommendation-card-header p,
+.recommendation-results-header p {
+  margin: 0;
+}
+
+.recommendation-card-header h2,
+.recommendation-results-header h2 {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.recommendation-card-header p,
+.recommendation-results-header p {
+  color: var(--muted);
+}
+
+.recommendation-icon-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+}
+
+.recommendation-icon-tile img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.recommendation-field-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(190px, 0.82fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.recommendation-field-row-top {
+  padding-top: var(--space-4);
+}
+
+.recommendation-field {
+  gap: var(--space-3);
+  min-width: 0;
+  width: 100%;
+  color: var(--color-text-primary);
+}
+
+.recommendation-field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 24px;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.recommendation-field-top .recommendation-field-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.recommendation-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
+}
+
+.recommendation-control-icon {
+  position: absolute;
+  left: var(--space-4);
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.recommendation-control-caret {
+  position: absolute;
+  right: var(--space-4);
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid var(--color-text-muted);
+  border-bottom: 2px solid var(--color-text-muted);
+  transform: translateY(-3px) rotate(45deg);
+  pointer-events: none;
+}
+
+.recommendation-field input,
+.recommendation-field select {
+  min-height: 42px;
+  margin: 0;
+  padding: 0 42px 0 52px;
+  border: 0;
+  border-radius: calc(var(--radius-sm) - 2px);
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  text-align: center;
+  appearance: none;
+}
+
+.recommendation-field input::placeholder {
+  color: var(--color-text-disabled);
+}
+
+.recommendation-field input[type='number'] {
+  appearance: textfield;
+}
+
+.recommendation-field input[type='number']::-webkit-outer-spin-button,
+.recommendation-field input[type='number']::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.recommendation-field input:focus,
+.recommendation-field select:focus {
+  outline: none;
+}
+
+.recommendation-control:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.recommendation-info-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-snug);
+}
+
+.recommendation-info-label img {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  object-fit: contain;
+}
+
+.recommendation-helper-text {
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+.recommendation-helper-reserve {
+  display: block;
+  min-height: 34px;
+}
+
+.recommendation-divider-band {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 62px;
+  padding-inline: var(--space-12);
+}
+
+.recommendation-divider {
+  width: 100%;
+  border-top: 2px dotted var(--color-border-strong);
+}
+
+.recommendation-divider-icon {
+  position: absolute;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  color: var(--color-text-primary);
+  transform: translateY(-50%);
+}
+
+.recommendation-divider-icon-send {
+  left: var(--space-5);
+}
+
+.recommendation-divider-icon-send::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 7px;
+  width: 22px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-left: 0;
+  transform: skew(-22deg) rotate(-22deg);
+}
+
+.recommendation-divider-icon-send::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 13px;
+  width: 14px;
+  border-top: 2px solid currentColor;
+  transform: rotate(-22deg);
+}
+
+.recommendation-divider-icon-pin {
+  right: var(--space-5);
+}
+
+.recommendation-divider-icon-pin::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 1px;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+}
+
+.recommendation-divider-icon-pin::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  bottom: 2px;
+  width: 18px;
+  height: 7px;
+  border: 2px solid currentColor;
+  border-top: 0;
+  transform: skew(-18deg);
+}
+
+.recommendation-action-row {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: var(--space-4);
+  justify-content: center;
+  align-items: center;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+.recommendation-submit-button,
+.recommendation-clear-button {
+  gap: var(--space-2);
+  min-width: 176px;
+  min-height: 42px;
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  box-shadow: var(--shadow-sm);
+}
+
+.recommendation-submit-button {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+.recommendation-submit-button:hover:not(:disabled) {
+  border-color: var(--color-primary-hover);
+  background: var(--color-primary-hover);
+}
+
+.recommendation-clear-button {
+  background: var(--panel-bg);
+  color: var(--color-text-primary);
+}
+
+.recommendation-submit-button img,
+.recommendation-clear-button img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.recommendation-results {
+  gap: var(--space-4);
+  width: 100%;
+  margin-inline: auto;
+}
+
+.recommendation-results-header {
+  align-items: center;
+  padding-left: 0;
+  gap: var(--space-3);
+}
+
+.recommendation-results-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+}
+
+.recommendation-results-icon img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.recommendation-results .card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+
+.recommendation-results .result-card {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.recommendation-empty-state {
+  display: flex;
+  min-height: 300px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  padding: var(--space-10);
+  border: 2px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--panel-bg);
+  color: var(--color-text-disabled);
+  text-align: center;
+}
+
+.recommendation-empty-state img {
+  width: 128px;
+  height: 128px;
+  object-fit: contain;
+  opacity: 0.45;
+}
+
+.recommendation-empty-state p {
+  max-width: 620px;
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-regular);
+}
+
+@media (max-width: 1180px) {
+  .recommendation-field-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .recommendation-info-label {
+    align-self: center;
+  }
+
+  .recommendation-divider-band {
+    padding-inline: var(--space-10);
+  }
+
+  .recommendation-divider-icon-send {
+    left: var(--space-2);
+  }
+
+  .recommendation-divider-icon-pin {
+    right: var(--space-2);
+  }
+}
+
+@media (max-width: 760px) {
+  .recommendation-page {
+    gap: var(--space-6);
+  }
+
+  .recommendation-profile-card {
+    padding: var(--space-5);
+    gap: var(--space-6);
+  }
+
+  .recommendation-field-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+
+  .recommendation-card-header,
+  .recommendation-results-header {
+    align-items: flex-start;
+  }
+
+  .recommendation-action-row {
+    position: static;
+    grid-template-columns: 1fr;
+    width: 100%;
+    transform: none;
+  }
+
+  .recommendation-submit-button,
+  .recommendation-clear-button {
+    width: 100%;
+  }
+
+  .recommendation-divider-band {
+    flex-direction: column;
+    gap: var(--space-4);
+    min-height: auto;
+    padding-inline: 0;
+  }
+
+  .recommendation-divider-icon {
+    display: none;
+  }
+
+  .recommendation-results-header {
+    padding-left: 0;
+  }
+
+  .recommendation-empty-state {
+    min-height: 260px;
+    padding: var(--space-8) var(--space-5);
+  }
+
+  .recommendation-empty-state img {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+/* ── Compare + Cost Calculator pages ────────────────────────────────────── */
+.compare-page,
+.cost-calculator-page {
+  gap: var(--space-6);
+}
+
+.compare-page-heading,
+.cost-calculator-page-heading {
+  max-width: 720px;
+}
+
+.compare-page-heading h2,
+.cost-calculator-page-heading h2 {
+  font-size: clamp(var(--text-2xl), 1.9vw, 34px);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+}
+
+.compare-form,
+.cost-calculator-form {
+  gap: var(--space-5);
+}
+
+.compare-page .panel,
+.cost-calculator-page .panel,
+.cost-calculator-page .info-card {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-6);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--panel-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.compare-page .panel::before,
+.cost-calculator-page .panel::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--color-primary);
+}
+
+.compare-page .panel-heading h2,
+.cost-calculator-page .panel-heading h2,
+.cost-calculator-page .info-card h3 {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.compare-page .form-grid,
+.cost-calculator-page .form-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: var(--space-4);
+  padding-top: var(--space-2);
+}
+
+.compare-page label,
+.cost-calculator-page label {
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.compare-page select,
+.cost-calculator-page select {
+  min-height: 44px;
+  margin: 0;
+  padding: 0 42px 0 var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
+  color: var(--color-text-primary);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+    linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) 50%,
+    calc(100% - 14px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.compare-page select:focus,
+.cost-calculator-page select:focus {
+  border-color: var(--color-primary);
+  outline: 3px solid var(--color-primary-soft);
+}
+
+.compare-actions,
+.cost-actions {
+  align-items: center;
+}
+
+.compare-primary-button,
+.compare-secondary-button,
+.cost-primary-button,
+.cost-secondary-button {
+  gap: var(--space-2);
+  min-height: 42px;
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  box-shadow: var(--shadow-sm);
+}
+
+.compare-primary-button,
+.cost-primary-button {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+.compare-primary-button:hover:not(:disabled),
+.cost-primary-button:hover:not(:disabled) {
+  border-color: var(--color-primary-hover);
+  background: var(--color-primary-hover);
+}
+
+.compare-secondary-button,
+.cost-secondary-button {
+  border-color: var(--border);
+  background: var(--panel-bg);
+  color: var(--color-text-primary);
+}
+
+.compare-secondary-button:hover,
+.cost-secondary-button:hover {
+  background: var(--panel-soft);
+}
+
+.compare-page .empty-state {
+  padding: var(--space-5);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--panel-bg);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.compare-page .table-shell {
+  border-radius: var(--radius-lg);
+  background: var(--panel-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.cost-calculator-page .detail-grid {
+  gap: var(--space-4);
+}
+
+.cost-calculator-page .detail-grid > div {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
+}
+
+@media (max-width: 760px) {
+  .compare-page .panel,
+  .cost-calculator-page .panel,
+  .cost-calculator-page .info-card {
+    padding: var(--space-5);
+  }
+
+  .compare-actions,
+  .cost-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .compare-primary-button,
+  .compare-secondary-button,
+  .cost-primary-button,
+  .cost-secondary-button {
+    width: 100%;
+  }
+}
+
 /* ── Analytics page ───────────────────────────────────────────── */
 
 .analytics-controls-row {

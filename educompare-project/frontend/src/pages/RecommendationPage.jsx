@@ -3,8 +3,17 @@ import { getCountryRules, getPrograms, getRecommendations } from '../api/api'
 import PageState from '../components/PageState'
 import { useAppShell } from '../context/AppShellContext'
 import { convertCurrency } from '../utils/currency'
-import FormSection from '../components/FormSection'
 import ResultCard from '../components/ResultCard'
+import aboutIcon from '../assets/recommendation/about.png'
+import gpaIcon from '../assets/recommendation/gpa.png'
+import graduateHatIcon from '../assets/recommendation/gratuadeHat.png'
+import ieltsIcon from '../assets/recommendation/ielts.png'
+import recommendationIcon from '../assets/recommendation/recommendation.png'
+import searchIcon from '../assets/recommendation/search.png'
+import studentIcon from '../assets/recommendation/student.png'
+import translateIcon from '../assets/recommendation/translate.png'
+import walletIcon from '../assets/recommendation/wallet.png'
+import worldIcon from '../assets/recommendation/world.png'
 
 function formatBudgetPreview(rawValue, isUSD, countryId) {
   const amount = Number(rawValue)
@@ -152,129 +161,196 @@ function RecommendationPage() {
   const budgetPreview = formatBudgetPreview(formData.max_budget, isUSD, formData.country_id)
 
   return (
-    <div className="page-stack">
-      <div className="section-heading">
-        <h2>{t('nav.recommendation', 'Program Recommendations')}</h2>
+    <div className="page-stack recommendation-page">
+      <div className="section-heading recommendation-page-heading">
+        <h1>{t('pages.programRecommendations', 'Program Recommendations')}</h1>
         <p>
           Enter your profile to find programs that match your background and budget.
           Country, degree level, and language narrow the results. Budget, GPA, and IELTS rank them by how well they fit you.
         </p>
       </div>
 
-      <form className="page-stack" onSubmit={handleSubmit}>
-        <FormSection
-          title="Student profile"
-          description="All fields are optional — fill in what you know. More inputs give more accurate results."
-        >
-          <label>
-            Country
-            <select name="country_id" value={formData.country_id} onChange={handleChange}>
-              <option value="">All countries</option>
-              {countries.map((country) => (
-                <option key={country.country_id} value={country.country_id}>
-                  {country.country_name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            Degree level
-            <select name="degree_level" value={formData.degree_level} onChange={handleChange}>
-              <option value="">All degree levels</option>
-              {degreeOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            Instruction language
-            <select name="instruction_language" value={formData.instruction_language} onChange={handleChange}>
-              <option value="">All languages</option>
-              {languageOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            <span>Maximum yearly budget{budgetCurrencyLabel ? <span className="label-unit"> ({budgetCurrencyLabel})</span> : null}</span>
-            <input
-              type="number"
-              name="max_budget"
-              value={formData.max_budget}
-              onChange={handleChange}
-              placeholder={isUSD ? 'e.g. 5,000' : 'e.g. 200,000'}
-            />
-          </label>
-
-          {formData.max_budget ? (
-            <div className="budget-hints">
-              {budgetPreview ? <p className="budget-preview">{budgetPreview}</p> : null}
-              <p className="muted-text" style={{ fontSize: '0.78rem' }}>
-                Covers tuition + living costs combined.
-              </p>
+      <form className="recommendation-form" onSubmit={handleSubmit}>
+        <section className="recommendation-profile-card">
+          <div className="recommendation-card-header">
+            <span className="recommendation-icon-tile" aria-hidden="true">
+              <img src={studentIcon} alt="" />
+            </span>
+            <div>
+              <h2>Student Profile</h2>
+              <p>All fields are optional — fill in what you know. More inputs give more accurate results.</p>
             </div>
-          ) : null}
+          </div>
 
-          <label>
-            GPA
-            <input
-              type="number"
-              step="0.01"
-              name="user_gpa"
-              value={formData.user_gpa}
-              onChange={handleChange}
-              placeholder="e.g. 3.2"
-            />
-          </label>
-          {formData.user_gpa ? (
-            <p className="muted-text" style={{ fontSize: '0.78rem', marginTop: '-6px' }}>
-              4.0 scale — 80% ≈ 3.2, 70% ≈ 2.8, 60% ≈ 2.0
-            </p>
-          ) : null}
+          <div className="recommendation-field-row recommendation-field-row-top">
+            <label className="recommendation-field recommendation-field-top">
+              <span className="recommendation-field-label">
+                Country
+              </span>
+              <span className="recommendation-control">
+                <img src={worldIcon} alt="" className="recommendation-control-icon" />
+                <select name="country_id" value={formData.country_id} onChange={handleChange}>
+                  <option value="">All countries</option>
+                  {countries.map((country) => (
+                    <option key={country.country_id} value={country.country_id}>
+                      {country.country_name}
+                    </option>
+                  ))}
+                </select>
+                <span className="recommendation-control-caret" aria-hidden="true" />
+              </span>
+            </label>
 
-          <label>
-            IELTS
-            <input
-              type="number"
-              step="0.5"
-              name="user_ielts"
-              value={formData.user_ielts}
-              onChange={handleChange}
-              placeholder="e.g. 6.0"
-            />
-          </label>
-        </FormSection>
+            <label className="recommendation-field recommendation-field-top">
+              <span className="recommendation-field-label">
+                Degree level
+              </span>
+              <span className="recommendation-control">
+                <img src={graduateHatIcon} alt="" className="recommendation-control-icon" />
+                <select name="degree_level" value={formData.degree_level} onChange={handleChange}>
+                  <option value="">All degree levels</option>
+                  {degreeOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+                <span className="recommendation-control-caret" aria-hidden="true" />
+              </span>
+            </label>
 
-        <div className="action-row">
-          <button className="primary-button" type="submit" disabled={loading}>
-            {loading ? 'Loading recommendations...' : 'Get recommendations'}
-          </button>
-          <button
-            type="button"
-            className="secondary-button"
-            disabled={!hasSearched && !Object.values(formData).some((v) => v)}
-            onClick={() => {
-              setFormData({ country_id: '', degree_level: '', instruction_language: '', max_budget: '', user_gpa: '', user_ielts: '' })
-              setResults([])
-              setHasSearched(false)
-              setError('')
-              sessionStorage.removeItem(SESSION_KEY)
-            }}
-          >
-            Clear
-          </button>
-        </div>
+            <label className="recommendation-field recommendation-field-top">
+              <span className="recommendation-field-label">
+                Language
+              </span>
+              <span className="recommendation-control">
+                <img src={translateIcon} alt="" className="recommendation-control-icon" />
+                <select name="instruction_language" value={formData.instruction_language} onChange={handleChange}>
+                  <option value="">All languages</option>
+                  {languageOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+                <span className="recommendation-control-caret" aria-hidden="true" />
+              </span>
+            </label>
+
+            <div className="recommendation-info-label">
+              <img src={recommendationIcon} alt="" />
+              <span>Programs</span>
+            </div>
+          </div>
+
+          <div className="recommendation-divider-band">
+            <span className="recommendation-divider-icon recommendation-divider-icon-send" aria-hidden="true" />
+            <div className="recommendation-divider" />
+            <div className="action-row recommendation-action-row">
+              <button className="primary-button recommendation-submit-button" type="submit" disabled={loading}>
+                <img src={recommendationIcon} alt="" />
+                {loading ? 'Loading recommendations...' : 'Get recommendations'}
+              </button>
+              <button
+                type="button"
+                className="secondary-button recommendation-clear-button"
+                onClick={() => {
+                  setFormData({ country_id: '', degree_level: '', instruction_language: '', max_budget: '', user_gpa: '', user_ielts: '' })
+                  setResults([])
+                  setHasSearched(false)
+                  setError('')
+                  sessionStorage.removeItem(SESSION_KEY)
+                }}
+              >
+                <img src={aboutIcon} alt="" />
+                Clear
+              </button>
+            </div>
+            <span className="recommendation-divider-icon recommendation-divider-icon-pin" aria-hidden="true" />
+          </div>
+
+          <div className="recommendation-field-row">
+            <label className="recommendation-field">
+              <span className="recommendation-field-label">
+                Maximum yearly budget{budgetCurrencyLabel ? <span className="label-unit"> ({budgetCurrencyLabel})</span> : null}
+              </span>
+              <span className="recommendation-control">
+                <img src={walletIcon} alt="" className="recommendation-control-icon" />
+                <input
+                  type="number"
+                  name="max_budget"
+                  value={formData.max_budget}
+                  onChange={handleChange}
+                  placeholder={isUSD ? 'e.g. 5,000' : 'e.g. 200,000'}
+                />
+                <span className="recommendation-control-caret" aria-hidden="true" />
+              </span>
+              {formData.max_budget ? (
+                <div className="budget-hints">
+                  {budgetPreview ? <p className="budget-preview">{budgetPreview}</p> : null}
+                  <p className="muted-text recommendation-helper-text">
+                    Covers tuition + living costs combined.
+                  </p>
+                </div>
+              ) : <span className="recommendation-helper-reserve" />}
+            </label>
+
+            <label className="recommendation-field">
+              <span className="recommendation-field-label">
+                GPA
+              </span>
+              <span className="recommendation-control">
+                <img src={gpaIcon} alt="" className="recommendation-control-icon" />
+                <input
+                  type="number"
+                  step="0.01"
+                  name="user_gpa"
+                  value={formData.user_gpa}
+                  onChange={handleChange}
+                  placeholder="e.g. 3.2"
+                />
+                <span className="recommendation-control-caret" aria-hidden="true" />
+              </span>
+              {formData.user_gpa ? (
+                <p className="muted-text recommendation-helper-text">
+                  4.0 scale — 80% ≈ 3.2, 70% ≈ 2.8, 60% ≈ 2.0
+                </p>
+              ) : <span className="recommendation-helper-reserve" />}
+            </label>
+
+            <label className="recommendation-field">
+              <span className="recommendation-field-label">
+                IELTS
+              </span>
+              <span className="recommendation-control">
+                <img src={ieltsIcon} alt="" className="recommendation-control-icon" />
+                <input
+                  type="number"
+                  step="0.5"
+                  name="user_ielts"
+                  value={formData.user_ielts}
+                  onChange={handleChange}
+                  placeholder="e.g. 6.0"
+                />
+                <span className="recommendation-control-caret" aria-hidden="true" />
+              </span>
+              <span className="recommendation-helper-reserve" />
+            </label>
+
+            <div className="recommendation-info-label">
+              <img src={aboutIcon} alt="" />
+              <span>Program’s requirement</span>
+            </div>
+          </div>
+        </section>
       </form>
 
       <PageState error={error} />
 
-      <section className="results-block">
-        <div className="section-heading">
-          <h2>{t('pages.recommendationResults', 'Recommendation results')}</h2>
-          <p>Programs ranked by how well they match your profile. Review costs and requirements before deciding.</p>
+      <section className="results-block recommendation-results">
+        <div className="recommendation-results-header">
+          <span className="recommendation-results-icon" aria-hidden="true">
+            <img src={studentIcon} alt="" />
+          </span>
+          <div>
+            <h2>{t('pages.recommendationResults', 'Recommendation results')}</h2>
+          </div>
         </div>
 
         {results.length ? (
@@ -293,9 +369,15 @@ function RecommendationPage() {
             </div>
           </>
         ) : hasSearched ? (
-          <p className="empty-state">No programs matched your criteria. Try broadening your filters.</p>
+          <div className="recommendation-empty-state">
+            <img src={searchIcon} alt="" />
+            <p>No programs matched your criteria. Try broadening your filters.</p>
+          </div>
         ) : (
-          <p className="empty-state">Fill in your profile above and click Get recommendations.</p>
+          <div className="recommendation-empty-state">
+            <img src={searchIcon} alt="" />
+            <p>Your personalized program matches will appear here</p>
+          </div>
         )}
       </section>
     </div>

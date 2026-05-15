@@ -97,13 +97,13 @@ function CostCalculatorPage() {
   }
 
   return (
-    <div className="page-stack">
-      <div className="section-heading">
+    <div className="page-stack cost-calculator-page">
+      <div className="section-heading cost-calculator-page-heading">
         <h2>{t('nav.costCalculator', 'Cost Calculator')}</h2>
         <p>See the full yearly cost picture — tuition, living costs, fees — not just the headline tuition figure agents usually show.</p>
       </div>
 
-      <form className="page-stack" onSubmit={handleSubmit}>
+      <form className="page-stack cost-calculator-form" onSubmit={handleSubmit}>
         <FormSection
           title="Program selection"
           description="Select a program to see the full yearly cost breakdown — tuition, living costs, application fee, and insurance."
@@ -127,14 +127,13 @@ function CostCalculatorPage() {
           </label>
         </FormSection>
 
-        <div className="action-row">
-          <button className="primary-button" type="submit" disabled={loading}>
+        <div className="action-row cost-actions">
+          <button className="primary-button cost-primary-button" type="submit" disabled={loading}>
             {loading ? 'Calculating...' : 'Calculate yearly cost'}
           </button>
           <button
             type="button"
-            className="secondary-button"
-            disabled={!programId && !summary}
+            className="secondary-button cost-secondary-button"
             onClick={() => {
               setProgramId('')
               setSummary(null)
