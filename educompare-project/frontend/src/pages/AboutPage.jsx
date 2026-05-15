@@ -1,8 +1,8 @@
 import { Bank, SealCheck, CurrencyDollar } from '@phosphor-icons/react'
 import { useAppShell } from '../context/AppShellContext'
 import IconImage from '../components/IconImage'
-import logoLight from '../assets/logo/logo_light_without_text.svg'
-import logoDark from '../assets/logo/logo_dark_without_text.svg'
+import logoLight from '../assets/logo/logo_nexa_light.png'
+import logoDark from '../assets/logo/logo_nexa_dark.png'
 
 function getInitials(name) {
   return name
@@ -99,8 +99,7 @@ function AboutPage() {
     <div className="page-stack">
       <div className="about-hero">
         <div className="about-hero-brand">
-          <IconImage src={logoSrc} alt="UniMatch logo" className="about-hero-logo" />
-          <span className="about-hero-name">UniMatch</span>
+          <IconImage src={logoSrc} alt="NexA Education logo" className="about-hero-logo about-hero-logo-nexa" />
         </div>
         <p className="about-hero-tagline">
           A student-built platform for comparing universities in Taiwan, Thailand, and Singapore,

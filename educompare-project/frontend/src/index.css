@@ -1713,6 +1713,17 @@ select {
   flex-shrink: 0;
 }
 
+.about-hero-logo-nexa {
+  width: min(220px, 60vw);
+  height: 64px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+[data-theme='dark'] .about-hero-logo-nexa {
+  mix-blend-mode: screen;
+}
+
 .about-hero-name {
   font-size: var(--text-2xl);
   font-weight: var(--weight-bold);
