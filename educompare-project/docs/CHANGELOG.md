@@ -5,6 +5,64 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 165. Home page — leaderboard row height fix
+
+**Files changed:** `index.css`
+
+Removed `justify-content: space-between` from `.value-leaderboard` — this was distributing all leftover panel height as gaps between the 5 rows, producing thin chips with disproportionately large gaps. Replaced with `gap: var(--space-2)` (8px fixed gap) and added `flex: 1` to `.value-leaderboard-row` so each row grows to fill an equal share of the panel height. Removed fixed `padding: var(--space-3) var(--space-4)` from rows (now `padding: 0 var(--space-4)` — height comes from flex growth). Result: 5 evenly-tall rows with consistent 8px gaps filling the full leaderboard panel.
+
+---
+
+### 164. Home page — ZH translations for all panel content + leaderboard token sizes
+
+**Files changed:** `i18n/translations.js`, `pages/HomePage.jsx`, `index.css`
+
+ZH translations:
+- Added `home` section to both `en` and `zh` in `translations.js` covering all home page body strings: panel headings and descriptions (Find a university, Where to start, Best Value Universities, Deadlines), action card titles and descriptions (Get a recommendation, Compare programs, Check costs), search placeholder, search hint, recent searches label, KPI subtitles (Across 3 countries, In our database, Lowest yearly program cost), and loading state.
+- Added `t` destructure to `HomePage` — all hardcoded strings replaced with `t('home.*', fallback)`.
+- ZH: 查找大学, 从哪里开始, 高性价比大学, 申请截止日期, 获取推荐, 比较课程, 查看费用, 覆盖3个国家, 收录于数据库, 最低年度课程费用, 课程, 大学, 国家, 最低起价 (KPI card titles also wired).
+
+Leaderboard token compliance (`index.css`):
+- `.value-leaderboard-name`: `0.95rem` → `var(--text-md)`, `font-weight: 600` → `var(--weight-semibold)`
+- `.value-leaderboard-meta`: `0.8rem` → `var(--text-sm)`
+- `.value-leaderboard-score`: `var(--text-sm)` → `var(--text-base)` — score number now more readable
+- `.value-leaderboard-rank`: `width: 14px` → `var(--space-4)`, `var(--text-xs)` → `var(--text-sm)`
+- `.value-leaderboard-row`: `gap: 12px` → `var(--space-3)`, `padding: 12px 14px` → `var(--space-3) var(--space-4)`
+- `.value-leaderboard-info`: `gap: 3px` → `var(--space-1)`
+
+---
+
+### 163. Compare and Cost Calculator — remove blue left-border accent from cards
+
+**Files changed:** `index.css`
+
+Removed the `::before` blue left-border accent (3px `var(--color-primary)`) from `.compare-page .panel` and `.cost-calculator-page .panel`, matching the same fix done to `.recommendation-profile-card` in entry 162. Also removed the now-unused `position: relative` and `overflow: hidden` from the shared `.compare-page .panel, .cost-calculator-page .panel, .cost-calculator-page .info-card` rule.
+
+---
+
+### 162. RecommendationPage — alignment and consistency fixes
+
+**Files changed:** `pages/RecommendationPage.jsx`, `i18n/translations.js`, `index.css`
+
+Audited and corrected six issues introduced by teammate's changes:
+- `<h1>` → `<h2>` (heading hierarchy, matches all sibling pages)
+- Page heading left-aligned (removed `text-align: center` + `margin-inline: auto` from `.recommendation-page-heading`)
+- Removed hidden `<p>` description that existed in JSX but was `display: none` in CSS (dead markup)
+- Added `disabled={loading}` back to Clear button (was accidentally removed, allowing form to be cleared mid-request)
+- Added `pages.programRecommendations` translation key to both `en` and `zh` (`'课程推荐'`) — ZH heading was silently falling back to English
+- Removed blue left-border accent (`::before` pseudo-element with `var(--color-primary)`) from `.recommendation-profile-card` — not used anywhere else in the project; also removed now-unused `position: relative` and `overflow: hidden` from the same rule
+- Extended dark mode icon invert rule to cover `.recommendation-icon-tile img` and `.recommendation-results-icon img` — card header and results section icons now consistently white/monochrome in dark mode
+
+---
+
+### 161. Home page — fix Deadline card clipping (grid-template-rows)
+
+**Files changed:** `index.css`
+
+Friend changed `grid-template-rows` from `auto auto` to `minmax(300px, 1.25fr) minmax(170px, 0.75fr)`. The `0.75fr` constraint on row 2 was too small at common viewport heights, causing the deadline badge row ("11d", "Apr 30") to be clipped at the bottom of each card. Fixed by changing to `minmax(300px, 1fr) auto` — row 1 stays flexible, row 2 sizes to its content. Badges are now fully visible at 1440×900 and above.
+
+---
+
 ### 160. Loading and error states — PageState component + skeleton + error banner
 
 **Files changed:** `components/PageState.jsx` (new), `index.css`, `pages/AnalyticsPage.jsx`, `pages/AdmissionAnalyticsPage.jsx`, `pages/DeadlineInsightsPage.jsx`, `pages/RankingInsightsPage.jsx`, `pages/RecommendationPage.jsx`, `pages/CostCalculatorPage.jsx`, `pages/CompareProgramsPage.jsx`

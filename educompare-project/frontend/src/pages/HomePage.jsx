@@ -105,7 +105,7 @@ function HomeKpiCard({ icon: Icon, title, value, subtitle, accentClass }) {
 }
 
 function HomePage() {
-  const { currency: displayCurrency } = useAppShell()
+  const { currency: displayCurrency, t } = useAppShell()
   const [programs, setPrograms] = useState([])
   const [universities, setUniversities] = useState([])
   const [rawValueData, setRawValueData] = useState([])
@@ -239,30 +239,30 @@ function HomePage() {
       <section className="home-kpi-row" aria-label="Home summary metrics">
         <HomeKpiCard
           icon={Buildings}
-          title="Programs"
+          title={t('home.kpiPrograms', 'Programs')}
           value={isLoading ? '—' : programs.length}
-          subtitle="Across 3 countries"
+          subtitle={t('home.acrossCountries', 'Across 3 countries')}
           accentClass="home-kpi-icon-programs"
         />
         <HomeKpiCard
           icon={GraduationCap}
-          title="Universities"
+          title={t('home.kpiUniversities', 'Universities')}
           value={isLoading ? '—' : universities.length}
-          subtitle="In our database"
+          subtitle={t('home.inDatabase', 'In our database')}
           accentClass="home-kpi-icon-verified"
         />
         <HomeKpiCard
           icon={GlobeSimple}
-          title="Countries"
+          title={t('home.kpiCountries', 'Countries')}
           value="3"
           subtitle="Taiwan · Thailand · Singapore"
           accentClass="home-kpi-icon-countries"
         />
         <HomeKpiCard
           icon={Coins}
-          title="Starting from"
+          title={t('home.kpiStartingFrom', 'Starting from')}
           value={isLoading ? '—' : minCostDisplay}
-          subtitle="Lowest yearly program cost"
+          subtitle={t('home.lowestCost', 'Lowest yearly program cost')}
           accentClass="home-kpi-icon-refresh"
         />
       </section>
@@ -270,8 +270,8 @@ function HomePage() {
       <section className="home-figma-grid">
         <section className="panel home-search-panel">
           <div className="panel-heading">
-            <h2>Find a university</h2>
-            <p>Search by university or program.</p>
+            <h2>{t('home.findUniversity', 'Find a university')}</h2>
+            <p>{t('home.findUniversityDesc', 'Search by university or program.')}</p>
           </div>
 
           {/* Search bar + dropdown — results float as overlay, never push panel height */}
@@ -283,8 +283,8 @@ function HomePage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === 'Escape' && setSearchTerm('')}
-                placeholder="Search university or program"
-                aria-label="Search university or program"
+                placeholder={t('home.searchPlaceholder', 'Search university or program')}
+                aria-label={t('home.searchPlaceholder', 'Search university or program')}
               />
             </div>
 
@@ -317,7 +317,7 @@ function HomePage() {
           {/* Static content — always visible, never changes when typing */}
           {recentSearches.length ? (
             <div className="recent-searches">
-              <p className="home-mini-label">Recent searches</p>
+              <p className="home-mini-label">{t('home.recentSearches', 'Recent searches')}</p>
               <div className="recent-search-chips">
                 {recentSearches.map((term) => (
                   <button
@@ -333,36 +333,38 @@ function HomePage() {
             </div>
           ) : null}
           <p className="muted-text">
-            {programs.length ? `${programs.length} programs — type to search.` : 'Loading…'}
+            {programs.length
+              ? `${programs.length} ${t('home.programs', 'programs')} — ${t('home.typeToSearch', 'type to search.')}`
+              : t('home.loading', 'Loading…')}
           </p>
         </section>
 
         <section className="panel home-actions-panel">
           <div className="panel-heading">
-            <h2>Where to start</h2>
-            <p>Pick a tool to get started.</p>
+            <h2>{t('home.whereToStart', 'Where to start')}</h2>
+            <p>{t('home.whereToStartDesc', 'Pick a tool to get started.')}</p>
           </div>
 
           <nav className="home-action-cards">
             <Link className="home-action-card" to="/decision-hub/recommendation">
-              <span className="home-action-card-title">Get a recommendation</span>
-              <span className="home-action-card-desc">Answer a few questions, get matched.</span>
+              <span className="home-action-card-title">{t('home.getRecommendation', 'Get a recommendation')}</span>
+              <span className="home-action-card-desc">{t('home.getRecommendationDesc', 'Answer a few questions, get matched.')}</span>
             </Link>
             <Link className="home-action-card" to="/decision-hub/compare">
-              <span className="home-action-card-title">Compare programs</span>
-              <span className="home-action-card-desc">Side-by-side costs and requirements.</span>
+              <span className="home-action-card-title">{t('home.comparePrograms', 'Compare programs')}</span>
+              <span className="home-action-card-desc">{t('home.compareProgramsDesc', 'Side-by-side costs and requirements.')}</span>
             </Link>
             <Link className="home-action-card" to="/decision-hub/cost-calculator">
-              <span className="home-action-card-title">Check costs</span>
-              <span className="home-action-card-desc">Estimate tuition, living, insurance.</span>
+              <span className="home-action-card-title">{t('home.checkCosts', 'Check costs')}</span>
+              <span className="home-action-card-desc">{t('home.checkCostsDesc', 'Estimate tuition, living, insurance.')}</span>
             </Link>
           </nav>
         </section>
 
         <aside className="panel home-leaderboard-panel">
           <div className="panel-heading">
-            <h2>Best Value Universities</h2>
-            <p>Lower cost · GPA · IELTS = higher score.</p>
+            <h2>{t('home.bestValue', 'Best Value Universities')}</h2>
+            <p>{t('home.bestValueDesc', 'Lower cost · GPA · IELTS = higher score.')}</p>
           </div>
 
           {valueLeaderboard.length ? (
@@ -420,8 +422,8 @@ function HomePage() {
         {/* Row 2 — Deadlines */}
         <section className="panel home-deadlines-panel">
           <div className="panel-heading">
-            <h2>Deadlines</h2>
-            <p>Application windows, closest first.</p>
+            <h2>{t('home.deadlines', 'Deadlines')}</h2>
+            <p>{t('home.deadlinesDesc', 'Application windows, closest first.')}</p>
           </div>
           {upcomingDeadlines.length ? (
             <div className="home-deadline-list">

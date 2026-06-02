@@ -163,11 +163,7 @@ function RecommendationPage() {
   return (
     <div className="page-stack recommendation-page">
       <div className="section-heading recommendation-page-heading">
-        <h1>{t('pages.programRecommendations', 'Program Recommendations')}</h1>
-        <p>
-          Enter your profile to find programs that match your background and budget.
-          Country, degree level, and language narrow the results. Budget, GPA, and IELTS rank them by how well they fit you.
-        </p>
+        <h2>{t('pages.programRecommendations', 'Program Recommendations')}</h2>
       </div>
 
       <form className="recommendation-form" onSubmit={handleSubmit} autoComplete="off">
@@ -250,6 +246,7 @@ function RecommendationPage() {
               <button
                 type="button"
                 className="secondary-button recommendation-clear-button"
+                disabled={loading}
                 onClick={() => {
                   setFormData({ country_id: '', degree_level: '', instruction_language: '', max_budget: '', user_gpa: '', user_ielts: '' })
                   setResults([])
