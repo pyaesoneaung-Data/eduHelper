@@ -105,11 +105,13 @@
 /* LIGHT MODE — color tokens                                                   */
 /* ─────────────────────────────────────────────────────────────────────────── */
 :root {
-  /* Surfaces */
-  --color-bg-base:     #e8e4df;
-  --color-bg-surface:  #faf8f5;
-  --color-bg-elevated: #fdfcfa;
-  --color-bg-subtle:   #f2efea;
+  /* Surfaces — two-layer system:
+     bg-base/subtle = cool blue-grey canvas (sets institutional tone, feeds glassmorphism)
+     bg-surface/elevated = barely-off-white reading surfaces (eye comfort for dense data) */
+  --color-bg-base:     #d8e2ee;
+  --color-bg-surface:  #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-subtle:   #e8eff8;
 
   /* Text */
   --color-text-primary:   #121212;
@@ -119,41 +121,50 @@
   --color-text-inverse:   #ffffff;
 
   /* Borders */
-  --color-border-default: #d4cfc9;
-  --color-border-subtle:  #e8e4df;
-  --color-border-strong:  #b0b0b0;
+  --color-border-default: #c8d5e5;
+  --color-border-subtle:  #dce7f2;
+  --color-border-strong:  #9ab5cf;
 
-  /* Primary action (placeholder — palette TBD) */
-  --color-primary:       #2d6aa0;
-  --color-primary-hover: #255a8a;
-  --color-primary-active: #1e4d78;
-  --color-primary-text:  #ffffff;
-  --color-primary-soft:  #e7f0f7;
+  /* Primary action — deep institutional navy */
+  --color-primary:        #1a3a6e;
+  --color-primary-hover:  #143060;
+  --color-primary-active: #0e2450;
+  --color-primary-text:   #ffffff;
+  --color-primary-soft:   #ddeaf8;
 
   /* Status */
   --color-success: #2e7d4f;
   --color-warning: #b45309;
   --color-danger:  #bf4949;
-  --color-info:    #2d6aa0;
+  --color-info:    #2e6db4;
 
   /* Sidebar — glass (light) */
-  --sidebar-bg:        rgba(255, 255, 255, 0.48);
-  --sidebar-border:    rgba(255, 255, 255, 1.0);
+  /* --sidebar-bg at 0.24 (was 0.48): lower white opacity lets the blurred canvas
+     show through — the cool blue-grey #d8e2ee saturated at 200% becomes a visible
+     frosted blue tint under the subtle white film. At 0.48 the glass was washed
+     out and appeared nearly solid white.                                          */
+  --sidebar-bg:        rgba(255, 255, 255, 0.24);
+  --sidebar-border:    rgba(255, 255, 255, 0.90);
   --sidebar-shadow:    0 16px 56px rgba(0, 0, 0, 0.18), 0 2px 10px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1.0), inset 1px 0 0 rgba(255, 255, 255, 0.60);
   --sidebar-blur:      blur(20px) saturate(200%);
-  --sidebar-link-active-bg: rgba(0, 0, 0, 0.09);
-  --sidebar-link-hover-bg:  rgba(0, 0, 0, 0.04);
+  --sidebar-link-active-bg: rgba(255, 255, 255, 0.22);
+  --sidebar-link-hover-bg:  rgba(255, 255, 255, 0.12);
+  /* Mobile drawer: approximates the glass visual without backdrop-filter.
+     Backdrop-filter on a drawer over a dim overlay causes murky grey artefacts
+     (the blur picks up the overlay's darkness). This blue-tinted white matches
+     the frosted look without the artefact.                                      */
+  --sidebar-mobile-bg: rgba(238, 244, 252, 0.98);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* DARK MODE — color tokens                                                    */
 /* ─────────────────────────────────────────────────────────────────────────── */
 :root[data-theme='dark'] {
-  /* Surfaces */
-  --color-bg-base:     #111111;
-  --color-bg-surface:  #1a1a1a;
-  --color-bg-elevated: #222222;
-  --color-bg-subtle:   #252525;
+  /* Surfaces — deep blue-black family (richer than pure black) */
+  --color-bg-base:     #0f172a;
+  --color-bg-surface:  #1a2236;
+  --color-bg-elevated: #1f2a40;
+  --color-bg-subtle:   #1e2a3d;
 
   /* Text */
   --color-text-primary:   #f3f3f3;
@@ -163,28 +174,30 @@
   --color-text-inverse:   #121212;
 
   /* Borders */
-  --color-border-default: #313131;
-  --color-border-subtle:  #272727;
-  --color-border-strong:  #484848;
+  --color-border-default: #283650;
+  --color-border-subtle:  #1f2d47;
+  --color-border-strong:  #384e6e;
 
-  /* Primary action */
-  --color-primary:       #75a8d3;
-  --color-primary-hover: #8ab8de;
-  --color-primary-active: #5e96c4;
-  --color-primary-text:  #0d1f2d;
-  --color-primary-soft:  #1a2e3f;
+  /* Primary action — lighter blue for dark bg readability */
+  --color-primary:        #7eb8e8;
+  --color-primary-hover:  #92c5ef;
+  --color-primary-active: #6aaee0;
+  --color-primary-text:   #0a1628;
+  --color-primary-soft:   #172344;
 
   /* Status */
   --color-success: #5ab07a;
   --color-warning: #f0a030;
   --color-danger:  #ef9a9a;
-  --color-info:    #75a8d3;
+  --color-info:    #7eb8e8;
 
   /* Sidebar — solid elevated panel (dark, no glass) */
-  --sidebar-bg:        #1e1e1e;
-  --sidebar-border:    rgba(255, 255, 255, 0.06);
-  --sidebar-shadow:    0 8px 32px rgba(0, 0, 0, 0.40);
+  --sidebar-bg:        #1a2438;
+  --sidebar-border:    rgba(255, 255, 255, 0.07);
+  --sidebar-shadow:    0 8px 32px rgba(0, 0, 0, 0.50);
   --sidebar-blur:      none;
   --sidebar-link-active-bg: rgba(255, 255, 255, 0.10);
   --sidebar-link-hover-bg:  rgba(255, 255, 255, 0.05);
+  /* Mobile drawer in dark mode matches the solid panel */
+  --sidebar-mobile-bg: #1a2438;
 }

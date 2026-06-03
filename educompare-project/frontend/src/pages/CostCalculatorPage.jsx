@@ -100,13 +100,13 @@ function CostCalculatorPage() {
     <div className="page-stack cost-calculator-page">
       <div className="section-heading cost-calculator-page-heading">
         <h2>{t('nav.costCalculator', 'Cost Calculator')}</h2>
-        <p>See the full yearly cost picture — tuition, living costs, fees — not just the headline tuition figure agents usually show.</p>
+        <p>See the full yearly cost picture: tuition, living costs, and fees, not just the headline figure agents usually show.</p>
       </div>
 
       <form className="page-stack cost-calculator-form" onSubmit={handleSubmit}>
         <FormSection
           title="Program selection"
-          description="Select a program to see the full yearly cost breakdown — tuition, living costs, application fee, and insurance."
+          description="Select a program to see the full yearly cost breakdown: tuition, living costs, application fee, and insurance."
         >
           <label>
             Program
@@ -117,7 +117,7 @@ function CostCalculatorPage() {
                   <optgroup key={countryId} label={COUNTRY_NAMES[countryId]}>
                     {programsByCountry[countryId].map((program) => (
                       <option key={program.program_id} value={program.program_id}>
-                        {`${universityMap[program.university_id]?.university_name ?? 'Unknown university'} — ${program.major_name}`}
+                        {`${universityMap[program.university_id]?.university_name ?? 'Unknown university'} · ${program.major_name}`}
                       </option>
                     ))}
                   </optgroup>

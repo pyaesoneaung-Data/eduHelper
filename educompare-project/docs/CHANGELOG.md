@@ -5,6 +5,224 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 173. Sidebar glass effect — transparency overhaul + drawer visual alignment + overlay animation
+
+**Files changed:** `tokens.css`, `index.css`, `Layout.jsx`
+
+Full sidebar quality pass across desktop (1440px), tablet (768px), and mobile (375px). Three issues fixed.
+
+**1. Desktop glass effect invisible (VISUAL fix)**
+
+`--sidebar-bg` was `rgba(255,255,255,0.48)` + `linear-gradient(150deg, rgba(255,255,255,0.30), transparent)` layered on top. Combined, these pushed the white overlay to ~65% opacity over the blurred `#d8e2ee` canvas. `backdrop-filter: blur(20px) saturate(200%)` was active but its output was almost entirely washed out — the sidebar appeared near-solid white with no visible blue-grey frosted tint.
+
+Fix:
+- `--sidebar-bg`: `rgba(255,255,255,0.48)` → `rgba(255,255,255,0.24)` — halved; blurred canvas now bleeds through visibly
+- Specular highlight gradient: `rgba(255,255,255,0.30)` → `rgba(255,255,255,0.12)` — subtle top-left glass catch; doesn't fight the transparency
+- `--sidebar-link-active-bg`: `0.16` → `0.22` (slightly stronger hit state on the now-transparent surface)
+- `--sidebar-link-hover-bg`: `0.08` → `0.12` (same reason)
+- Result: sidebar shows a clear cool blue-grey frosted tint — visually distinct from the white content cards
+
+**2. Mobile drawer visually disconnected from desktop glass (VISUAL fix)**
+
+Mobile drawer used `var(--color-bg-surface)` = pure `#ffffff` solid. On desktop the sidebar is a frosted blue-grey glass panel; on mobile it was a hard white sheet — visually unrelated.
+
+Fix:
+- New token `--sidebar-mobile-bg: rgba(238, 244, 252, 0.98)` (light mode) — a very light cool blue-tinted white that approximates the glass family without using `backdrop-filter` (which causes the overlay-blur murky artefact documented in #171).
+- New token `--sidebar-mobile-bg: #1a2438` (dark mode) — matches the existing solid dark panel (no change to dark mode behaviour).
+- `will-change: transform` added to `.dashboard-sidebar` inside `@media (max-width: 1120px)` only — promotes the translateX slide to its own GPU compositor layer for smooth 60 fps on low-end devices.
+
+**3. Overlay fade — open/close animation was instant (ANIMATION fix)**
+
+The `sidebar-overlay` was conditionally mounted/unmounted (`{isSidebarOpen ? <button /> : null}`) — CSS transitions had no element to run on during unmount, so the dim background appeared and disappeared with a hard cut.
+
+Fix:
+- `Layout.jsx`: Always render the overlay; toggle `.sidebar-overlay-visible` class instead of mounting/unmounting.
+- `index.css` base rule: `.sidebar-overlay { display: none }` (hidden on desktop).
+- `index.css` ≤1120px: overlay gets `opacity: 0; pointer-events: none; transition: opacity var(--transition-sidebar)` by default; `.sidebar-overlay-visible` sets `opacity: 1; pointer-events: auto`.
+- Result: overlay fades in with the drawer slide on open, fades out on close — smooth 220ms ease.
+
+**Verified:**
+- Desktop 1440px: glass tint clearly visible, sidebar visually distinct from white cards ✓
+- Mobile 375px: cool blue-tinted drawer matches glass family; overlay fade works ✓
+- Dark mode desktop: solid `#1a2438` unchanged (specificity 0,2,0 beats media query 0,1,0) ✓
+- Dark mode mobile: `--sidebar-mobile-bg: #1a2438` applied correctly ✓
+- Collapse animation unaffected ✓
+
+---
+
+### 172. Spacing audit — topbar-to-content gap missing on all pages
+
+**Files changed:** `index.css`
+
+Design critique + spacing audit across all pages (Home, Analytics, Recommendation, Settings, Legal, Red Flags) at 375px / 768px / 1280px. Confirmed a single systemic gap omission present everywhere.
+
+**Problem:** `page-shell` had `padding: 0 26px 16px` — no `padding-top` at any breakpoint. Content started at exactly 0px below the sticky topbar on every page and viewport. The desktop topbar has 20px of bottom padding that appears visually as spacing, but it lives *inside* the topbar's 82px height. The actual gap between the topbar's bottom edge and the first content pixel was **0px** across all pages. On mobile (56px topbar with `padding: 0`) the collision was most severe — page headings and KPI cards were physically touching the topbar border-bottom.
+
+**Fix:**
+
+1. Base rule `padding: 0 26px 16px` → `padding: var(--space-4) 26px var(--space-4)` — adds 16px top padding at desktop. Both bottom and top now use the same token for symmetry.
+
+2. Added `.page-shell { padding-top: var(--space-5); }` inside `@media (max-width: 1120px)` — increases to 20px on mobile/tablet, where the topbar has no internal padding and the white-to-canvas colour change at the boundary makes the zero gap most jarring.
+
+**Result (verified via live measurement):**
+- Desktop (1280px): gap topbar→content = 16px (was 0px) ✓
+- Tablet (768px): gap = 20px (was 0px) ✓
+- Mobile (375px): gap = 20px (was 0px) ✓
+- home-figma-grid min-height and KPI layout unaffected at 800px viewport ✓
+- The ≤760px `padding-inline: 16px` override is unaffected (only targets inline axis) ✓
+- ≥1600px and ≥1920px `padding-inline` overrides are unaffected ✓
+
+---
+
+### 171. Responsive audit — sidebar drawer quality + mobile panel overflow
+
+**Files changed:** `index.css`
+
+Visual audit and live measurement across 375px / 768px / 1280px. Three bugs confirmed and fixed.
+
+**1. Sidebar drawer — murky colour and animation colour-shift (VISUAL fix)**
+
+The sidebar uses `backdrop-filter: blur(20px) saturate(200%)` for the glass effect on desktop. When opened as a mobile/tablet drawer, the blur picks up whatever is directly behind it. The `sidebar-overlay` (`rgba(0,0,0,0.38)`) sits between the sidebar and the page content. The blur saturates this dark tint, turning the sidebar a murky grey instead of the intended frosted white. The effect also shifts colours frame-by-frame during the slide-in animation as different page content passes under the blur.
+
+Fix: Inside `@media (max-width: 1120px)`, override `.dashboard-sidebar` with `background: var(--color-bg-surface)` (solid white) and `backdrop-filter: none`. Dark mode is unaffected: `[data-theme='dark'] .dashboard-sidebar` has specificity 0,2,0 vs the media query's 0,1,0 — the dark `#1a2438` solid always wins in dark mode. Desktop (>1120px) is completely unaffected.
+
+Verified: `sidebarBg = rgb(255,255,255)`, `sidebarBackdrop = none` at 375px and 768px. Desktop still shows `blur(20px) saturate(2)`. ✓
+
+**2. Home page panels — horizontal overflow on 375px (LAYOUT fix)**
+
+At 375px, `document.documentElement.scrollWidth = 394px` (+19px overflow). All four `.home-figma-grid` panels were 378px wide inside a 343px grid column. Root cause: `grid-template-columns: 1fr` does not override `min-width: auto` on grid items. CSS Grid resolves `1fr` as `max(available-space / tracks, min-content-size)`. The panels' min-content size is ~378px (from panel padding 18px×2 + content 342px), so the track inflated to 378px, overflowing the 343px container.
+
+Fix: Changed every responsive single-column grid override from `grid-template-columns: 1fr` to `grid-template-columns: minmax(0, 1fr)`. The explicit `0` minimum overrides the `auto` default, allowing tracks to stay at their `fr` value. Applied to all responsive breakpoints: `≤1120px` (section-shell, home-figma-grid, two-column-grid), `≤760px` (home-kpi-row, home-country-grid, home-deadline-list, about grids, cost grids), `≤900px` (admission grids), `≤1180px` (recommendation grids), `≤520px` (card/detail/form grids), and the end-of-file analytics overrides.
+
+Verified: `docScrollWidth = 375` (was 394), `panelWidths = [343, 343, 343, 343]` (was 378 each), `gridCols = 343px` (was 377.82px). ✓
+
+**3. Collapse button visible in mobile drawer (UX fix)**
+
+The sidebar's Collapse button (toggles the desktop icon-only collapsed rail mode) was visible at the bottom of the mobile drawer. On mobile/tablet the sidebar is a drawer controlled by the hamburger — the collapse action has no meaning in this context and creates a confusing tap target.
+
+Fix: Added `.sidebar-collapse-btn { display: none }` inside `@media (max-width: 1120px)`. Desktop (>1120px) still shows the button normally. The button's toggle action still works on desktop and the localStorage state is unaffected.
+
+Verified: `collapseDisplay = none` at 375px and 768px; `collapseDisplay = flex` at 1280px. ✓
+
+---
+
+### 170. Responsive audit — design critique + four targeted fixes
+
+**Files changed:** `index.css`, `pages/SettingsPage.jsx`, `pages/CostCalculatorPage.jsx`
+
+Full visual audit across mobile (375px), tablet (768px), and laptop (1280px) using live browser screenshots. Four confirmed bugs fixed, three em-dash policy violations cleaned up.
+
+**1. Sidebar-collapsed class breaks mobile layout (CRITICAL fix)**
+
+`isSidebarCollapsed` is persisted to `localStorage`. When `true` from a prior desktop session, the `.sidebar-collapsed .dashboard-main` rule (specificity 0,2,0) overrides the media query's `.dashboard-main { margin-left: 0 }` (specificity 0,1,0) — forcing `margin-left: 116px` on mobile. At 375px, visible content shrinks to ~227px. The mobile drawer also rendered as a 76px icon-only strip instead of a full-width panel.
+
+Fix: Added a reset block inside `@media (max-width: 1120px)` that neutralises every `.sidebar-collapsed` override for drawer context:
+- `.sidebar-collapsed .dashboard-main { margin-left: 0 }` — removes the margin-left override
+- `.sidebar-collapsed .dashboard-sidebar { width: var(--sidebar-width) }` — restores full drawer width
+- Full restoration of labels (`opacity: 1; max-width: 200px`), chevrons, sub-items (`display: flex`), brand padding, link padding, and logo width
+
+Verified: at 375px with `sidebar-collapsed` class forced on, `margin-left = 0`, `sidebarWidth = 210px`, `linkLabelMaxW = 200px`. ✓
+
+**2. Topbar ≤760px conflicting padding (MEDIUM fix)**
+
+`@media (max-width: 760px)` added `padding-top: 12px; padding-bottom: 8px` to `.dashboard-topbar`, which already had `height: 56px; padding: 0` from the `@media (max-width: 1120px)` rule. With `box-sizing: border-box` the 20px of padding reduced the content area to 36px for 40px-tall buttons. Also removed the redundant `flex-direction: row` and `align-items: center` (both already set by the ≤1120px rule).
+
+Fix: Removed the entire `.dashboard-topbar` rule from the ≤760px block.
+
+**3. Topbar touch targets at mobile (MEDIUM fix)**
+
+`.topbar-toggle-btn` at ≤760px was `width: 44px` but `height: 40px` (4px below the Apple HIG 44×44px minimum). Added `height: 44px` to the ≤760px override so both dimensions meet the minimum.
+
+**4. Page headings too large on mobile (MEDIUM fix)**
+
+`clamp(var(--text-2xl), 1.9vw, 34px)` resolves to 28px at 375px. "Program Recommendations" wrapped to 2 lines, pushing the form below the fold. Override added at the end of the file (after the base rules — same cascade placement pattern as the analytics override block) setting all three section headings to `var(--text-xl)` = 22px at ≤760px. Verified: computed `fontSize = 22px` on mobile, 28–34px range preserved on desktop and tablet.
+
+**5. Em-dash policy violations fixed**
+
+Three strings in JSX still used `—` against the project rule. Replaced with `:` or removed:
+- `SettingsPage.jsx`: "...currency — TWD..." → "...currency: TWD..."
+- `CostCalculatorPage.jsx` description: "...picture — tuition...fees — not just..." → "...picture: tuition...fees, not just..."
+- `CostCalculatorPage.jsx` FormSection description: "...breakdown — tuition..." → "...breakdown: tuition..."
+- `CostCalculatorPage.jsx` dropdown option: `university — major` → `university · major`
+
+---
+
+### 169. Responsive audit — mobile + laptop layout fixes
+
+**Files changed:** `index.css`
+
+Systematic audit across 375px (mobile), 768px (tablet), and 1280px (laptop) viewports. Five issues found and fixed:
+
+1. **Analytics panels: collapse to 1 col on mobile** — `.cost-overview-viz-grid` and `.cost-charts-grid` were fixed 2-column grids with no mobile breakpoint. At 375px each panel was ~160px wide — charts were unreadable. Added `@media (max-width: 760px)` at the end of the stylesheet (after base rules) to collapse both grids to `1fr`. Note: the override must come after the base rules in the file — earlier placement caused cascade ordering bug where the base `1fr 1fr` rule (later in file) silently won.
+
+2. **Analytics pie chart not rendering** — Recharts `ResponsiveContainer` renders nothing if its parent has zero computed height. `.pie-chart-area` had `flex: 1 1 0` but no minimum, so at certain sidebar+viewport combinations the container collapsed to 0px and the chart simply didn't appear. Fixed with `min-height: 240px` on `.pie-chart-area`. Chart now renders at all tested breakpoints (375px, 768px, 1280px).
+
+3. **Pie chart mobile layout** — At mobile, the pie chart layout (chart left, legend right) was cramped. Added `flex-direction: column` to `.pie-chart-layout` at `≤760px` so chart stacks above a horizontal legend row (`flex-wrap: wrap`).
+
+4. **Home deadlines grid: collapse to 1 col on mobile** — `.home-deadline-list` was 3 columns at all widths. At 375px each card was ~115px — program names like "International Business Administration (IBA)" were truncated to barely readable. Collapsed to `grid-template-columns: 1fr` at `≤760px`.
+
+5. **Leaderboard names truncating at 1280px with sidebar** — `.value-leaderboard-name` used `white-space: nowrap; text-overflow: ellipsis`. At 1280px with expanded sidebar the Best Value Universities panel column is ~340px — too narrow for long names like "National University of Singapore". Added `@media (min-width: 1121px) and (max-width: 1440px)` scoped to `.dashboard-shell:not(.sidebar-collapsed)` to allow name wrapping and reduce font-size to `var(--text-sm)` for names and `var(--text-xs)` for meta lines. Also added `--home-kpi-subtitle` font reduction to the existing 1250–1400px and 1121–1249px compact KPI tiers.
+
+---
+
+### 168. Colour system — card depth + settings toggle contrast
+
+**Files changed:** `styles/tokens.css`, `index.css`
+
+Two remaining harmony issues fixed after visual review:
+
+1. **Cards lacked depth** (`tokens.css`): `--color-bg-surface` was `#f5f7fa` — a barely-cool white that sat in the same blue-grey family as the canvas (`#d8e2ee`). Both layers read as "blue field" with no clear separation. Changed to `#ffffff` (pure white) so panels clearly float over the canvas — the contrast between white cards and the coloured canvas creates the "floating panel" depth that is the defining visual of the layout. `--color-bg-elevated` also set to `#ffffff`. `--color-bg-subtle` adjusted from `#e4ecf5` to `#e8eff8` (slightly lighter, less saturated, better as a nested-element tier inside white cards).
+
+2. **Settings toggle active state invisible** (`index.css`): Active button was `--color-primary-soft` (`#ddeaf8` pale blue) on a `--color-bg-subtle` (`#e8eff8` pale blue) track — virtually the same colour, unreadable at a glance. Changed to the classic segmented control pattern: active pill = `var(--color-bg-elevated)` pure white + `var(--shadow-sm)` elevation + `var(--color-primary)` navy text. White pill on blue-grey track is immediately legible — the active state is obvious without being harsh. Dark mode updated symmetrically.
+
+---
+
+### 167. Colour system — harmony fixes across all pages
+
+**Files changed:** `styles/tokens.css`, `index.css`
+
+Four sources of visual disharmony identified through computed-style inspection and fixed:
+
+1. **KPI icon tile colours unified** (`index.css`): Four home-page KPI icon tiles (Programs, Universities, Countries, Starting from) each had hardcoded background, border, and icon colours from unrelated hue families — blue `#eef4ff`, green `#edf9f1`, orange `#fff5ea`, purple `#f4efff`. On the new cool institutional canvas these read as 4 different product families. All 4 light-mode and 4 dark-mode tile rules collapsed into a single token-based rule using `var(--color-primary-soft)` background, `var(--color-border-subtle)` border, and `var(--color-primary)` icon colour. Result: unified institutional navy voice across all KPI tiles.
+
+2. **Sidebar active state** (`tokens.css`): `--sidebar-link-active-bg` was `rgba(0,0,0,0.10)` — a black smudge on the frosted glass sidebar. On the cool blue canvas the `saturate(200%)` blur makes the glass tint cool-white, so a black alpha overlay looked muddy and out of family. Changed to `rgba(255,255,255,0.16)` — white-alpha creates a proper light-catch highlight, like real frosted glass. Hover bg updated symmetrically `rgba(0,0,0,0.05)` → `rgba(255,255,255,0.08)`.
+
+3. **Card surface temperature** (`tokens.css`): `--color-bg-surface` was `#f8f8f6` (blue channel lowest = barely warm). Against the cool `#d8e2ee` canvas, simultaneous contrast made cards read as cream/yellow. Shifted to `#f5f7fa` (blue channel highest = barely cool) — cards now read as same colour temperature family as the canvas. `--color-bg-elevated` updated from `#ffffff` to `#f9fbfd` symmetrically.
+
+4. **Settings toggle active state** (`index.css`): `.settings-toggle-btn-active` used `--color-bg-surface` background with text-colour border — no connection to the product's primary accent. Changed to `--color-primary-soft` background + `--color-primary` text + `--color-border-default` border. Dark mode variant updated the same way. Active toggles (Light mode, English, USD) now show the institutional navy accent.
+
+---
+
+### 166. Colour system — full palette overhaul (cool blue-slate)
+
+**Files changed:** `styles/tokens.css`
+
+Replaced the warm beige palette with a cool institutional blue-grey system addressing three requirements: remove warm document feel, maintain glassmorphism quality, avoid eye strain.
+
+Light mode surfaces — two-layer design:
+- `--color-bg-base`: `#e8e4df` → `#d8e2ee` (cool blue-grey canvas — feeds glassmorphism with `saturate(200%)` blur)
+- `--color-bg-surface`: `#faf8f5` → `#f8f8f6` (barely-off-white reading surface, initially)
+- `--color-bg-elevated`: `#fdfcfa` → `#ffffff`
+- `--color-bg-subtle`: `#f2efea` → `#e4ecf5`
+- Borders: all updated to cool blue-grey family (`#c8d5e5`, `#dce7f2`, `#9ab5cf`)
+- Primary: `#2d6aa0` → `#1a3a6e` (deep institutional navy, deeper authority)
+- Primary soft: `#e7f0f7` → `#ddeaf8`
+- `--color-info` separated from primary: `#2d6aa0` → `#2e6db4`
+
+Dark mode — deep blue-black family replacing pure black neutrals:
+- `--color-bg-base`: `#111111` → `#0f172a`
+- `--color-bg-surface`: `#1a1a1a` → `#1a2236`
+- `--color-bg-elevated`: `#222222` → `#1f2a40`
+- `--color-bg-subtle`: `#252525` → `#1e2a3d`
+- Dark borders: blue-navy family (`#283650`, `#1f2d47`, `#384e6e`)
+- Primary dark: `#75a8d3` → `#7eb8e8`
+- Sidebar dark bg: `#1e1e1e` → `#1a2438`
+- Glass sidebar active (see entry 168 for final value)
+
+Result: glass sidebar picks up cool blue from base via `saturate(200%)` creating proper frosted glass. Cards float cleanly over the canvas. Deep navy primary reads as institutional authority, not generic mid-blue.
+
+---
+
 ### 165. Home page — leaderboard row height fix
 
 **Files changed:** `index.css`

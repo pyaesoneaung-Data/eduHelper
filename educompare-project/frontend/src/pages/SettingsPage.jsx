@@ -51,7 +51,7 @@ function SettingsPage() {
             <div className="settings-row-info">
               <span className="settings-row-label">Display Currency</span>
               <p className="settings-row-note">
-                Local shows costs in each country's own currency — TWD, THB, SGD. USD converts everything for cross-country comparison.
+                Local shows costs in each country's own currency: TWD, THB, SGD. USD converts everything for cross-country comparison.
               </p>
             </div>
             <div className="settings-toggle">

@@ -83,8 +83,11 @@ img {
   width: var(--sidebar-width);
   border-radius: var(--radius-xl);
   border: 1px solid var(--sidebar-border);
+  /* Gradient: top-left specular highlight (glass catches light from top-left).
+     Reduced from 0.30 → 0.12 so it doesn't add extra white that would wash out
+     the frosted tint — the highlight stays readable without killing transparency. */
   background:
-    linear-gradient(150deg, rgba(255, 255, 255, 0.30) 0%, transparent 50%),
+    linear-gradient(150deg, rgba(255, 255, 255, 0.12) 0%, transparent 45%),
     var(--sidebar-bg);
   -webkit-backdrop-filter: var(--sidebar-blur);
   backdrop-filter: var(--sidebar-blur);
@@ -639,11 +642,19 @@ label,
   background: var(--sidebar-link-hover-bg);
 }
 
+/* Overlay: always in the DOM so it can transition opacity — hidden on desktop.
+   The .sidebar-overlay-visible class is toggled by React on open/close.         */
+.sidebar-overlay {
+  display: none;
+}
 
 .page-shell {
   width: min(100%, 1680px);
   margin-inline: auto;
-  padding: 0 26px 16px;
+  /* padding-top separates content from the sticky topbar.
+     No raw 0 here — even at desktop the 20px topbar bottom-padding is
+     *inside* the topbar height, not below it.                         */
+  padding: var(--space-4) 26px var(--space-4);
 }
 
 .page-stack,
@@ -759,10 +770,11 @@ label,
 }
 
 .settings-toggle-btn-active {
-  background: var(--color-bg-surface);
-  color: var(--color-text-primary);
+  background: var(--color-bg-elevated);
+  color: var(--color-primary);
   font-weight: var(--weight-semibold);
-  box-shadow: var(--shadow-xs);
+  border-color: var(--color-border-subtle);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Dark mode: flip the elevation direction so active reads as raised, not sunken */
@@ -773,6 +785,8 @@ label,
 
 [data-theme='dark'] .settings-toggle-btn-active {
   background: var(--color-bg-elevated);
+  color: var(--color-primary);
+  border-color: var(--color-border-default);
   box-shadow: none;
 }
 
@@ -1576,52 +1590,22 @@ select {
   flex-shrink: 0;
 }
 
-.home-kpi-icon-programs {
-  background: #eef4ff;
-  border-color: #d9e7ff;
-  color: #4c6fb4;
-}
-
-.home-kpi-icon-verified {
-  background: #edf9f1;
-  border-color: #d4efdd;
-  color: #3f8b61;
-}
-
-.home-kpi-icon-countries {
-  background: #fff5ea;
-  border-color: #f6e0bf;
-  color: #b27a2d;
-}
-
+.home-kpi-icon-programs,
+.home-kpi-icon-verified,
+.home-kpi-icon-countries,
 .home-kpi-icon-refresh {
-  background: #f4efff;
-  border-color: #e2d9ff;
-  color: #6b5bb0;
+  background: var(--color-primary-soft);
+  border-color: var(--color-border-subtle);
+  color: var(--color-primary);
 }
 
-:root[data-theme='dark'] .home-kpi-icon-programs {
-  background: #1a2840;
-  border-color: #2a3d5a;
-  color: #7aa8d8;
-}
-
-:root[data-theme='dark'] .home-kpi-icon-verified {
-  background: #1a2e22;
-  border-color: #2a4434;
-  color: #5aae7a;
-}
-
-:root[data-theme='dark'] .home-kpi-icon-countries {
-  background: #2a2218;
-  border-color: #3d3020;
-  color: #c8943a;
-}
-
+:root[data-theme='dark'] .home-kpi-icon-programs,
+:root[data-theme='dark'] .home-kpi-icon-verified,
+:root[data-theme='dark'] .home-kpi-icon-countries,
 :root[data-theme='dark'] .home-kpi-icon-refresh {
-  background: #221a35;
-  border-color: #342850;
-  color: #9b88d0;
+  background: var(--color-primary-soft);
+  border-color: var(--color-border-default);
+  color: var(--color-primary);
 }
 
 .home-kpi-copy {
@@ -1672,6 +1656,9 @@ select {
   .dashboard-shell:not(.sidebar-collapsed) .home-kpi-value {
     font-size: 1.3rem;
   }
+  .dashboard-shell:not(.sidebar-collapsed) .home-kpi-subtitle {
+    font-size: var(--text-xs);
+  }
 }
 
 @media (min-width: 1121px) and (max-width: 1249px) {
@@ -1689,6 +1676,22 @@ select {
   }
   .dashboard-shell:not(.sidebar-collapsed) .home-kpi-value {
     font-size: 1.1rem;
+  }
+  .dashboard-shell:not(.sidebar-collapsed) .home-kpi-subtitle {
+    font-size: var(--text-xs);
+  }
+}
+
+/* Leaderboard: allow names to wrap at laptop widths where panel column is narrow */
+@media (min-width: 1121px) and (max-width: 1440px) {
+  .dashboard-shell:not(.sidebar-collapsed) .value-leaderboard-name {
+    white-space: normal;
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+  }
+  .dashboard-shell:not(.sidebar-collapsed) .value-leaderboard-meta {
+    white-space: normal;
+    font-size: var(--text-xs);
   }
 }
 
@@ -2440,8 +2443,21 @@ select {
     /* left:0 means translateX(-100%) is exactly off-screen — no edge bleed */
     transform: translateX(-100%);
     transition: transform var(--transition-sidebar);
-    /* Keep glass but without the inset shadow that bleeds onto topbar */
     box-shadow: 4px 0 32px rgba(0, 0, 0, 0.14);
+    /* Drawer: replace glass with a solid-ish blue-tinted surface.
+       backdrop-filter blurs whatever is behind the panel. When the drawer
+       slides over the dim overlay the sidebar picks up the overlay's dark
+       tint, turning murky grey. It also creates visible colour shifts during
+       the open/close animation as different page content passes under the
+       blur. --sidebar-mobile-bg approximates the frosted look (cool tinted
+       white) without the artefact.
+       Dark mode is unaffected — [data-theme='dark'] specificity (0,2,0)
+       beats this rule's (0,1,0) and --sidebar-mobile-bg = #1a2438 there.  */
+    background: var(--sidebar-mobile-bg);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    /* GPU layer: translateX slide is compositor-only at 60 fps             */
+    will-change: transform;
   }
 
   .dashboard-sidebar-open {
@@ -2465,6 +2481,14 @@ select {
     padding-inline: 16px;
   }
 
+  /* The mobile topbar has no bottom padding (padding: 0; height: 56px).
+     Compensate with extra top padding so content doesn't butt against
+     the topbar's border-bottom. Desktop gets 16px from the base rule;
+     mobile/tablet gets 20px for a more comfortable gap.               */
+  .page-shell {
+    padding-top: var(--space-5);
+  }
+
   /* Greeting scales down to fit the fixed 56px bar */
   .topbar-section-greeting {
     font-size: var(--text-lg);
@@ -2485,12 +2509,23 @@ select {
     z-index: 25;
     border: 0;
     background: rgba(0, 0, 0, 0.38);
+    /* Fade in/out — class toggled by React (always rendered, never unmounted) */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-sidebar);
+  }
+
+  .sidebar-overlay-visible {
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .section-shell,
   .home-figma-grid,
   .two-column-grid {
-    grid-template-columns: 1fr;
+    /* minmax(0, 1fr) not plain 1fr — grid items with min-width:auto inflate
+       the track beyond the container, causing horizontal overflow on mobile. */
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .home-page,
@@ -2526,18 +2561,49 @@ select {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   }
+
+  /* ── Sidebar-collapsed → drawer reset ────────────────────────────────────
+     isSidebarCollapsed is persisted to localStorage. If a user collapsed the
+     sidebar on desktop then visits on mobile/tablet, the class is still on
+     .dashboard-shell. These rules neutralise every collapsed override so the
+     drawer always renders as a full-width expanded panel in mobile/tablet.  */
+  .sidebar-collapsed .dashboard-main    { margin-left: 0; }
+  .sidebar-collapsed .dashboard-sidebar { width: var(--sidebar-width); overflow: hidden; }
+  .sidebar-collapsed .sidebar-panel     { overflow: hidden; }
+  .sidebar-collapsed .sidebar-nav       { overflow-y: auto; overflow-x: hidden; }
+  .sidebar-collapsed .sidebar-group-children { display: flex; }
+  .sidebar-collapsed .sidebar-brand     { padding: 0 var(--sidebar-brand-px); gap: var(--sidebar-brand-gap); }
+  .sidebar-collapsed .sidebar-brand-name,
+  .sidebar-collapsed .sidebar-link-label { opacity: 1; max-width: 200px; pointer-events: auto; }
+  .sidebar-collapsed .sidebar-group-chevron { opacity: 1; max-width: var(--sidebar-chevron-size); margin-left: auto; pointer-events: auto; }
+  .sidebar-collapsed .sidebar-link,
+  .sidebar-collapsed .sidebar-group-btn,
+  .sidebar-collapsed .sidebar-collapse-btn { padding: 0 var(--sidebar-link-px); gap: var(--sidebar-icon-label-gap); }
+  .sidebar-collapsed .sidebar-logo-nexa { width: 150px; }
+
+  /* Collapse button is a desktop action (icon-only rail mode).
+     In drawer mode the sidebar is opened/closed via the hamburger — the
+     collapse toggle has no meaning and should not be visible.             */
+  .sidebar-collapse-btn {
+    display: none;
+  }
 }
 
 @media (max-width: 760px) {
   .home-kpi-row,
   .home-country-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Deadline cards: 3-col is too narrow at mobile — collapse to 1 */
+  .home-deadline-list {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .about-two-col,
   .about-sources-row,
   .about-team-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .about-stats-row {
@@ -2548,23 +2614,19 @@ select {
     padding-inline: 16px;
   }
 
-  .dashboard-topbar {
-    flex-direction: row;
-    align-items: center;
-    padding-top: 12px;
-    padding-bottom: 8px;
-  }
-
   /* Hide text labels — show icons only on small screens */
   .toggle-label {
     display: none;
   }
 
+  /* 44×44 minimum touch target (Apple HIG) — width+height both set */
   .topbar-toggle-btn {
     width: 44px;
+    height: 44px;
     padding: 0;
     justify-content: center;
   }
+
 
   .topbar-actions {
     gap: 6px;
@@ -2585,11 +2647,11 @@ select {
   }
 
   .cost-overview-viz-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .cost-columns-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .cost-column {
@@ -2612,7 +2674,7 @@ select {
   .detail-grid,
   .form-grid,
   .section-nav {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .compare-table {
@@ -3163,7 +3225,7 @@ select {
   }
 
   .recommendation-field-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-5);
   }
 
@@ -3174,7 +3236,7 @@ select {
 
   .recommendation-action-row {
     position: static;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     width: 100%;
     transform: none;
   }
@@ -3382,6 +3444,7 @@ select {
   .cost-secondary-button {
     width: 100%;
   }
+
 }
 
 /* ── Analytics page ───────────────────────────────────────────── */
@@ -3549,7 +3612,7 @@ select {
   .admission-middle-grid,
   .admission-bottom-grid,
   .admission-snapshot-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -3940,6 +4003,7 @@ select {
 .pie-chart-area {
   flex: 1 1 0;
   min-width: 0;
+  min-height: 240px; /* Recharts ResponsiveContainer needs explicit height or it renders nothing */
 }
 
 .pie-combined-total {
@@ -4037,4 +4101,39 @@ select {
 .admission-scale-note { font-size: var(--text-xs); }
 .admission-program-rankings-heading { margin-bottom: 0; }
 .admission-program-rankings-heading h3 { font-size: var(--text-base); margin: 0; }
+
+/* ─── Analytics responsive overrides (must live after base rules) ──────────── */
+@media (max-width: 760px) {
+  /* Collapse 2-col analytics grids to 1 col — base rules are defined after the
+     main mobile breakpoint blocks so this override must also come after them. */
+  .cost-overview-viz-grid,
+  .cost-charts-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Pie chart: stack vertically, legend becomes a row */
+  .pie-chart-layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pie-legend {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+}
 .admission-program-rankings-heading p { margin: 0; }
+
+/* ─── Decision-Hub page heading overrides (must live after base rules) ──────
+   The section headings use clamp(28px, 1.9vw, 34px). At 375px that resolves
+   to the 28px minimum — too large for mobile. These overrides scale them down
+   to var(--text-xl) = 22px. They MUST be placed after the base clamp rules
+   (lines ~2697, ~3218, ~3222) or the base rule wins the cascade.          */
+@media (max-width: 760px) {
+  .recommendation-page-heading h2,
+  .compare-page-heading h2,
+  .cost-calculator-page-heading h2 {
+    font-size: var(--text-xl);
+  }
+}

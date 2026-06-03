@@ -46,14 +46,14 @@ function LayoutFrame() {
         <Sidebar />
       </aside>
 
-      {isSidebarOpen ? (
-        <button
-          className="sidebar-overlay"
-          type="button"
-          onClick={closeSidebar}
-          aria-label={t('ui.close', 'Close')}
-        />
-      ) : null}
+      {/* Always rendered so CSS opacity transition fires on open AND close.
+          pointer-events:none when hidden prevents accidental click interception. */}
+      <button
+        className={isSidebarOpen ? 'sidebar-overlay sidebar-overlay-visible' : 'sidebar-overlay'}
+        type="button"
+        onClick={closeSidebar}
+        aria-label={t('ui.close', 'Close')}
+      />
 
       <div className="dashboard-main">
         <header className="dashboard-topbar">
