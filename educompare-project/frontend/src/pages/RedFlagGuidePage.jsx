@@ -45,6 +45,23 @@ function RedFlagGuidePage() {
           <li>Keep any promise that sounds risk-free under suspicion until it is backed by official documentation.</li>
         </ul>
       </InfoCard>
+
+      <InfoCard title="Credential fraud: how it works" eyebrow="Further reading">
+        <p>
+          The UNESCO ETICO Observatory documents the full range of credential fraud tactics used
+          across international education systems, from fake degrees to falsified transcripts and
+          accreditation scams. Required reading before trusting any institution or agent you
+          cannot independently verify.
+        </p>
+        <a
+          className="external-link"
+          href="https://etico.iiep.unesco.org/en/many-always-deleterious-faces-credential-fraud"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          UNESCO ETICO: The many faces of credential fraud
+        </a>
+      </InfoCard>
     </div>
   )
 }

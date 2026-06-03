@@ -5,6 +5,18 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 174. Red Flag Guide — UNESCO ETICO credential fraud reference added
+
+**Files changed:** `RedFlagGuidePage.jsx`, `index.css`
+
+Added a "Further reading" InfoCard at the bottom of the Red Flag Guide page linking to the UNESCO ETICO Observatory article on credential fraud. The card gives context about what the resource covers so users know why it matters before clicking.
+
+- New `.external-link` CSS class in `index.css` — `--color-primary` colour, `--text-sm` size, underline fades in on hover via `text-decoration-color` transition; no inline styles.
+- `target="_blank" rel="noopener noreferrer"` on the anchor for safe external navigation.
+- Link: `https://etico.iiep.unesco.org/en/many-always-deleterious-faces-credential-fraud`
+
+---
+
 ### 173. Sidebar glass effect — transparency overhaul + drawer visual alignment + overlay animation
 
 **Files changed:** `tokens.css`, `index.css`, `Layout.jsx`

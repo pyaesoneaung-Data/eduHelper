@@ -1336,6 +1336,24 @@ select {
   margin-bottom: 8px;
 }
 
+/* External reference links — used in Red Flag Guide and About pages */
+.external-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: color var(--transition-ui), text-decoration-color var(--transition-ui);
+}
+
+.external-link:hover {
+  color: var(--color-primary-hover);
+  text-decoration-color: currentColor;
+}
+
 
 .table-shell {
   border: 1px solid var(--border);
