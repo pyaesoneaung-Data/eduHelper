@@ -17,37 +17,37 @@ const phases = [
     number: 1,
     title: 'Problem & Scope',
     description:
-      'Identified that students planning to study abroad in the region had no reliable, unbiased source. Most relied on agents or social media, both of which have clear conflicts of interest. We defined what "verified" means for this project, then scoped the initial 3 countries and core data points: cost, admission requirements, and legal rules.',
+      'Students planning to study abroad had no reliable, unbiased source. Most relied on agents or social media, both with clear conflicts of interest. Scoped the initial 3 countries and core data points: cost, admission requirements, and legal rules.',
   },
   {
     number: 2,
     title: 'Research & Data Collection',
     description:
-      'Pulled data directly from official university websites, government education portals (MoE Taiwan, Ministry of Education Thailand, MOE Singapore), QS and THE rankings, and verified exchange rate references. Every data point was cross-referenced against at least two sources before inclusion.',
+      'Pulled data from official university websites, government portals (MoE Taiwan, MoE Thailand, MOE Singapore), QS and THE rankings, and exchange rate references. All data points cross-referenced against at least two sources.',
   },
   {
     number: 3,
     title: 'Cleaning & Structuring',
     description:
-      'Standardised formats across all three countries: currencies, GPA scales, and IELTS versus TOEFL thresholds. Data gaps were flagged and documented honestly rather than filled with estimates. Singapore GPA data is one known gap in the current dataset.',
+      'Standardised currencies, GPA scales, and IELTS vs TOEFL thresholds across all three countries. Gaps were flagged and documented rather than filled with estimates. Singapore GPA data is one known gap in the current dataset.',
   },
   {
     number: 4,
     title: 'Backend & Tools',
     description:
-      'Built a FastAPI backend with endpoints for program scoring, admission analytics, cost summaries, and comparison. All program data is stored in PostgreSQL with consistent schemas across countries, making cross-country comparison queries reliable and fast.',
+      'FastAPI backend with endpoints for program scoring, admission analytics, cost summaries, and comparison. Program data stored in PostgreSQL with consistent schemas across countries for reliable cross-country queries.',
   },
   {
     number: 5,
     title: 'Frontend & Analytics',
     description:
-      'Built the React dashboard: program comparison, cost calculator, recommendation engine, and two analytics pages. Cost Overview covers tuition and living cost breakdown with monthly commitment figures. Admission Overview shows average GPA and IELTS thresholds per country with program-level tables.',
+      'React dashboard: program comparison, cost calculator, recommendation engine, and analytics pages. Cost Overview covers tuition and living cost breakdown with monthly figures. Admission Overview shows GPA and IELTS thresholds with program-level tables.',
   },
   {
     number: 6,
     title: 'Testing & Refinement',
     description:
-      'Tested against real student scenarios: varying budgets, different English proficiency levels, and different target countries. Data gaps identified in testing were documented. An update cycle is set for each new university intake period.',
+      'Tested against real student scenarios across varying budgets, proficiency levels, and target countries. Gaps found in testing were documented. Updates planned for each new university intake period.',
   },
 ]
 
@@ -112,11 +112,10 @@ function AboutPage() {
           <h3>Mission</h3>
         </div>
         <p className="about-prose">
-          UniMatch started from a real problem: students planning to study abroad in the region
-          were relying on agents and social media, both of which have obvious conflicts of
-          interest. This platform gives students a direct source with actual costs, real admission
-          thresholds, and honest legal information, all collected from official sources and
-          structured into tools anyone can use.
+          UniMatch started from a real problem: students planning to study abroad were relying on
+          agents and social media, both with clear conflicts of interest. This platform gives
+          students direct access to actual costs, admission thresholds, and legal information,
+          collected from official sources and structured into usable tools.
         </p>
         <div className="about-stats-row">
           {stats.map((stat) => (

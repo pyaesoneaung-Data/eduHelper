@@ -5,6 +5,23 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 175. Content tightening — Red Flag Guide and About page
+
+**Files changed:** `RedFlagGuidePage.jsx`, `AboutPage.jsx`
+
+Copy audit and tightening pass on both pages. No structural or logic changes — copy-only edits.
+
+**Red Flag Guide:**
+- Removed second sentence from `page-description` ("Risk checks should happen alongside...") — administrative filler that restated the obvious
+- Red flag 4 ending: "treat the claim carefully" → "is a warning sign" — weak hedging replaced with clear language matching the page's tone
+- Checklist bullet 4: "Keep any promise that sounds risk-free under suspicion until it is backed by official documentation" → "Any risk-free promise should be treated with suspicion until confirmed by official documentation" — untangled the double-negative
+
+**About page:**
+- Mission: removed "in the region" (redundant after tagline), "obvious" → "clear", final clause simplified
+- All 6 phase descriptions tightened by ~30-40%: removed implied context ("We defined what 'verified' means", "Built a"), replaced multi-clause endings with single clean statements. Blog-post pace → dashboard pace.
+
+---
+
 ### 174. Red Flag Guide — UNESCO ETICO credential fraud reference added
 
 **Files changed:** `RedFlagGuidePage.jsx`, `index.css`

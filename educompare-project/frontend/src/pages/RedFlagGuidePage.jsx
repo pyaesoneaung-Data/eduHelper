@@ -4,7 +4,7 @@ function RedFlagGuidePage() {
   return (
     <div className="page-stack">
       <p className="page-description">
-        Review these warning signs before any payment, deposit, or admission commitment. Risk checks should happen alongside cost, comparison, and legal review.
+        Review these warning signs before any payment, deposit, or admission commitment.
       </p>
 
       <div className="card-grid">
@@ -32,7 +32,7 @@ function RedFlagGuidePage() {
         <InfoCard title="Check legal work rights" eyebrow="Red flag 4">
           <p>
             Part-time work rules vary by country and often require permits.
-            If someone promises easy income without explaining legal restrictions, treat the claim carefully.
+            Any promise of easy income without explaining legal restrictions is a warning sign.
           </p>
         </InfoCard>
       </div>
@@ -42,7 +42,7 @@ function RedFlagGuidePage() {
           <li>Confirm the program exists on the official university site and that the deadline matches the university record.</li>
           <li>Calculate tuition, living cost, insurance, and any listed fees together instead of trusting a low tuition headline.</li>
           <li>Read the country work-rights note before assuming part-time income can offset yearly costs.</li>
-          <li>Keep any promise that sounds risk-free under suspicion until it is backed by official documentation.</li>
+          <li>Any risk-free promise should be treated with suspicion until confirmed by official documentation.</li>
         </ul>
       </InfoCard>
 
