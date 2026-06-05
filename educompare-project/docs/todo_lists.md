@@ -21,6 +21,28 @@ Kino Part
 0- check home page
 1- about pages if something is not working carefully, fix it - 5/05/2026
 
+6/6/2026
+0- Decision Hub → Student Profile
+
+Fix the icon sizes. Some icons are not equal in size.
+Remove the drop-down arrows from the Amount, GPA, and IELTS input fields.
+Fix the USD icon because the current icon is incorrect.
+Fix the GPA and IELTS icons because they are repeated.
+
+0- Red Flag Guide
+
+Fix this post: “Credential Fraud: How It Works”
+
+Branding
+
+0- Use the old logo and old name again.
+
+About Page
+
+0- Update the About page so it looks more professional.
+
+-> Other things look fine and cool
+
 
 Dot Part
 
