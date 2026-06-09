@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Bank, SealCheck, CurrencyDollar, ArrowRight } from '@phosphor-icons/react'
 import { Link } from 'react-router-dom'
+import avatarPyae from '../assets/team/pyaesoneaung.jpg'
+import avatarKaung from '../assets/team/kaungkhantlin.png'
 
 function getInitials(name) {
   return name
@@ -92,16 +94,14 @@ const builders = [
     role: 'Data · Backend · Project Research',
     githubName: 'pyaesoneaung-Data',
     githubUrl: 'https://github.com/pyaesoneaung-Data',
-    avatar:
-      'https://media.licdn.com/dms/image/v2/D4E03AQHJLdzMiLHR3g/profile-displayphoto-crop_800_800/B4EZkpe7.YKsAI-/0/1757337600666?e=1782345600&v=beta&t=A003_ycBiaGcAi_0MoZNs1_o3RztEsOjHJ_1aAyH2dc',
+    avatar: avatarPyae,
   },
   {
     name: 'Kaung Khant Lin',
     role: 'Data · Frontend · Implementation',
     githubName: 'Kinosaur',
     githubUrl: 'https://github.com/Kinosaur',
-    avatar:
-      'https://media.licdn.com/dms/image/v2/D5603AQG1bdhlfl38RQ/profile-displayphoto-crop_800_800/B56Z3DoIwKH4AI-/0/1777103573344?e=1782345600&v=beta&t=zx4ElkWwvlmW9Zx8_h6xZQgb1MNjCyZy8mn9LzVzphk',
+    avatar: avatarKaung,
   },
 ]
 

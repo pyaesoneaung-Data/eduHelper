@@ -70,7 +70,7 @@ img {
 
 /* ─── Shell ──────────────────────────────────────────────────────────────── */
 .dashboard-shell {
-  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--color-bg-base);
 }
 
@@ -615,11 +615,13 @@ img {
 
 .dashboard-main {
   margin-left: calc(var(--sidebar-width) + var(--sidebar-inset) * 2);
-  /* height: 100vh + flex-column creates a bounded scroll container.
+  /* height: 100dvh + flex-column creates a bounded scroll container.
+     dvh excludes the iOS Safari retractable address bar (100vh is taller
+     than the visible area there, causing double-scroll). Safari 15.4+.
      display:flex makes topbar and page-shell proper flex children so
      page-shell can use flex:1 to fill the remaining height exactly —
      home-page then uses that definite height to eliminate default scroll. */
-  height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;

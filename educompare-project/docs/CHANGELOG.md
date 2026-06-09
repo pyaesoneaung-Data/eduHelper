@@ -5,6 +5,31 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 206. About page: replace expiring LinkedIn CDN avatars with local assets
+
+**Date:** 2026-06-09
+
+**Files changed:** `frontend/src/pages/AboutPage.jsx`, `frontend/src/assets/team/pyaesoneaung.jpg`, `frontend/src/assets/team/kaungkhantlin.png`
+
+- LinkedIn CDN URLs carried `e=1782345600` (approx. 2026-06-25 expiry); after that date both images would return 403 on every load before the `onError` fallback.
+- Downloaded both 800x800 avatars and saved them as static assets under `frontend/src/assets/team/`.
+- Replaced CDN URL strings with Vite static imports (`avatarPyae`, `avatarKaung`) in `AboutPage.jsx`. The `BuilderAvatar` `onError` fallback is unchanged.
+
+---
+
+### 205. Fix iOS Safari double-scroll: switch dashboard height units to `dvh`
+
+**Date:** 2026-06-09
+
+**Files changed:** `frontend/src/index.css`
+
+- `.dashboard-main` was using `height: 100vh`. On iOS Safari, `100vh` resolves to the full viewport height including the retractable address bar, which is taller than the visible area. With `html/body` having only `min-height: 100%` (no `overflow: hidden`), the window scroll container remained active alongside `.dashboard-main`'s `overflow-y: auto`, producing double-scroll or jump behaviour.
+- Changed `height: 100vh` → `height: 100dvh` on `.dashboard-main`. `dvh` (dynamic viewport height) is capped to the visible area and excludes the address bar. Supported in Safari 15.4+.
+- Changed `min-height: 100vh` → `min-height: 100dvh` on `.dashboard-shell` for consistency.
+- Updated the inline comment on `.dashboard-main` to document the `dvh` rationale.
+
+---
+
 ### 204. Sidebar: separator line visible on both themes
 
 **Date:** 2026-06-08
