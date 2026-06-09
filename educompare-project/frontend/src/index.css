@@ -97,9 +97,11 @@ img {
   transition: width var(--transition-sidebar), overflow 0s var(--transition-sidebar);
 }
 
-/* Dark mode — strip the white gradient, solid panel only */
+/* Dark mode — same glass structure, dimmer cold specular highlight */
 [data-theme='dark'] .dashboard-sidebar {
-  background: var(--sidebar-bg);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.04) 0%, transparent 45%),
+    var(--sidebar-bg);
 }
 
 /* ─── Sidebar panel (inner flex column) ──────────────────────────────────── */
@@ -145,15 +147,6 @@ img {
   flex-shrink: 0;
 }
 
-.sidebar-logo-nexa {
-  width: 150px;
-  object-fit: contain;
-  mix-blend-mode: multiply;
-}
-
-[data-theme='dark'] .sidebar-logo-nexa {
-  mix-blend-mode: screen;
-}
 
 /* ─── Nav ────────────────────────────────────────────────────────────────── */
 .sidebar-nav {
@@ -204,9 +197,18 @@ img {
   font-weight: var(--weight-semibold);
 }
 
+/* Active icon uses brand primary in both themes for a clear selection cue.
+   Light: navy #1a3a6e on the tinted bg (12.5:1). Dark: #7eb8e8 (8.4:1). */
+.sidebar-link-active .sidebar-link-icon,
+.sidebar-group-btn-active .sidebar-link-icon {
+  color: var(--color-primary);
+}
+
+/* Dark mode — redundant but explicit; kept for future theme specificity needs */
 [data-theme='dark'] .sidebar-link-active .sidebar-link-icon {
   color: var(--color-primary);
 }
+
 
 .sidebar-link-icon {
   width: var(--sidebar-icon-size);
@@ -281,12 +283,19 @@ img {
   transform: rotate(90deg);
 }
 
+@keyframes sidebar-children-in {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .sidebar-group-children {
   display: flex;
   flex-direction: column;
   gap: var(--sidebar-sub-gap);
   padding: var(--space-1) var(--sidebar-padding-x) var(--space-1) var(--sidebar-sub-indent);
   overflow: hidden;
+  /* Smooth slide-in when React mounts the children; exit is instant (conditional render) */
+  animation: sidebar-children-in 180ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 /* ─── Sub-links ──────────────────────────────────────────────────────────── */
@@ -312,6 +321,7 @@ img {
 }
 
 .sidebar-sub-link-active {
+  background: var(--sidebar-link-active-bg);
   color: var(--color-text-primary);
   font-weight: var(--weight-semibold);
 }
@@ -340,8 +350,9 @@ img {
   color: var(--color-text-muted);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
+  text-align: left; /* matches sidebar-group-btn — prevents UA center-alignment */
   white-space: nowrap;
-  overflow: hidden;
+  overflow: visible; /* must be visible: allows ::before separator + ::after tooltip to paint above bounds */
   transition: background var(--transition-ui), color var(--transition-ui),
               padding var(--transition-sidebar), gap var(--transition-sidebar);
   margin-top: var(--space-3);
@@ -355,7 +366,9 @@ img {
   left: var(--space-2);
   right: var(--space-2);
   height: 1px;
-  background: var(--color-border-subtle);
+  /* border-subtle (#dce7f2 light / #1f2d47 dark) is invisible on the frosted
+     glass surface — step up to border-default for visibility on both themes */
+  background: var(--color-border-default);
 }
 
 .sidebar-collapse-btn:hover {
@@ -367,6 +380,90 @@ img {
   width: var(--sidebar-icon-size);
   height: var(--sidebar-icon-size);
   flex-shrink: 0;
+}
+
+/* ─── Link wrapper (position context for collapsed link tooltips) ────────── */
+/* Mirrors .sidebar-group: wrap gives position:relative so the name tooltip
+   can be positioned absolutely to the right of the icon rail.              */
+.sidebar-link-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Collapsed single-link name tooltip ─────────────────────────────────── */
+/* Hidden entirely in expanded mode — zero layout cost.                       */
+.sidebar-link-tooltip {
+  display: none;
+}
+
+/* Shown (but opacity:0) once sidebar is collapsed — ready to fade in.
+   Positioned at the same offset as the group flyout for visual consistency.
+   Font color matches .sidebar-flyout-link so all collapsed-mode labels
+   look identical regardless of whether they're a pill or a flyout row.     */
+.sidebar-collapsed .sidebar-link-tooltip {
+  display: block;
+  position: absolute;
+  left: calc(100% + var(--flyout-offset));
+  top: 50%;
+  transform: translateY(-50%);
+  padding: var(--space-1) var(--space-3);
+  background: rgba(248, 251, 255, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.80);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted); /* matches .sidebar-flyout-link */
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+  /* 120ms delay on hide = same gap-crossing buffer as the group flyout */
+  transition: opacity 100ms ease 120ms;
+}
+[data-theme='dark'] .sidebar-collapsed .sidebar-link-tooltip {
+  background: rgba(16, 26, 50, 0.96);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+
+.sidebar-collapsed .sidebar-link-wrap:hover .sidebar-link-tooltip {
+  opacity: 1;
+  transition: opacity 80ms ease 0ms;
+}
+
+/* ─── Expand-button tooltip (collapsed mode only) ────────────────────────── */
+/* attr(title) keeps it in sync with the JSX title prop automatically.
+   Color matches .sidebar-flyout-link so all collapsed-mode labels are
+   visually consistent.                                                       */
+.sidebar-collapsed .sidebar-collapse-btn::after {
+  content: attr(title);
+  position: absolute;
+  left: calc(100% + var(--flyout-offset));
+  top: 50%;
+  transform: translateY(-50%);
+  padding: var(--space-1) var(--space-3);
+  background: rgba(248, 251, 255, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.80);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted); /* matches .sidebar-flyout-link */
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 100ms ease 120ms;
+}
+[data-theme='dark'] .sidebar-collapsed .sidebar-collapse-btn::after {
+  background: rgba(16, 26, 50, 0.96);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+
+.sidebar-collapsed .sidebar-collapse-btn:hover::after {
+  opacity: 1;
+  transition: opacity 80ms ease 0ms;
 }
 
 /* ─── Collapsed state ────────────────────────────────────────────────────── */
@@ -396,9 +493,6 @@ img {
   gap: 0;
 }
 
-.sidebar-collapsed .sidebar-logo-nexa {
-  width: 54px;
-}
 
 .sidebar-collapsed .sidebar-brand-name,
 .sidebar-collapsed .sidebar-link-label {
@@ -419,6 +513,10 @@ img {
 .sidebar-collapsed .sidebar-collapse-btn {
   padding: 0 18px;
   gap: 0;
+  overflow: visible; /* labels are opacity:0 + max-width:0 so nothing visually bleeds */
+  /* padding animates via the existing transition:padding on each element —
+     do NOT use justify-content:center here; it doesn't animate and causes a
+     visible snap on collapse/expand                                          */
 }
 
 .sidebar-collapsed .sidebar-group {
@@ -436,8 +534,12 @@ img {
   left: calc(100% + var(--flyout-offset));
   top: 0;
   min-width: 192px;
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border-default);
+  /* Glass tint consistent with the sidebar panel.
+     No backdrop-filter here — flyout sits within the sidebar's stacking
+     context, so a child backdrop-filter would blur the sidebar contents
+     rather than the page. Near-opaque tinted bg gives the same glass feel. */
+  background: rgba(248, 251, 255, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.80);
   border-radius: var(--radius-lg);
   padding: var(--space-2);
   z-index: 100;
@@ -446,6 +548,11 @@ img {
   opacity: 0;
   pointer-events: none;
   transition: opacity 100ms ease 120ms, pointer-events 0s linear 220ms;
+}
+
+[data-theme='dark'] .sidebar-flyout {
+  background: rgba(16, 26, 50, 0.96);
+  border-color: rgba(255, 255, 255, 0.10);
 }
 
 .sidebar-collapsed .sidebar-group:hover .sidebar-flyout {
@@ -508,7 +615,14 @@ img {
 
 .dashboard-main {
   margin-left: calc(var(--sidebar-width) + var(--sidebar-inset) * 2);
-  min-height: 100vh;
+  /* height: 100vh + flex-column creates a bounded scroll container.
+     display:flex makes topbar and page-shell proper flex children so
+     page-shell can use flex:1 to fill the remaining height exactly —
+     home-page then uses that definite height to eliminate default scroll. */
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   transition: margin-left var(--transition-sidebar);
 }
 
@@ -522,6 +636,7 @@ img {
   z-index: 20;
   display: flex;
   align-items: flex-start;
+  flex-shrink: 0; /* never compress topbar — page-shell fills remaining space */
   /* padding-top matches --sidebar-padding-top (22px) so greeting and sidebar
      brand logo start at the same vertical position — one visual band */
   padding: var(--sidebar-padding-top) 0 20px;
@@ -651,9 +766,18 @@ label,
 .page-shell {
   width: min(100%, 1680px);
   margin-inline: auto;
+  /* flex:1 fills the remaining height below the sticky topbar.
+     min-height:0 allows it to shrink below content height so home-page
+     can use flex:1 + min-height:0 to fit exactly in the viewport.
+     display:flex makes home-page a flex child (other pages size to content
+     and overflow to the dashboard-main scroll container as expected).    */
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   /* padding-top separates content from the sticky topbar.
      No raw 0 here — even at desktop the 20px topbar bottom-padding is
-     *inside* the topbar height, not below it.                         */
+     *inside* the topbar height, not below it.                           */
   padding: var(--space-4) 26px var(--space-4);
 }
 
@@ -813,6 +937,13 @@ label,
   border-radius: var(--radius-lg);
 }
 
+/* InfoCard internal layout — title block / content separated by a consistent gap */
+.info-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
 .page-header,
 .page-header-copy,
 .panel-heading,
@@ -873,7 +1004,7 @@ label,
 .section-label,
 .home-mini-label {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   letter-spacing: 0.02em;
 }
 
@@ -1098,26 +1229,36 @@ select {
 }
 
 .match-tags-label {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--muted);
+  color: var(--color-text-muted);
 }
 
 .match-tags-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .match-tag {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
-  background: var(--panel-soft);
-  border: 1px solid var(--border);
-  font-size: 0.78rem;
-  color: var(--text);
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-success) 28%, transparent);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-success);
+}
+
+.match-tag svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
 }
 
 .result-no-match {
@@ -1289,9 +1430,9 @@ select {
 
 .data-freshness-note {
   margin: 0;
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-left: 3px solid var(--border);
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   color: var(--muted);
 }
 
@@ -1370,7 +1511,7 @@ select {
 
 .compare-table th,
 .compare-table td {
-  padding: 12px 14px;
+  padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border);
   text-align: left;
   vertical-align: top;
@@ -1383,7 +1524,7 @@ select {
 .compare-table-uni {
   display: block;
   margin-top: 3px;
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   font-weight: 400;
   color: var(--muted);
 }
@@ -1392,13 +1533,13 @@ select {
 .admission-bottom-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
+  gap: var(--space-6);
 }
 
 .admission-overview-card {
   display: grid;
-  gap: 18px;
-  padding: 24px;
+  gap: var(--space-4);
+  padding: var(--space-6);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--panel-bg);
@@ -1584,6 +1725,7 @@ select {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
+  flex-shrink: 0; /* never compress KPI row — home-figma-grid fills remaining space */
 }
 
 .home-kpi-card {
@@ -1722,34 +1864,26 @@ select {
   border-bottom: 1px solid var(--border);
 }
 
-.about-hero-brand {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
+.about-hero-badge {
+  display: inline-flex;
+  width: fit-content;
+  padding: var(--space-1) var(--space-3);
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--muted);
+  letter-spacing: 0.02em;
 }
 
-.about-hero-logo {
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-}
-
-.about-hero-logo-nexa {
-  width: min(220px, 60vw);
-  height: 64px;
-  object-fit: contain;
-  mix-blend-mode: multiply;
-}
-
-[data-theme='dark'] .about-hero-logo-nexa {
-  mix-blend-mode: screen;
-}
-
-.about-hero-name {
+.about-hero-title {
+  margin: 0;
   font-size: var(--text-2xl);
   font-weight: var(--weight-bold);
   color: var(--text);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+  line-height: var(--leading-tight);
 }
 
 .about-hero-tagline {
@@ -1757,7 +1891,6 @@ select {
   font-size: var(--text-md);
   color: var(--muted);
   line-height: var(--leading-relaxed);
-  max-width: 64ch;
 }
 
 .about-section-block {
@@ -1773,7 +1906,7 @@ select {
   border-bottom: 1px solid var(--border);
 }
 
-.about-section-head h3 {
+.about-section-head h2 {
   margin: 0;
   font-size: var(--text-lg);
   font-weight: var(--weight-semibold);
@@ -1785,7 +1918,6 @@ select {
   font-size: var(--text-md);
   line-height: var(--leading-relaxed);
   color: var(--text);
-  max-width: 72ch;
 }
 
 .about-stats-row {
@@ -1795,11 +1927,13 @@ select {
 }
 
 .about-stat {
-  display: grid;
+  display: flex;
+  flex-direction: column-reverse;
   gap: var(--space-1);
   padding: var(--space-3) var(--space-4);
   background: var(--panel-bg);
   border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
   border-radius: var(--radius-lg);
 }
 
@@ -1811,9 +1945,16 @@ select {
 }
 
 .about-stat-label {
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   color: var(--muted);
   line-height: var(--leading-snug);
+}
+
+/* Reset browser-default <dd> indent (margin-inline-start: 40px) inside stat cards */
+.about-stats-row dd,
+.about-stats-row dt {
+  margin: 0;
+  padding: 0;
 }
 
 .about-two-col {
@@ -1831,7 +1972,7 @@ select {
   border-radius: var(--radius-lg);
 }
 
-.about-feature-card h4 {
+.about-feature-card h3 {
   margin: 0;
   font-size: var(--text-md);
   font-weight: var(--weight-semibold);
@@ -1840,9 +1981,9 @@ select {
 
 .about-feature-list {
   margin: 0;
-  padding-left: 18px;
+  padding-left: var(--space-4);
   display: grid;
-  gap: 7px;
+  gap: var(--space-2);
   color: var(--text);
 }
 
@@ -1862,6 +2003,7 @@ select {
   padding: var(--space-4) var(--space-5);
   background: var(--panel-bg);
   border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
   border-radius: var(--radius-lg);
 }
 
@@ -1918,11 +2060,11 @@ select {
 }
 
 .about-source-icon {
-  color: var(--muted);
+  color: var(--accent);
   margin-top: 2px;
 }
 
-.about-source-card h4 {
+.about-source-card h3 {
   margin: 0 0 var(--space-1);
   font-size: var(--text-md);
   font-weight: var(--weight-semibold);
@@ -1950,7 +2092,7 @@ select {
 .about-team-card {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--space-5);
+  gap: var(--space-4);
   align-items: center;
   padding: var(--space-5);
   background: var(--panel-bg);
@@ -1958,21 +2100,67 @@ select {
   border-radius: var(--radius-lg);
 }
 
-.about-avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: var(--radius-pill);
+.about-team-photo {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.about-team-photo-fallback {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-sm);
   background: var(--panel-soft);
   border: 1px solid var(--border);
-  flex-shrink: 0;
-  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-md);
   font-weight: var(--weight-semibold);
   color: var(--muted);
-  letter-spacing: 0.04em;
   user-select: none;
+}
+
+.about-closing {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+
+.about-closing-text {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--muted);
+  line-height: var(--leading-relaxed);
+}
+
+.about-closing-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background var(--transition-ui);
+}
+
+.about-closing-cta:hover {
+  background: var(--color-primary-hover);
 }
 
 .about-builder-info {
@@ -1980,32 +2168,37 @@ select {
   gap: var(--space-1);
 }
 
-.about-builder-info h4 {
+.about-builder-info h3 {
   margin: 0;
   font-size: var(--text-md);
   font-weight: var(--weight-semibold);
   color: var(--text);
 }
 
-.about-builder-info h4 {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
 .home-page {
-  min-height: calc(100vh - 128px);
-  gap: clamp(18px, 2.2vh, 30px);
+  /* flex:1 + min-height:0 binds the home page to the exact height allocated
+     by page-shell. Combined with flex:1 on home-figma-grid, neither the KPI
+     row nor the panel grid can push content below the viewport fold.
+     On tablet/mobile the media-query overrides min-height to auto so the
+     page grows with stacked content and scrolls normally.                   */
+  flex: 1;
+  min-height: 0;
+  gap: clamp(10px, 1.3vh, 20px);
 }
 
 .home-figma-grid {
   display: grid;
   grid-template-columns: minmax(230px, 1fr) minmax(230px, 1fr) minmax(260px, 1.2fr);
-  grid-template-rows: minmax(300px, 1fr) auto;
+  /* Row 1 min lowered 300→240px: at 768px viewport the flex-allocated grid
+     height is 531px; with deadlines ~240px + gap 14px, free space = 277px.
+     240px minimum clears that floor; 300px was 23px over the boundary.    */
+  grid-template-rows: minmax(240px, 1fr) auto;
   gap: clamp(12px, 1.8vh, 22px);
   flex: 1;
-  min-height: clamp(540px, calc(100vh - 300px), 720px);
+  /* min-height:0 (was: clamp(540px,vh-300,720px)) — the flex-chain now gives
+     this grid a definite height. The 1fr row gets remaining space after the
+     auto row; both rows distribute within the bounded container, no overflow. */
+  min-height: 0;
   align-items: stretch;
 }
 
@@ -2013,6 +2206,16 @@ select {
 .home-actions-panel,
 .home-leaderboard-panel {
   min-height: 0;
+}
+
+/* Clip panel content at the grid cell boundary — prevents overflow from
+   bleeding visually into the adjacent grid row.
+   home-search-panel is intentionally excluded: its search dropdown is
+   position:absolute and would be clipped by overflow:hidden.           */
+.home-actions-panel,
+.home-leaderboard-panel,
+.home-deadlines-panel {
+  overflow: hidden;
 }
 
 .home-search-panel {
@@ -2548,6 +2751,9 @@ select {
 
   .home-page,
   .home-figma-grid {
+    /* Disable the flex-fill constraint — tablet/mobile uses content-based height
+       so stacked panels can grow naturally and dashboard-main scrolls.          */
+    flex: none;
     min-height: auto;
   }
 
@@ -2596,9 +2802,14 @@ select {
   .sidebar-collapsed .sidebar-group-chevron { opacity: 1; max-width: var(--sidebar-chevron-size); margin-left: auto; pointer-events: auto; }
   .sidebar-collapsed .sidebar-link,
   .sidebar-collapsed .sidebar-group-btn,
-  .sidebar-collapsed .sidebar-collapse-btn { padding: 0 var(--sidebar-link-px); gap: var(--sidebar-icon-label-gap); }
-  .sidebar-collapsed .sidebar-logo-nexa { width: 150px; }
-
+  .sidebar-collapsed .sidebar-collapse-btn {
+    padding: 0 var(--sidebar-link-px);
+    gap: var(--sidebar-icon-label-gap);
+    overflow: hidden; /* restore clipping — labels are visible in drawer */
+  }
+  /* Hide tooltips — drawer is always expanded, no icon-only rail */
+  .sidebar-collapsed .sidebar-link-tooltip,
+  .sidebar-collapsed .sidebar-collapse-btn::after { display: none; }
   /* Collapse button is a desktop action (icon-only rail mode).
      In drawer mode the sidebar is opened/closed via the hamburger — the
      collapse toggle has no meaning and should not be visible.             */
@@ -2792,7 +3003,7 @@ select {
 .recommendation-profile-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
   width: 100%;
   margin-inline: auto;
   padding: var(--space-6);
@@ -2810,14 +3021,18 @@ select {
 }
 
 .recommendation-card-header h2,
+.recommendation-card-header h3,
 .recommendation-results-header h2,
+.recommendation-results-header h3,
 .recommendation-card-header p,
 .recommendation-results-header p {
   margin: 0;
 }
 
 .recommendation-card-header h2,
-.recommendation-results-header h2 {
+.recommendation-card-header h3,
+.recommendation-results-header h2,
+.recommendation-results-header h3 {
   font-size: var(--text-xl);
   font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
@@ -2837,21 +3052,20 @@ select {
   flex: 0 0 40px;
 }
 
-.recommendation-icon-tile img {
+.recommendation-icon-tile svg {
   width: 40px;
   height: 40px;
-  object-fit: contain;
 }
 
 .recommendation-field-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(190px, 0.82fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-4);
   align-items: start;
 }
 
 .recommendation-field-row-top {
-  padding-top: var(--space-4);
+  padding-top: 0;
 }
 
 .recommendation-field {
@@ -2888,6 +3102,12 @@ select {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--panel-soft);
+  transition: border-color var(--transition-ui), box-shadow var(--transition-ui);
+  cursor: pointer;
+}
+
+.recommendation-control:hover {
+  border-color: var(--color-border-strong);
 }
 
 .recommendation-control-icon {
@@ -2895,18 +3115,6 @@ select {
   left: var(--space-4);
   width: 24px;
   height: 24px;
-  object-fit: contain;
-  pointer-events: none;
-}
-
-.recommendation-control-caret {
-  position: absolute;
-  right: var(--space-4);
-  width: 10px;
-  height: 10px;
-  border-right: 2px solid var(--color-text-muted);
-  border-bottom: 2px solid var(--color-text-muted);
-  transform: translateY(-3px) rotate(45deg);
   pointer-events: none;
 }
 
@@ -2925,6 +3133,17 @@ select {
   appearance: none;
 }
 
+.recommendation-field select {
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+    linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) 50%,
+    calc(100% - 14px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
 .recommendation-field input::placeholder {
   color: var(--color-text-disabled);
 }
@@ -2933,10 +3152,10 @@ select {
   appearance: textfield;
 }
 
-.recommendation-field input[type='number']::-webkit-outer-spin-button,
-.recommendation-field input[type='number']::-webkit-inner-spin-button {
+.recommendation-field input[type='number']::-webkit-inner-spin-button,
+.recommendation-field input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
   margin: 0;
-  appearance: none;
 }
 
 .recommendation-field input:focus,
@@ -2949,42 +3168,6 @@ select {
   box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
-.recommendation-info-label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-height: 44px;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--color-text-primary);
-  font-size: var(--text-md);
-  font-weight: var(--weight-medium);
-  line-height: var(--leading-snug);
-  text-decoration: none;
-  border-bottom: 0;
-}
-
-.recommendation-info-label img {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 24px;
-  object-fit: contain;
-}
-
-.recommendation-info-label span {
-  display: inline-flex;
-  align-items: center;
-  line-height: var(--leading-snug);
-  text-decoration: none;
-  border-bottom: 0;
-}
-
-.recommendation-field-row:not(.recommendation-field-row-top) .recommendation-info-label {
-  margin-top: calc(24px + var(--space-3));
-}
-
 .recommendation-helper-text {
   font-size: var(--text-xs);
   line-height: var(--leading-snug);
@@ -2995,93 +3178,11 @@ select {
   min-height: 34px;
 }
 
-.recommendation-divider-band {
-  position: relative;
+.recommendation-action-row {
   display: flex;
   align-items: center;
-  min-height: 62px;
-  padding-inline: var(--space-12);
-}
-
-.recommendation-divider {
-  width: 100%;
-  border-top: 2px dotted var(--color-border-strong);
-}
-
-.recommendation-divider-icon {
-  position: absolute;
-  top: 50%;
-  width: 28px;
-  height: 28px;
-  color: var(--color-text-primary);
-  transform: translateY(-50%);
-}
-
-.recommendation-divider-icon-send {
-  left: var(--space-5);
-}
-
-.recommendation-divider-icon-send::before {
-  content: '';
-  position: absolute;
-  left: 2px;
-  top: 7px;
-  width: 22px;
-  height: 14px;
-  border: 2px solid currentColor;
-  border-left: 0;
-  transform: skew(-22deg) rotate(-22deg);
-}
-
-.recommendation-divider-icon-send::after {
-  content: '';
-  position: absolute;
-  left: 8px;
-  top: 13px;
-  width: 14px;
-  border-top: 2px solid currentColor;
-  transform: rotate(-22deg);
-}
-
-.recommendation-divider-icon-pin {
-  right: var(--space-5);
-}
-
-.recommendation-divider-icon-pin::before {
-  content: '';
-  position: absolute;
-  left: 7px;
-  top: 1px;
-  width: 14px;
-  height: 14px;
-  border: 2px solid currentColor;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-}
-
-.recommendation-divider-icon-pin::after {
-  content: '';
-  position: absolute;
-  left: 5px;
-  bottom: 2px;
-  width: 18px;
-  height: 7px;
-  border: 2px solid currentColor;
-  border-top: 0;
-  transform: skew(-18deg);
-}
-
-.recommendation-action-row {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  display: grid;
-  grid-template-columns: auto auto;
+  justify-content: flex-end;
   gap: var(--space-4);
-  justify-content: center;
-  align-items: center;
-  transform: translate(-50%, -50%);
-  z-index: 1;
 }
 
 .recommendation-submit-button,
@@ -3094,6 +3195,7 @@ select {
   font-size: var(--text-base);
   font-weight: var(--weight-medium);
   box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-ui), background var(--transition-ui);
 }
 
 .recommendation-submit-button {
@@ -3105,6 +3207,7 @@ select {
 .recommendation-submit-button:hover:not(:disabled) {
   border-color: var(--color-primary-hover);
   background: var(--color-primary-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .recommendation-clear-button {
@@ -3112,11 +3215,15 @@ select {
   color: var(--color-text-primary);
 }
 
-.recommendation-submit-button img,
-.recommendation-clear-button img {
+.recommendation-clear-button:hover:not(:disabled) {
+  background: var(--panel-soft);
+  box-shadow: var(--shadow-md);
+}
+
+.recommendation-submit-button svg,
+.recommendation-clear-button svg {
   width: 20px;
   height: 20px;
-  object-fit: contain;
 }
 
 .recommendation-results {
@@ -3132,15 +3239,14 @@ select {
 }
 
 .recommendation-results-icon {
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
 }
 
-.recommendation-results-icon img {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
+.recommendation-results-icon svg {
+  width: 24px;
+  height: 24px;
 }
 
 .recommendation-results .card-grid {
@@ -3167,10 +3273,9 @@ select {
   text-align: center;
 }
 
-.recommendation-empty-state img {
+.recommendation-empty-state svg {
   width: 128px;
   height: 128px;
-  object-fit: contain;
   opacity: 0.45;
 }
 
@@ -3181,13 +3286,32 @@ select {
   font-weight: var(--weight-regular);
 }
 
-[data-theme='dark'] .recommendation-page .recommendation-control-icon,
-[data-theme='dark'] .recommendation-page .recommendation-info-label img,
-[data-theme='dark'] .recommendation-page .recommendation-clear-button img,
-[data-theme='dark'] .recommendation-page .recommendation-icon-tile img,
-[data-theme='dark'] .recommendation-page .recommendation-results-icon img {
-  filter: brightness(0) invert(1);
-  opacity: 0.85;
+.hub-pre-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  min-height: 220px;
+  padding: var(--space-8);
+  border: 2px dashed var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--panel-bg);
+  color: var(--color-text-disabled);
+  text-align: center;
+}
+
+.hub-pre-result svg {
+  width: 56px;
+  height: 56px;
+  opacity: 0.3;
+}
+
+.hub-pre-result p {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-regular);
+  max-width: 320px;
 }
 
 [data-theme='dark'] .recommendation-page .recommendation-clear-button {
@@ -3206,29 +3330,13 @@ select {
   color: var(--color-text-primary);
 }
 
-[data-theme='dark'] .recommendation-page .recommendation-empty-state img {
+[data-theme='dark'] .recommendation-page .recommendation-empty-state svg {
   opacity: 0.72;
 }
 
 @media (max-width: 1180px) {
   .recommendation-field-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .recommendation-info-label {
-    align-self: center;
-  }
-
-  .recommendation-divider-band {
-    padding-inline: var(--space-10);
-  }
-
-  .recommendation-divider-icon-send {
-    left: var(--space-2);
-  }
-
-  .recommendation-divider-icon-pin {
-    right: var(--space-2);
   }
 }
 
@@ -3239,7 +3347,7 @@ select {
 
   .recommendation-profile-card {
     padding: var(--space-5);
-    gap: var(--space-6);
+    gap: var(--space-4);
   }
 
   .recommendation-field-row {
@@ -3253,26 +3361,12 @@ select {
   }
 
   .recommendation-action-row {
-    position: static;
-    grid-template-columns: minmax(0, 1fr);
-    width: 100%;
-    transform: none;
+    flex-direction: column;
   }
 
   .recommendation-submit-button,
   .recommendation-clear-button {
     width: 100%;
-  }
-
-  .recommendation-divider-band {
-    flex-direction: column;
-    gap: var(--space-4);
-    min-height: auto;
-    padding-inline: 0;
-  }
-
-  .recommendation-divider-icon {
-    display: none;
   }
 
   .recommendation-results-header {
@@ -3284,9 +3378,14 @@ select {
     padding: var(--space-8) var(--space-5);
   }
 
-  .recommendation-empty-state img {
+  .recommendation-empty-state svg {
     width: 120px;
     height: 120px;
+  }
+
+  .hub-pre-result {
+    min-height: 160px;
+    padding: var(--space-6) var(--space-4);
   }
 }
 
@@ -3323,8 +3422,6 @@ select {
   box-shadow: var(--shadow-sm);
 }
 
-.compare-page .panel-heading h2,
-.cost-calculator-page .panel-heading h2,
 .cost-calculator-page .info-card h3 {
   font-size: var(--text-xl);
   font-weight: var(--weight-semibold);
@@ -3335,7 +3432,6 @@ select {
 .cost-calculator-page .form-grid {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   gap: var(--space-4);
-  padding-top: var(--space-2);
 }
 
 .compare-page label,
@@ -3366,6 +3462,13 @@ select {
     calc(100% - 14px) 50%;
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
+  transition: border-color var(--transition-ui), box-shadow var(--transition-ui);
+  cursor: pointer;
+}
+
+.compare-page select:hover,
+.cost-calculator-page select:hover {
+  border-color: var(--color-border-strong);
 }
 
 .compare-page select:focus,
@@ -3377,6 +3480,8 @@ select {
 .compare-actions,
 .cost-actions {
   align-items: center;
+  justify-content: flex-end;
+  margin-top: var(--space-5);
 }
 
 .compare-primary-button,
@@ -3390,6 +3495,7 @@ select {
   font-size: var(--text-base);
   font-weight: var(--weight-medium);
   box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-ui), background var(--transition-ui);
 }
 
 .compare-primary-button,
@@ -3403,6 +3509,7 @@ select {
 .cost-primary-button:hover:not(:disabled) {
   border-color: var(--color-primary-hover);
   background: var(--color-primary-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .compare-secondary-button,
@@ -3412,18 +3519,10 @@ select {
   color: var(--color-text-primary);
 }
 
-.compare-secondary-button:hover,
-.cost-secondary-button:hover {
+.compare-secondary-button:hover:not(:disabled),
+.cost-secondary-button:hover:not(:disabled) {
   background: var(--panel-soft);
-}
-
-.compare-page .empty-state {
-  padding: var(--space-5);
-  border: 1px dashed var(--color-border-strong);
-  border-radius: var(--radius-lg);
-  background: var(--panel-bg);
-  color: var(--color-text-muted);
-  text-align: center;
+  box-shadow: var(--shadow-md);
 }
 
 .compare-page .table-shell {
@@ -3441,6 +3540,20 @@ select {
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-sm);
   background: var(--panel-soft);
+}
+
+.cost-summary-lead {
+  margin-bottom: var(--space-3);
+}
+
+.cost-summary-footnote {
+  margin-top: var(--space-4);
+  font-size: var(--text-xs);
+}
+
+.cost-summary-detail-link {
+  display: inline-block;
+  margin-top: var(--space-3);
 }
 
 @media (max-width: 760px) {
@@ -3515,8 +3628,8 @@ select {
 
 .admission-snapshot-section {
   display: grid;
-  gap: 18px;
-  padding: 24px;
+  gap: var(--space-4);
+  padding: var(--space-6);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--panel-bg);
@@ -3870,18 +3983,18 @@ select {
 .cheapest-programs-sections {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-6);
 }
 
 .cheapest-country-section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .cheapest-country-label {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
@@ -3892,23 +4005,18 @@ select {
 .cost-charts-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 /* Cost overview: columns + pie two-up grid */
 .cost-overview-viz-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: var(--space-5);
   align-items: stretch;
 }
 
-/* Left InfoCard: fill grid cell height so columns can stretch */
-.cost-overview-viz-grid > .info-card:first-child {
-  display: flex;
-  flex-direction: column;
-}
-
+/* Left InfoCard: children wrapper fills remaining height so cost columns can stretch */
 .cost-overview-viz-grid > .info-card:first-child > div:last-child {
   flex: 1;
 }
@@ -4153,5 +4261,13 @@ select {
   .compare-page-heading h2,
   .cost-calculator-page-heading h2 {
     font-size: var(--text-xl);
+  }
+}
+
+/* ── about-closing responsive — must live after base .about-closing rule ── */
+@media (max-width: 760px) {
+  .about-closing {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

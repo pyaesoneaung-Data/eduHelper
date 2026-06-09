@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Check } from '@phosphor-icons/react'
 import { useAppShell } from '../context/AppShellContext'
 import { convertCurrency } from '../utils/currency'
 import { formatDate, isDeadlinePassed } from '../utils/date'
@@ -62,7 +63,7 @@ function ResultCard({ item }) {
           <dt>Deadline</dt>
           <dd className={deadlinePassed ? 'deadline-passed' : ''}>
             {formatDate(item.application_deadline) ?? 'Not listed'}
-            {deadlinePassed ? ' — Deadline passed' : ''}
+            {deadlinePassed ? ' · Deadline passed' : ''}
           </dd>
         </div>
       </dl>
@@ -73,6 +74,7 @@ function ResultCard({ item }) {
           <div className="match-tags-row">
             {metCriteria.map(([key]) => (
               <span key={key} className="match-tag">
+                <Check size={12} aria-hidden="true" />
                 {CRITERIA_LABELS[key] ?? key.replace(/_/g, ' ')}
               </span>
             ))}

@@ -1,8 +1,6 @@
-import { Bank, SealCheck, CurrencyDollar } from '@phosphor-icons/react'
-import { useAppShell } from '../context/AppShellContext'
-import IconImage from '../components/IconImage'
-import logoLight from '../assets/logo/logo_nexa_light.png'
-import logoDark from '../assets/logo/logo_nexa_dark.png'
+import { useState } from 'react'
+import { Bank, SealCheck, CurrencyDollar, ArrowRight } from '@phosphor-icons/react'
+import { Link } from 'react-router-dom'
 
 function getInitials(name) {
   return name
@@ -12,12 +10,31 @@ function getInitials(name) {
     .toUpperCase()
 }
 
+function BuilderAvatar({ name, src }) {
+  const [failed, setFailed] = useState(false)
+  if (src && !failed) {
+    return (
+      <img
+        src={src}
+        alt={name}
+        className="about-team-photo"
+        onError={() => setFailed(true)}
+      />
+    )
+  }
+  return (
+    <div className="about-team-photo about-team-photo-fallback" aria-hidden="true">
+      {getInitials(name)}
+    </div>
+  )
+}
+
 const phases = [
   {
     number: 1,
     title: 'Problem & Scope',
     description:
-      'Students planning to study abroad had no reliable, unbiased source. Most relied on agents or social media, both with clear conflicts of interest. Scoped the initial 3 countries and core data points: cost, admission requirements, and legal rules.',
+      'No reliable, unbiased source existed for students planning to study abroad. Scoped the platform to 3 countries and 3 core data points: cost, admission requirements, and legal rules.',
   },
   {
     number: 2,
@@ -41,7 +58,7 @@ const phases = [
     number: 5,
     title: 'Frontend & Analytics',
     description:
-      'React dashboard: program comparison, cost calculator, recommendation engine, and analytics pages. Cost Overview covers tuition and living cost breakdown with monthly figures. Admission Overview shows GPA and IELTS thresholds with program-level tables.',
+      'React dashboard covering program comparison, cost calculator, recommendation engine, and analytics views. All data is fetched live from backend endpoints.',
   },
   {
     number: 6,
@@ -72,44 +89,43 @@ const sourceCards = [
 const builders = [
   {
     name: 'Pyae Sone Aung',
-    role: 'Data · Analytics · Project Research',
+    role: 'Data · Backend · Project Research',
     githubName: 'pyaesoneaung-Data',
     githubUrl: 'https://github.com/pyaesoneaung-Data',
+    avatar:
+      'https://media.licdn.com/dms/image/v2/D4E03AQHJLdzMiLHR3g/profile-displayphoto-crop_800_800/B4EZkpe7.YKsAI-/0/1757337600666?e=1782345600&v=beta&t=A003_ycBiaGcAi_0MoZNs1_o3RztEsOjHJ_1aAyH2dc',
   },
   {
     name: 'Kaung Khant Lin',
-    role: 'Frontend · UI · Implementation',
+    role: 'Data · Frontend · Implementation',
     githubName: 'Kinosaur',
     githubUrl: 'https://github.com/Kinosaur',
+    avatar:
+      'https://media.licdn.com/dms/image/v2/D5603AQG1bdhlfl38RQ/profile-displayphoto-crop_800_800/B56Z3DoIwKH4AI-/0/1777103573344?e=1782345600&v=beta&t=zx4ElkWwvlmW9Zx8_h6xZQgb1MNjCyZy8mn9LzVzphk',
   },
 ]
 
 const stats = [
   { value: '3', label: 'Countries covered' },
   { value: '15', label: 'Programs in database' },
-  { value: 'Apr 2026', label: 'Data verified' },
+  { value: 'Apr 2026', label: 'Last verified' },
   { value: 'Beta MVP', label: 'Current status' },
 ]
 
 function AboutPage() {
-  const { theme } = useAppShell()
-  const logoSrc = theme === 'dark' ? logoDark : logoLight
-
   return (
     <div className="page-stack">
       <div className="about-hero">
-        <div className="about-hero-brand">
-          <IconImage src={logoSrc} alt="NexA Education logo" className="about-hero-logo about-hero-logo-nexa" />
-        </div>
+        <h1 className="about-hero-title">UniMatch</h1>
         <p className="about-hero-tagline">
-          A student-built platform for comparing universities in Taiwan, Thailand, and Singapore,
-          built on verified data rather than marketing.
+          Compare universities in Taiwan, Thailand, and Singapore using verified data,
+          not agent advice.
         </p>
       </div>
 
-      <section id="mission" className="about-section-block">
+      <section id="mission" className="about-section-block" aria-labelledby="heading-mission">
         <div className="about-section-head">
-          <h3>Mission</h3>
+          <h2 id="heading-mission">Mission</h2>
         </div>
         <p className="about-prose">
           UniMatch started from a real problem: students planning to study abroad were relying on
@@ -117,23 +133,23 @@ function AboutPage() {
           students direct access to actual costs, admission thresholds, and legal information,
           collected from official sources and structured into usable tools.
         </p>
-        <div className="about-stats-row">
+        <dl className="about-stats-row">
           {stats.map((stat) => (
             <div key={stat.label} className="about-stat">
-              <span className="about-stat-value">{stat.value}</span>
-              <span className="about-stat-label">{stat.label}</span>
+              <dt className="about-stat-label">{stat.label}</dt>
+              <dd className="about-stat-value">{stat.value}</dd>
             </div>
           ))}
-        </div>
+        </dl>
       </section>
 
-      <section id="features" className="about-section-block">
+      <section id="features" className="about-section-block" aria-labelledby="heading-features">
         <div className="about-section-head">
-          <h3>Features</h3>
+          <h2 id="heading-features">What It Does</h2>
         </div>
         <div className="about-two-col">
           <div className="about-feature-card">
-            <h4>What it does</h4>
+            <h3>Capabilities</h3>
             <ul className="about-feature-list">
               <li>Compare programs across universities</li>
               <li>Estimate real yearly costs, including tuition and living</li>
@@ -143,7 +159,7 @@ function AboutPage() {
             </ul>
           </div>
           <div className="about-feature-card">
-            <h4>Who it&apos;s for</h4>
+            <h3>Who it&apos;s for</h3>
             <ul className="about-feature-list">
               <li>Students planning to study abroad in the region</li>
               <li>First-generation international applicants</li>
@@ -154,9 +170,9 @@ function AboutPage() {
         </div>
       </section>
 
-      <section id="methodology" className="about-section-block">
+      <section id="methodology" className="about-section-block" aria-labelledby="heading-methodology">
         <div className="about-section-head">
-          <h3>Methodology</h3>
+          <h2 id="heading-methodology">Methodology</h2>
           <p className="muted-text">
             How this project was researched and built, phase by phase.
           </p>
@@ -165,8 +181,8 @@ function AboutPage() {
           {phases.map((phase) => (
             <div key={phase.number} className="about-phase-card">
               <div className="about-phase-header">
-                <span className="about-phase-number" aria-hidden="true">{phase.number}</span>
-                <h4 className="about-phase-title">{phase.title}</h4>
+                <span className="about-phase-number" aria-label={`Phase ${phase.number}`}>{phase.number}</span>
+                <h3 className="about-phase-title">{phase.title}</h3>
               </div>
               <p className="about-phase-desc">{phase.description}</p>
             </div>
@@ -174,9 +190,9 @@ function AboutPage() {
         </div>
       </section>
 
-      <section id="data" className="about-section-block">
+      <section id="data" className="about-section-block" aria-labelledby="heading-data">
         <div className="about-section-head">
-          <h3>Data &amp; Sources</h3>
+          <h2 id="heading-data">Data &amp; Sources</h2>
           <p className="muted-text">
             All data is collected from primary sources and reviewed for accuracy.
           </p>
@@ -186,9 +202,9 @@ function AboutPage() {
             const Icon = card.icon
             return (
               <article key={card.title} className="about-source-card">
-                <Icon size={20} strokeWidth={1.8} className="about-source-icon" aria-hidden="true" />
+                <Icon size={20} className="about-source-icon" aria-hidden="true" />
                 <div>
-                  <h4>{card.title}</h4>
+                  <h3>{card.title}</h3>
                   <p>{card.description}</p>
                 </div>
               </article>
@@ -200,23 +216,24 @@ function AboutPage() {
         </p>
       </section>
 
-      <section id="team" className="about-section-block">
+      <section id="team" className="about-section-block" aria-labelledby="heading-team">
         <div className="about-section-head">
-          <h3>Meet the Builders</h3>
+          <h2 id="heading-team">Meet the Builders</h2>
           <p className="muted-text">Built collaboratively by two student contributors.</p>
         </div>
         <div className="about-team-grid">
           {builders.map((builder) => (
             <article key={builder.githubName} className="about-team-card">
-              <div className="about-avatar" aria-hidden="true">{getInitials(builder.name)}</div>
+              <BuilderAvatar name={builder.name} src={builder.avatar} />
               <div className="about-builder-info">
-                <h4>{builder.name}</h4>
+                <h3>{builder.name}</h3>
                 <p className="muted-text">{builder.role}</p>
                 <a
                   className="text-link"
                   href={builder.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={`GitHub: ${builder.githubName} (opens in new tab)`}
                 >
                   GitHub: {builder.githubName}
                 </a>
@@ -225,6 +242,16 @@ function AboutPage() {
           ))}
         </div>
       </section>
+
+      <div className="about-closing">
+        <p className="about-closing-text">
+          Official data from government and university portals, updated each intake. Free to use.
+        </p>
+        <Link to="/" className="about-closing-cta">
+          Start exploring
+          <ArrowRight size={16} aria-hidden="true" />
+        </Link>
+      </div>
     </div>
   )
 }

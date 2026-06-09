@@ -5,6 +5,664 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 204. Sidebar: separator line visible on both themes
+
+**Date:** 2026-06-08
+
+**Files changed:** `index.css`
+
+- `.sidebar-collapse-btn::before` was using `--color-border-subtle` (`#dce7f2` light / `#1f2d47` dark). In light mode this is nearly identical to the frosted glass surface colour, making the divider between About and Collapse invisible. Changed to `--color-border-default` (`#c8d5e5` light / `#283650` dark) which has enough contrast to be visible on both the light glass and dark glass backgrounds.
+
+---
+
+### 203. Sidebar: fix tooltip colour inconsistency and collapse/expand jumpiness
+
+**Date:** 2026-06-08
+
+**Files changed:** `index.css`
+
+- **Jumpiness fix**: `justify-content: center` on collapsed links/buttons does not animate — it snaps instantly when the `.sidebar-collapsed` class is toggled, causing icons to visibly jump. Reverted to `padding: 0 18px; gap: 0` which uses the existing `transition: padding var(--transition-sidebar)` for a smooth animated settle. Also removed the now-unnecessary `justify-content: flex-start` reset in the mobile drawer block.
+- **Tooltip colour fix**: New single-link tooltips and the expand-button `::after` tooltip were using `--color-text-primary` (near-black/near-white), while the existing group flyout links use `--color-text-muted`. Changed both to `--color-text-muted` so all collapsed-mode hover labels are visually identical regardless of type.
+
+---
+
+### 202. Sidebar: dark glass, collapsed tooltips, smooth animations, full responsive polish
+
+**Date:** 2026-06-08
+
+**Files changed:** `styles/tokens.css`, `index.css`, `components/Sidebar.jsx`
+
+#### Dark mode glass effect
+- Dark sidebar was a flat solid `#1a2438` panel with no blur — now matches the light-mode frosted-glass treatment: `rgba(12,20,40,0.72)` + `blur(20px) saturate(160%)` + cold specular gradient `rgba(255,255,255,0.04)`.
+- Updated dark shadow to include inset top/left highlights (`rgba(255,255,255,0.08/0.04)`) for glass-edge depth.
+- Dark mobile drawer updated to `rgba(16,26,48,0.97)` — approximates glass without backdrop-filter artefacts on mobile.
+
+#### Collapsed-mode name tooltips for all nav items
+- Simple nav links (Home, Legal Info, Red Flag Guide) and footer links (Settings, About) previously showed nothing when hovered in collapsed mode — only group flyouts worked.
+- Added `.sidebar-link-wrap` wrapper (mirrors `.sidebar-group` pattern) with an absolutely-positioned `.sidebar-link-tooltip` span. Tooltip fades in at `80ms` and fades out with a `120ms` gap-crossing buffer, identical timing to the group flyout.
+- Dark mode tooltip glass tokens applied (`rgba(16,26,50,0.96)` bg + `rgba(255,255,255,0.10)` border).
+- Expand (Collapse) button gets a `::after` tooltip via `attr(title)` — same timing, no JSX change needed.
+
+#### Icon centering in collapsed mode
+- Replaced `padding: 0 18px` (1–2px off-center) with `justify-content: center; padding: 0` for pixel-perfect icon centering in the 76px rail.
+
+#### Overflow corrections
+- `.sidebar-collapse-btn` changed from `overflow: hidden` to `overflow: visible` — this unblocked both the `::before` separator line (which was silently clipped) and the new `::after` tooltip.
+- Collapsed `.sidebar-link`, `.sidebar-group-btn`, `.sidebar-collapse-btn` set to `overflow: visible` — label content is `opacity:0; max-width:0` so nothing bleeds visually; enables tooltip painting outside the rail.
+- Mobile drawer reset block updated to restore `justify-content: flex-start`, `overflow: hidden`, and hide all tooltips/`::after` content — drawer is always expanded so tooltips have no meaning there.
+
+#### Smooth expand animation
+- Added `@keyframes sidebar-children-in` (`opacity:0 translateY(-5px)` to `opacity:1 translateY(0)`, 180ms ease). Applied to `.sidebar-group-children` so sub-items slide in on expand. Exit remains instant (conditional render), which reads as responsive.
+
+#### Active icon colour
+- Both themes now get `color: var(--color-primary)` on active nav icons (light: navy `#1a3a6e`, dark: `#7eb8e8`). Previously only dark mode had the explicit rule.
+
+#### Sub-link active background
+- `.sidebar-sub-link-active` now includes `background: var(--sidebar-link-active-bg)` — consistent with top-level active state.
+
+#### Flyout glass
+- Group flyout updated from plain `--color-bg-surface` to `rgba(248,251,255,0.96)` (light) / `rgba(16,26,50,0.96)` (dark) with matching glass-tinted borders. No `backdrop-filter` on the flyout (would blur sidebar contents rather than page — flyout is within the sidebar stacking context).
+
+---
+
+### 201. Favicon root cause fixed — shield/crest restored, cache bust updated
+
+**Date:** 2026-06-08
+
+**Files changed:** `frontend/public/favicon.svg`, `frontend/index.html`
+
+- **Root cause found:** Three compounding problems — (1) `dist/favicon.svg` still had the old purple Vite bolt from a stale build; (2) `public/favicon.svg` (shield/crest version) was never committed to git, meaning any checkout/reset would silently revert to the purple bolt; (3) multiple other local Vite projects (`hskABM`, `anatomy_of_conflict`, `onepiece`) all use the identical default purple bolt on port 5173, causing browser favicon cache collisions.
+- **Fix:** Restored `public/favicon.svg` as the correct UniMatch shield/crest — `#1a3a6e` navy rounded square (`rx="120"`, `viewBox="0 0 683 683"`) with all 14 white path elements extracted from `logo_light_without_text.svg`. Shield is the project's own mark and correctly represents UniMatch.
+- **Cache bust:** `index.html` favicon href bumped to `?v=200` to force browsers to fetch the updated file and clear any stale cached favicon from other local projects sharing port 5173.
+- **Note:** Browser may still show the old cached favicon until a hard reload (Cmd+Shift+R). This is a browser-side cache issue, not a code issue.
+
+---
+
+### 200. Scroll fix, sidebar contrast overhaul, collapse button alignment
+
+**Date:** 2026-06-08
+
+**Files changed:** `styles/tokens.css`, `index.css`
+
+---
+
+#### Scroll fix — home page no longer scrolls by default at any laptop viewport
+
+**Root cause:** No flex chain existed between `.dashboard-main` and the home-page grid. The grid's `auto` row 2 (Deadlines, 245px) plus the `minmax(300px,1fr)` row 1 minimum caused total content height to exceed available space at 768–800px viewport heights:
+- 1280×800: 39px overflow
+- 1280×768: 12px overflow
+
+**Fix — flex chain:** `dashboard-main { display:flex; flex-direction:column }` → `dashboard-topbar { flex-shrink:0 }` → `page-shell { flex:1; min-height:0; display:flex; flex-direction:column }` → `home-page { flex:1; min-height:0 }` → `home-figma-grid { flex:1; min-height:0 }` + `home-kpi-row { flex-shrink:0 }`.
+
+Each node in the chain now has a definite allocated height. The CSS grid distributes its two rows within that bounded space — no content can push below the viewport fold.
+
+**Grid row minimum lowered:** `minmax(300px,1fr)` → `minmax(240px,1fr)` for row 1. The 300px minimum exceeded free space at 768px (free space = 277px), causing 12px overflow despite the flex chain. 240px clears the floor at all tested heights.
+
+**Tablet/mobile preserved:** the `max-width:1120px` breakpoint adds `flex:none; min-height:auto` on `.home-page` and `.home-figma-grid`, disabling the flex-fill so stacked panels grow naturally and `dashboard-main` scrolls as expected.
+
+**Verified:** `mainOverflow: 0` at 1280×768, 1280×800, and 1280×900.
+
+---
+
+#### Sidebar hover/active contrast — visible state changes in both themes
+
+**Problem:** Hover and active backgrounds used near-transparent white overlays (`rgba(255,255,255,0.12/0.22)` light; `rgba(255,255,255,0.05/0.10)` dark) that were nearly invisible against the glass background (light) or solid dark panel.
+
+**Fix — tokens.css:**
+
+| Token | Was | Now |
+|---|---|---|
+| `--sidebar-link-active-bg` (light) | `rgba(255,255,255,0.22)` | `rgba(26,58,110,0.13)` — navy tint, 12.5:1 contrast |
+| `--sidebar-link-hover-bg` (light) | `rgba(255,255,255,0.12)` | `rgba(26,58,110,0.07)` — subtle navy |
+| `--sidebar-link-active-bg` (dark) | `rgba(255,255,255,0.10)` | `rgba(126,184,232,0.18)` — primary-blue tint, 8.4:1 contrast |
+| `--sidebar-link-hover-bg` (dark) | `rgba(255,255,255,0.05)` | `rgba(255,255,255,0.09)` — more visible white |
+
+**Left indicator bar added:** `.sidebar-link-active::after` and `.sidebar-group-btn-active::after` — a `3px × 52%` primary-coloured bar at `left:0` drawn inside the element's border-box (works in expanded and collapsed mode; `overflow:hidden` clips it cleanly at the rounded corners). Added `position:relative` to `.sidebar-link` and `.sidebar-group-btn` to establish the containing block.
+
+---
+
+#### Collapse button text alignment
+
+**Problem:** `.sidebar-collapse-btn` lacked `text-align:left`, so the browser UA default (`center`) could misalign the label relative to other nav items.
+
+**Fix:** Added `text-align:left` to `.sidebar-collapse-btn` (matching the explicit `text-align:left` already on `.sidebar-group-btn`). Verified icon at left 41px and label at left 79px — both identical to the active Home link.
+
+---
+
+#### Panel overflow clipping
+
+Added `overflow:hidden` to `.home-actions-panel`, `.home-leaderboard-panel`, and `.home-deadlines-panel` so panel content clips cleanly at its grid cell boundary at very constrained viewport heights. `.home-search-panel` excluded — its search dropdown is `position:absolute` and would be clipped.
+
+---
+
+### 199. Fix broken favicon href in index.html
+
+**Date:** 2026-06-08
+
+**Files changed:** `index.html`
+
+**Root cause:** Two compounding issues left the favicon invisible:
+
+1. The correct navy `#1a3a6e` shield favicon was built (entry #189) but never committed — git HEAD still held the old purple `#863bff` Vite scaffold SVG.
+2. A subsequent `index.html` edit (likely same session that added the title "UniMatch", meta description, and theme-color) accidentally changed the favicon href from the correct Vite path `/favicon.svg` to the filesystem path `educompare-project/frontend/public/favicon.svg?v=189`. Vite serves `public/` assets at the URL root, so that path resolves to a 404.
+
+**Fix:** Restored the href to `/favicon.svg?v=198` (correct Vite-served path, cache-bust version bumped). The `favicon.svg` file on disk is already the correct navy shield version — no SVG changes needed.
+
+**Verified:** `fetch('/favicon.svg?v=198')` → 200, `isNavy: true`, `isPurple: false`, 6066 bytes.
+
+---
+
+### 198. About page: remove hero card box, drop badge, responsive verified
+
+**Date:** 2026-06-08
+
+**Files changed:** `AboutPage.jsx`, `index.css`
+
+**Problem:** At wide viewports (1440px+) the hero section — a card with soft-blue background, border, and 32px padding on all sides — left the right ~40% of its width empty, making the title and tagline look like text stuck in a box. The `max-width: 72ch` added to `.about-prose` (entry #197) caused the same effect: paragraph ended midway while the stats row below spanned full width.
+
+**Fixes:**
+- Removed `background`, `border`, `border-radius`, and all-side `padding` from `.about-hero`. Replaced with `padding-bottom: var(--space-6)` + `border-bottom: 1px solid var(--border)` for clean visual separation
+- Removed the now-unnecessary mobile `padding: var(--space-5)` override for `.about-hero`
+- Reverted `max-width: 72ch` on `.about-prose` (was deliberately removed in entry #194 for this same reason; re-added by mistake in #197)
+- Removed `<span className="about-hero-badge">Student project · Beta MVP</span>` from JSX
+
+**Responsive verified:** desktop (1280px), wide (1600px), tablet (768px), mobile (375px) — all pass.
+
+---
+
+### 197. About page: accessibility and readability fixes (post-audit)
+
+**Date:** 2026-06-08
+
+**Files changed:** `AboutPage.jsx`, `index.css`
+
+**Accessibility fixes (WCAG 2.1 AA):**
+- Fixed `<dl>` semantic order: swapped `<dt>` (label) before `<dd>` (value) in each stat card. Used `flex-direction: column-reverse` on `.about-stat` to preserve value-on-top visual layout
+- Changed `<p className="about-hero-title">` to `<h1>` — page had no h1, heading navigation jumped directly to section h2s
+- Added `aria-labelledby` + matching `id` on all five `<section>` / `<h2>` pairs (mission, features, methodology, data, team)
+- Added `aria-label="GitHub: name (opens in new tab)"` to both external GitHub links
+
+**Readability fixes:**
+- Added `max-width: 72ch` to `.about-prose` — Mission paragraph was ~130 chars/line at full width; now wraps at a comfortable reading width
+- Bumped `.about-stat-label` from `--text-xs` (11px) to `--text-sm` (13px) — stat labels were too small to read comfortably
+- Trimmed Phase 5 (Frontend & Analytics) description from 3 dense technical sentences to 2 concise ones
+
+**Content fix:**
+- Renamed first feature card h3 from "What it does" to "Capabilities" — was near-identical to the parent section h2 "What It Does"
+
+---
+
+### 196. Home page: eliminate default scroll, verify collapse button alignment
+
+**Date:** 2026-06-08
+
+**Files changed:** `index.css`
+
+**Body scroll eliminated:**
+- Changed `.dashboard-main { min-height: 100vh }` to `height: 100vh; overflow-y: auto`. Creates a self-contained scroll container: body never gets a scrollbar regardless of page content length. All pages that exceed the viewport (analytics, about, etc.) scroll within `.dashboard-main`. Sidebar stays fixed. `.dashboard-topbar { position: sticky; top: 0 }` remains sticky within `.dashboard-main` as the correct scroll ancestor.
+
+**8px internal overflow patched:**
+- At 1280x900, the KPI subtitle "Lowest yearly program cost" wraps to 2 lines at 228px card width, making each KPI card 113px. Combined with the figma-grid content height (661px), topbar (82px), and page-shell padding (32px), total = 908px in a 900px container, causing 8px internal scroll.
+- Fixed by tightening `.home-page` row gap from `clamp(18px, 2.2vh, 30px)` to `clamp(10px, 1.3vh, 20px)`. At 900px the gap resolves to 11.7px (was 19.8px). Verified: `mainScrollHeight === mainClientHeight === 900`, zero overflow.
+
+**Collapse button alignment confirmed correct (no change):**
+- Verified via JavaScript: `.sidebar-collapse-icon` and `.sidebar-link-icon` both sit at exactly 21px from the sidebar left edge. "Collapse" label aligns with all other nav labels. No CSS change needed.
+
+---
+
+### 195. Decision Hub: harmonise action button placement across all 3 pages
+
+**Date:** 2026-06-08
+
+**Files changed:** `CompareProgramsPage.jsx`, `CostCalculatorPage.jsx`, `index.css`
+
+**Problem:** Action buttons (primary submit + Clear) were inconsistently placed across the three Decision Hub pages. Recommendation had them right-aligned inside the profile card; Compare and Cost Calculator had them left-aligned in a standalone row outside the panel.
+
+**Fix:**
+- Moved the `.action-row.compare-actions` div inside the `.panel` in `CompareProgramsPage.jsx`
+- Moved the `.action-row.cost-actions` div inside the `.panel` in `CostCalculatorPage.jsx`
+- Added `justify-content: flex-end; margin-top: var(--space-5)` to `.compare-actions, .cost-actions` in `index.css`
+
+All three pages now share the same pattern: action buttons sit inside the form card, right-aligned, with primary action first in DOM order (correct for keyboard navigation).
+
+---
+
+### 194. About page: remove narrow text constraints, responsive hero padding
+
+**Date:** 2026-06-08
+
+**Files changed:** `index.css`
+
+**Root cause fixed:**
+- `.about-hero-tagline` had `max-width: 64ch` (~640px). Inside a hero panel ~1000px wide, this left the right ~360px blank, making the tagline look like a narrow text box on wide screens. Removed.
+- `.about-prose` had `max-width: 72ch` (~720px). Same visual issue in the Mission section. Removed. In a dashboard context, the page shell and panel padding already constrain line length appropriately.
+
+**Mobile hero padding:**
+- Added `@media (max-width: 760px) { .about-hero { padding: var(--space-5) } }` inside the existing 760px block. The base rule (`padding: var(--space-8)` = 32px) is too heavy at 375px, where it leaves only ~279px of hero content area. Reduced to `var(--space-5)` = 20px for mobile/tablet.
+
+**Responsive audit — no other issues found:**
+- Stats row 2-col at ≤760px: "Apr 2026" at 22px bold fits in ~134px card content area at 375px. No change needed.
+- Team cards 1-col at ≤760px: 80px photo + 16px gap + 207px info area is sufficient.
+- Feature/source/phase sections: already 1-col at ≤760px.
+- Closing banner: already stacks at ≤760px (end-of-file override from entry #192).
+
+---
+
+### 193. About page: compact team photos, dd/dt margin reset, copy fixes
+
+**Date:** 2026-06-07
+
+**Files changed:** `AboutPage.jsx`, `index.css`
+
+**Team photo size fix:**
+- The 4:3 full-width portrait photo was oversized (~470×350px per card). Reverted to horizontal card layout: photo is now a fixed 80×80px square with `border-radius: var(--radius-sm)` (rectangular with slight rounding, not circular).
+- `.about-team-card` back to `display: grid; grid-template-columns: auto 1fr; align-items: center; padding: var(--space-5)`.
+- `.about-team-photo` and `.about-team-photo-fallback` both fixed at 80×80px.
+- `.about-builder-info` back to simple `display: grid; gap: var(--space-1)` (card padding handles spacing).
+
+**`<dd>/<dt>` margin reset:**
+- Added `.about-stats-row dd, .about-stats-row dt { margin: 0; padding: 0 }` to neutralise browser-default `margin-inline-start: 40px` on `<dd>` elements inside the stats grid.
+
+**Copy improvements:**
+- "Capabilities" card heading → "What it does" (removes corporate tone, matches context).
+- "Data verified" stat label → "Last verified" (clearer meaning).
+- Phase 1 description rewritten to remove repetition: the phrase "both with clear conflicts of interest" appeared in both the Mission prose and Phase 1, now removed from Phase 1.
+
+---
+
+### 192. About page polish: rectangular team cards, CTA contrast fix, text tightening
+
+**Date:** 2026-06-07
+
+**Files changed:** `AboutPage.jsx`, `index.css`
+
+**Team card redesign (portrait layout):**
+- `BuilderAvatar` component now renders `about-team-photo` (img) / `about-team-photo-fallback` (div) classes instead of the old circular `about-avatar` classes.
+- `.about-team-card` changed from horizontal grid (`auto 1fr`) to vertical flex column with `overflow: hidden` — photo sits edge-to-edge at the card top, info section sits below.
+- `.about-team-photo`: `width: 100%; aspect-ratio: 4/3; object-fit: cover; object-position: center top` — 4:3 rectangle, face-anchored crop.
+- `.about-team-photo-fallback`: matching 4:3 div for initials fallback.
+- `.about-builder-info`: added `padding: var(--space-4) var(--space-5)` and increased gap to `var(--space-2)` since the card no longer wraps content in a single padded area.
+- Removed stale `.about-avatar` and `.about-avatar-img` CSS rules.
+
+**CTA contrast fix:**
+- `.about-closing-cta` changed from `background: var(--accent); color: #fff` to `background: var(--color-primary); color: var(--color-primary-text)`.
+- In dark mode `--color-primary` = `#7eb8e8` (light blue) and `--color-primary-text` = `#0a1628` (dark) — the old `#fff` text on `#7eb8e8` was a WCAG contrast failure. Now properly uses the semantic color pair from `tokens.css`.
+- Hover changed from `opacity: 0.88` to `background: var(--color-primary-hover)` — explicit token, not opacity hack.
+
+**Text tightening:**
+- Hero tagline: dropped "official" and "or social media marketing" — shorter and more direct.
+- Closing banner text: two sentences → one compact sentence.
+
+---
+
+### 191. About page overhaul: accessibility, visual hierarchy, closing section
+
+**Date:** 2026-06-07
+
+**Files changed:** `AboutPage.jsx`, `index.css`
+
+**Accessibility fixes:**
+- All section headings changed `h3` → `h2`; all subsection headings changed `h4` → `h3`. Eliminates the WCAG 1.3.1 heading-level skip (topbar h1 → page h3 had no h2).
+- Stats markup changed from `<div><span/><span/>` pairs to `<dl><div><dd/><dt/></div></dl>`. Screen readers now announce each stat as a definition pair (value + label) rather than unrelated text.
+- Phase number badges: `aria-hidden="true"` replaced with `aria-label="Phase N"` — screen readers now convey sequence without visual reliance on the badge number.
+
+**Visual improvements:**
+- **Hero redesign**: removed redundant logo (already in sidebar). New hero has a `var(--color-primary-soft)` panel background with rounded xl corners, a "Student project · Beta MVP" pill badge, and the product name at `--text-2xl` bold. Logo imports, `useAppShell`, and `IconImage` removed from component.
+- **Stat cards**: added `border-top: 3px solid var(--accent)` — KPI-style accent line gives the numbers visual weight and hierarchy.
+- **Phase cards**: added `border-left: 3px solid var(--accent)` — timeline feel, makes the progression read as a sequence.
+- **Source icons**: changed `color: var(--muted)` → `color: var(--accent)` — icons were near-invisible on white cards; now match the primary accent.
+- **Team avatars**: grown from 52px → 72px to give real profile photos proper presence.
+- **Section label**: "Features" → "What It Does" — more specific, removes generic marketing language. Card labels: "What it does" → "Capabilities".
+
+**New closing section:**
+- Added `.about-closing` banner at bottom of page: muted descriptive text left + "Start exploring" navy CTA right (uses `<Link to="/">` from react-router-dom).
+- Responsive: stacks column on `≤760px` via end-of-file override (cascade-safe pattern).
+
+**CSS selector updates:** `.about-section-head h3`, `.about-feature-card h4`, `.about-source-card h4`, `.about-builder-info h4` all updated to match the new heading levels.
+
+---
+
+### 190. About page: LinkedIn profile photos, CSS token fixes
+
+**Date:** 2026-06-07
+
+**Files changed:** `AboutPage.jsx`, `index.css`
+
+**`AboutPage.jsx`:**
+- Added `avatar` URL field to each builder in the `builders` array using LinkedIn CDN profile photo links (Pyae Sone Aung and Kaung Khant Lin).
+- Added `BuilderAvatar` sub-component: renders `<img className="about-avatar about-avatar-img">` when a URL is provided, falls back to initials `<div className="about-avatar">` via `onError` state if the image fails to load.
+- Added `import { useState } from 'react'` for the fallback state hook.
+- Note: LinkedIn CDN URLs include a time-limited access token (`e=1782345600`, expires approx. 2026-06-25) — links will need refreshing after expiry.
+
+**`index.css`:**
+- `.about-feature-list`: replaced raw `padding-left: 18px` with `var(--space-4)` and `gap: 7px` with `var(--space-2)` — both were token violations.
+- Removed duplicate `.about-builder-info h4` rule (lines ~1991-1996 in prior file) which shadowed the correct token-based rule above it with raw `0.95rem` / `600` values.
+- Added `.about-avatar-img` class: `display: block; object-fit: cover; background: var(--panel-bg); border: 2px solid var(--border)` — gives circular photo avatars a clean crop and subtle frame, overriding the text-avatar background.
+
+---
+
+### 189. Favicon overhaul, About hero consistency fix, index.html title
+
+**Files changed:** `public/favicon.svg`, `AboutPage.jsx`, `index.html`
+
+**`public/favicon.svg` — complete rewrite:**
+- Replaced the Vite scaffold lightning-bolt favicon (added by Dot in the initial commit) with the actual EduCompare shield/crest mark.
+- Extracted all 14 vector `<path>` elements from `logo_light_without_text.svg` — the same mark shown in the sidebar.
+- Background: rounded square `rx="120"` filled with `#1a3a6e` (brand deep navy). Mark: `fill="white"`. No purple, no gradients, no decorative effects.
+- Dropped the embedded 85KB base64 PNG from the original file — at 16–32px favicon render size the fine detail was invisible anyway. Pure SVG paths only (~4KB).
+- The favicon now matches the sidebar icon: same shape, same brand, works in all browser light/dark tab contexts without needing a media query.
+
+**`AboutPage.jsx` — hero consistency:**
+- Removed `logoFull` (`logo.svg`) import — the portrait logo-with-text was only used in light mode, creating an inconsistency where dark mode showed the icon mark + CSS "UniMatch" text while light mode showed baked-in text inside the image.
+- Imported `logoLightMark` (`logo_light_without_text.svg`) to match how the sidebar works.
+- Both light and dark modes now show: icon mark (theme-adaptive) + `<span className="about-hero-name">UniMatch</span>`. Consistent across themes.
+- Removed the `isDark &&` conditional on the name span — it always renders now.
+
+**`index.html`:**
+- `<title>frontend</title>` → `<title>UniMatch</title>` (was Vite scaffold default, never updated).
+- Added `<meta name="description" ...>` with the project mission statement.
+- Added `<meta name="theme-color" content="#1a3a6e">` — sets mobile browser chrome colour to match the brand navy.
+
+---
+
+### 188. Logo revert — replace NexA PNGs with original EduCompare SVG assets
+
+**Files changed:** `Sidebar.jsx`, `AboutPage.jsx`, `index.css`
+
+**Context:**
+- Dot had replaced the project's original logo assets with NexA Education PNGs (`logo_nexa_light.png`, `logo_nexa_dark.png`), using `mix-blend-mode: multiply/screen` to adapt them to light/dark backgrounds.
+- Reverted all logo usage back to the three original SVG assets that have been in the repo since April 2026.
+
+**Sidebar.jsx:**
+- Removed `logo_nexa_light.png` and `logo_nexa_dark.png` imports.
+- Imported `logo_light_without_text.svg` (as `logoLightMark`) and `logo_dark_without_text.svg` (as `logoDarkMark`).
+- Logo variable now: `const logoMark = theme === 'dark' ? logoDarkMark : logoLightMark`.
+- Changed `<IconImage>` class from `sidebar-logo sidebar-logo-nexa` to `sidebar-logo` (base class already sets 54px square, no override needed).
+- Restored `<span className="sidebar-brand-name">UniMatch</span>` — Dot had removed this when embedding text into the NexA PNG; the CSS rule for `.sidebar-brand-name` was already in place and handles collapse transitions correctly.
+
+**AboutPage.jsx:**
+- Removed NexA PNG imports. Imported `logo.svg` (as `logoFull`, the full portrait logo with text) and `logo_dark_without_text.svg` (as `logoDarkMark`).
+- Added `const isDark = theme === 'dark'`. Logo source: light mode uses `logoFull` (full branded logo, 804×876 portrait), dark mode uses `logoDarkMark` (icon mark, 683×683 square).
+- Changed class from `about-hero-logo-nexa` to `about-hero-logo-edu`.
+- Added `{isDark && <span className="about-hero-name">UniMatch</span>}` — shown only in dark mode because `logo.svg` has text baked in for light mode; `.about-hero-name` CSS already existed from before Dot's changes.
+
+**index.css:**
+- Removed `.sidebar-logo-nexa` block (width: 150px, mix-blend-mode: multiply) — no longer needed since base `.sidebar-logo` 54px rule applies.
+- Removed `[data-theme='dark'] .sidebar-logo-nexa { mix-blend-mode: screen }` block.
+- Removed `.sidebar-collapsed .sidebar-logo-nexa { width: 54px }` — was reducing from 150px; now unnecessary.
+- Removed `.sidebar-collapsed .sidebar-logo-nexa { width: 150px }` from the mobile `@media (max-width: 1120px)` override block.
+- Replaced `.about-hero-logo-nexa` (and its dark-mode `mix-blend-mode` override) with `.about-hero-logo-edu { height: 80px; width: auto; max-width: 120px; object-fit: contain }`. This renders the portrait `logo.svg` at ~73px wide / 80px tall in light mode, and the square icon mark at 80px square in dark mode.
+
+**Favicon:** Confirmed unchanged — `/public/favicon.svg` is the original EduCompare lightning-bolt SVG mark (`#863bff` purple gradient) and was never replaced with a NexA asset.
+
+---
+
+### 187. Analytics — InfoCard gap fix and full CSS tokenization sweep
+
+**Files changed:** `index.css`
+
+**Root structural fix — InfoCard head-to-body gap:**
+- `.info-card` was `display: block` with no gap between `.info-card-head` (eyebrow + title) and the content wrapper. Because `h3` has `margin: 0`, charts and tables rendered flush against their card title — zero breathing room.
+- Added `display: flex; flex-direction: column; gap: var(--space-4)` to `.info-card` — now all InfoCard instances across Deadline Insights, Ranking Insights, Cost Overview, and any future page have a consistent 16px gap between title and content.
+- Removed the redundant `display: flex; flex-direction: column` override from `.cost-overview-viz-grid > .info-card:first-child` (now inherited from base). Kept only the `flex: 1` on its children wrapper, which handles the height-fill behaviour.
+
+**Admission custom cards — tokenized and harmonised with InfoCard:**
+- `.admission-overview-card`: `gap: 18px` → `var(--space-4)`, `padding: 24px` → `var(--space-6)` — now consistent with InfoCard's 16px head-to-body gap
+- `.admission-snapshot-section`: same (`gap: 18px` → `var(--space-4)`, `padding: 24px` → `var(--space-6)`)
+- `.admission-middle-grid`, `.admission-bottom-grid`: `gap: 24px` → `var(--space-6)`
+
+**Table cell padding — tokenized with slight horizontal improvement:**
+- `.compare-table th, .compare-table td`: `padding: 12px 14px` → `var(--space-3) var(--space-4)` (12px 16px) — `14px` had no token; 16px adds a touch more horizontal breathing room per cell
+- `.compare-table-uni`: `font-size: 0.78rem` → `var(--text-xs)` (12px)
+
+**Analytics grid gaps — tokenized:**
+- `.cheapest-programs-sections`: `gap: 24px` → `var(--space-6)`
+- `.cheapest-country-section`: `gap: 10px` → `var(--space-3)` (12px)
+- `.cost-charts-grid`: `gap: 20px` → `var(--space-5)`
+- `.cost-overview-viz-grid`: `gap: 20px` → `var(--space-5)`
+
+**Typography raw values — tokenized:**
+- `.cheapest-country-label`: `font-size: 0.82rem` → `var(--text-sm)` (13px)
+- `.data-freshness-note`: `padding: 8px 12px` → `var(--space-2) var(--space-3)`, `font-size: 0.8rem` → `var(--text-xs)` (12px)
+- `.section-label` / `.eyebrow`: `font-size: 0.78rem` → `var(--text-xs)` (12px)
+
+---
+
+### 186. Compare + Cost Calculator — remove FormSection heading layer
+
+**Files changed:** `CompareProgramsPage.jsx`, `CostCalculatorPage.jsx`, `index.css`
+
+Removed `FormSection` (and its import) from both pages. Replaced with a bare `.panel > .form-grid` structure so there is no intermediate section heading between the page subtitle and the form fields. The previous flow had five redundant layers ("Cost Calculator" → subtitle → "Choose a program" → "Program" → "Select program"); now it is three clean layers (page heading → subtitle → field inputs).
+
+CSS: removed the dead `.compare-page .panel-heading h2, .cost-calculator-page .panel-heading h2` rule and dropped the `padding-top` from `.compare-page .form-grid, .cost-calculator-page .form-grid` since the panel's own padding provides sufficient breathing room.
+
+---
+
+### 185. Compare + Cost Calculator — copy tightening and form label clarity
+
+**Files changed:** `CompareProgramsPage.jsx`, `CostCalculatorPage.jsx`, `index.css`
+
+**Copy changes:**
+- Compare subtitle: "Select two programs to compare tuition, living costs, GPA and IELTS requirements, and deadlines side by side." → "Pick any two programs to compare costs, requirements, and deadlines side by side." (shorter, no jargon list)
+- Compare FormSection title: "Comparison inputs" → "Choose two programs" (action-oriented)
+- Compare FormSection description: removed entirely (was redundant with subtitle)
+- Cost Calculator subtitle: "See the full yearly cost picture: tuition, living costs, and fees, not just the headline figure agents usually show." → "See the full yearly cost: tuition, living costs, and fees. Not just the headline number agents quote." (tighter, cleaner split into two sentences)
+- Cost Calculator FormSection title: "Program selection" → "Choose a program" (action-oriented)
+- Cost Calculator FormSection description: removed entirely (was redundant with subtitle)
+
+**Spacing:**
+- Bumped `.compare-page .form-grid, .cost-calculator-page .form-grid { padding-top }` from `var(--space-2)` (8px) to `var(--space-4)` (16px) — compensates for the removed description paragraph so the section title has breathing room above the field labels
+
+---
+
+### 184. Decision Hub — unified dropdown arrows, harmonised pre-result placeholders, card gap reduction
+
+**Files changed:** `RecommendationPage.jsx`, `CompareProgramsPage.jsx`, `CostCalculatorPage.jsx`, `CompareTable.jsx`, `index.css`
+
+**Dropdown arrow unification:**
+- Removed the animated CSS `border-right/border-bottom` rotating caret from Recommendation page selects — replaced with the same CSS `background-image` linear-gradient chevron that Compare and Cost Calculator already used
+- Removed `openSelect` React state, all `onFocus`/`onBlur` handlers, and `<span className="recommendation-control-caret">` elements from all three recommendation selects
+- All three Decision Hub pages now show an identical static downward-pointing chevron on dropdowns with no flip animation
+
+**Pre-result placeholder harmony (`hub-pre-result`):**
+- Created shared `.hub-pre-result` CSS class: dashed border card, 220px min-height, centred icon + text, same visual language as `.recommendation-empty-state`
+- Recommendation: switched from `.recommendation-pre-search` to `.hub-pre-result`; updated placeholder text to "Fill in your profile above to see matching programs."
+- Compare: replaced `CompareTable.jsx` bare `<p className="empty-state">` with a proper `.hub-pre-result` div containing `ArrowsLeftRight size={56}`; updated text to "Select two programs above to compare them side by side."
+- Cost Calculator: added pre-result placeholder (`Calculator size={56}`) when no summary is loaded; text: "Select a program above to see the full cost breakdown."
+- Each page's placeholder icon matches its primary action button icon for visual coherence
+- Removed stale `.compare-page .empty-state` CSS rule (dead after CompareTable update)
+- Removed `.recommendation-pre-search` CSS block and sub-rules; replaced by `.hub-pre-result`
+
+**Student Profile card gap reduction:**
+- Reduced `.recommendation-profile-card { gap }` from `var(--space-6)` (24px) to `var(--space-4)` (16px) on both desktop and mobile breakpoints
+- Removed `padding-top: var(--space-2)` from `.recommendation-action-row` to eliminate the redundant 8px above the buttons
+
+---
+
+### 183. Decision Hub pages + ResultCard — Phosphor icons, hover parity, match tag redesign
+
+**Files changed:** `ResultCard.jsx`, `CompareProgramsPage.jsx`, `CostCalculatorPage.jsx`, `index.css`
+
+**ResultCard — match tag redesign:**
+- `.match-tag` was missing `border-radius` — rendered as a hard rectangle. Changed to `border-radius: var(--radius-pill)` for pill-shaped tags consistent with the site's badge/chip pattern.
+- Colour changed from neutral grey (`--panel-soft` background, `--text` colour) to success-coloured: `background: color-mix(in srgb, var(--color-success) 12%, transparent)`, `border: color-mix(in srgb, var(--color-success) 28%, transparent)`, `color: var(--color-success)`. Pattern taken directly from the existing `.home-deadline-badge-upcoming` class.
+- Added `<Check size={12} />` Phosphor icon to each tag — gives immediate "met" semantic meaning without relying on color alone (WCAG 1.4.1 use of color).
+- `.match-tags-label` raw font-size replaced with `var(--text-xs)`, added `var(--weight-semibold)`, colour changed from `--muted` to `--color-text-muted` (token).
+- `.match-tags-row` raw `gap: 6px` → `var(--space-2)`.
+- `.match-tag` raw `font-size`, `padding` → tokens. Added `.match-tag svg { width: 12px; height: 12px }` size rule.
+- Em-dash in `' — Deadline passed'` → middle dot `' · Deadline passed'` (project rule: no em dashes in displayed strings).
+
+**Compare Programs page:**
+- Imported `ArrowsLeftRight` and `ArrowCounterClockwise` from `@phosphor-icons/react`.
+- "Compare programs" button → `ArrowsLeftRight size={18}` icon.
+- "Clear" button → `ArrowCounterClockwise size={18}` icon.
+
+**Cost Calculator page:**
+- Imported `Calculator` and `ArrowCounterClockwise` from `@phosphor-icons/react`.
+- "Calculate yearly cost" button → `Calculator size={18}` icon.
+- "Clear" button → `ArrowCounterClockwise size={18}` icon.
+- Removed three inline style violations: `style={{ marginBottom: '12px' }}`, `style={{ marginTop: '16px', fontSize: '0.82rem' }}`, `style={{ display: 'inline-block', marginTop: '10px' }}` → replaced with `.cost-summary-lead`, `.cost-summary-footnote`, `.cost-summary-detail-link` CSS classes.
+
+**Compare/Cost button hover parity:**
+- Added `transition: box-shadow var(--transition-ui), background var(--transition-ui)` to all four compare/cost buttons — matches the recommendation button pattern from entry #182.
+- Primary hover: adds `box-shadow: var(--shadow-md)` alongside existing colour change.
+- Secondary hover: `background: var(--panel-soft)` + `box-shadow: var(--shadow-md)`. Fixed selector from `:hover` to `:hover:not(:disabled)` to avoid lifting disabled buttons.
+
+**Compare/Cost select hover:**
+- Added `transition: border-color var(--transition-ui), box-shadow var(--transition-ui)` and `cursor: pointer` to selects.
+- Added `:hover { border-color: var(--color-border-strong) }` — matches the recommendation field control hover pattern.
+
+---
+
+### 182. Recommendation page — submit button hover fix
+
+**Files changed:** `index.css`
+
+**Root cause:** `--color-primary: #1a3a6e` → `--color-primary-hover: #143060` is only ~4% darker. Combined with the 150ms background transition added in entry #181, the submit button slowly animated between two nearly-identical dark blues — producing movement you could sense but not see. Felt wrong without a clear explanation why.
+
+**Fix:** Replace the slow background-colour fade with `box-shadow` elevation as the hover signal.
+- `transition` changed from `background, border-color` to `box-shadow, background` — `box-shadow: --shadow-sm → --shadow-md` is clearly visible (shadow deepens/spreads), `background` transition is kept but it's secondary.
+- Both submit and clear buttons gain `box-shadow: var(--shadow-md)` on hover — the elevation lift is the primary visual cue, matching the dashboard's card/panel elevation pattern.
+- Submit button still changes to `--color-primary-hover` on hover (same as compare/cost pages), but the colour change is no longer the thing you're supposed to notice.
+- Clear button: same approach — `--panel-soft` background + `--shadow-md` lift.
+
+---
+
+### 181. Recommendation page — single placeholder, button hover parity
+
+**Files changed:** `RecommendationPage.jsx`, `index.css`
+
+**Single pre-search placeholder:**
+- `handleSubmit` sets `hasSearched = true` before the API call returns, so during loading `hasSearched && results.length === 0` was matching the "No programs matched" empty-state — showing the wrong placeholder while the spinner ran. Fixed by changing the condition to `hasSearched && !loading`. Now the `.recommendation-pre-search` placeholder is the only thing shown in both pre-search and during-loading states.
+- The results section heading (`<h3>Recommendation results`) now also gates on `!loading` so it doesn't flash in while results are still fetching.
+- Pre-search text changes during loading: "Finding matching programs..." replaces the default prompt, then reverts to "Your personalized program matches will appear here" after clear.
+
+**Button hover parity:**
+- Added `transition: background var(--transition-ui), border-color var(--transition-ui)` to both `.recommendation-submit-button` and `.recommendation-clear-button` — the same transition pattern used on `.topbar-toggle-btn` and other interactive elements site-wide.
+- Added `.recommendation-clear-button:hover:not(:disabled) { background: var(--panel-soft) }` — matching the exact hover pattern used by `.compare-secondary-button:hover` and `.cost-secondary-button:hover` on other pages.
+- The submit button already had a `background: var(--color-primary-hover)` hover; both buttons now have full interactive hover + transition consistent with the rest of the site.
+
+---
+
+### 180. Recommendation page — caret fix, gap tightening, hover states, pre-search sizing
+
+**Files changed:** `RecommendationPage.jsx`, `index.css`
+
+**Dropdown caret (proper fix):**
+- Replaced the `:focus-within`-based caret animation (which stayed rotated after selection) with a React `openSelect` state.
+- Added `onFocus={() => setOpenSelect(fieldName)}` and `onBlur={() => setOpenSelect(null)}` to each `<select>`. The control wrapper receives `is-open` class only while the select is actually focused.
+- `.recommendation-control.is-open .recommendation-control-caret` handles the 225° rotation. Snaps back to default immediately on `onBlur`, so it never stays open after a selection or click-outside.
+
+**Card gap fix:**
+- Removed `padding-top: var(--space-4)` from `.recommendation-field-row-top`. This was left over from the info-label column era (entry #178) and added a redundant 16px on top of the existing 24px card gap — creating a 40px visual gap above the first field row. Now all card children share the same 24px gap.
+
+**Hover + transition:**
+- Added `transition: border-color var(--transition-ui), box-shadow var(--transition-ui)` and `cursor: pointer` to `.recommendation-control`.
+- Added `.recommendation-control:hover { border-color: var(--color-border-strong) }` so the controls respond to hover like the rest of the dashboard's interactive elements.
+
+**Pre-search placeholder:**
+- `min-height` increased from 140px to 220px (mobile: 160px), icon from 40px to 56px, gap from `--space-3` to `--space-4`. Placeholder now reads as a real placeholder area rather than a thin stripe.
+
+---
+
+### 179. Recommendation page — animated dropdown caret + pre-search placeholder restored
+
+**Files changed:** `RecommendationPage.jsx`, `index.css`
+
+Two targeted UX improvements following the page restructure in entry #178.
+
+**Animated dropdown arrow:**
+- Added `transition: transform var(--transition-ui), border-color var(--transition-ui)` to `.recommendation-control-caret`.
+- Added `.recommendation-control:focus-within .recommendation-control-caret` rule: rotates the chevron from `rotate(45deg)` (pointing down) to `rotate(225deg)` (pointing up) and tints it to `--color-primary` when the select is open. Vertical translation flips sign (`-3px` → `+3px`) to keep the arrow optically centred.
+- The `:focus-within` selector triggers when the `<select>` inside the wrapper is focused — which is exactly when the dropdown is open. On close, it snaps back via the same 150ms ease transition.
+
+**Pre-search placeholder restored:**
+- The results section now renders unconditionally (removed `{hasSearched && ...}` wrapper).
+- Before any search, a compact `.recommendation-pre-search` card displays with a 40px `MagnifyingGlass` icon and the "Your personalized program matches will appear here" prompt. `min-height: 140px` (vs 300px for the empty-state) so the entire page — heading + form card + placeholder — fits in a standard viewport without scrolling.
+- After search with results: section heading (`<h3>`) appears above the result cards.
+- After search with no results: full `.recommendation-empty-state` (300px, 128px icon) as before.
+- `.recommendation-pre-search` uses `--color-border-default` (lighter than `--color-border-strong`) and `opacity: 0.3` on the icon for a subtle, non-distracting pre-state. Mobile override reduces min-height to 110px.
+
+---
+
+### 178. Recommendation page — page restructure, accessibility fixes, one-screen layout
+
+**Files changed:** `RecommendationPage.jsx`, `index.css`
+
+Full structural overhaul of the Recommendation page to fix accessibility violations, remove visual clutter, and make the pre-search state fit on one screen without scrolling.
+
+**Accessibility (WCAG 2.1):**
+- `<h2>Student Profile</h2>` → `<h3>` — only one `<h2>` per page (the page title). Card and section sub-headings must be `<h3>`.
+- `<h2>Recommendation results</h2>` → `<h3>` — same rule.
+- CSS heading selectors in `.recommendation-card-header` and `.recommendation-results-header` updated to match both `h2` and `h3` variants.
+
+**Removed elements:**
+- `.recommendation-divider-band` — the full dotted-line band with two CSS-drawn decorative icons (pin and send shapes) removed entirely. It was visually confusing and structurally unnecessary.
+- `.recommendation-info-label` (both "Programs" and "Program's requirement" columns) — these side-label columns added no actionable information for the user and broke the grid symmetry.
+- All divider band CSS: `.recommendation-divider-band`, `.recommendation-divider`, `.recommendation-divider-icon`, `.recommendation-divider-icon-send`, `.recommendation-divider-icon-pin` and their `::before`/`::after` pseudo-elements.
+- `Info` icon import — only used by the removed info-label.
+- Pre-search empty state — the 300px placeholder that was always visible before any search has been removed. The results section now renders only after `hasSearched` is true.
+
+**Action row:**
+- Buttons ("Get recommendations" + "Clear") moved to a clean `.recommendation-action-row` `flex` row, right-aligned, directly below the second field row inside the profile card.
+- Mobile: `flex-direction: column`, full-width buttons.
+
+**Layout / fit-on-screen:**
+- Field grid: `repeat(3, minmax(0, 1fr)) minmax(190px, 0.82fr)` → `repeat(3, minmax(0, 1fr))` — removes the 4th info-label column.
+- Responsive breakpoints kept: 3 cols → 2 cols at ≤1180px → 1 col at ≤760px.
+- Page now renders: heading + profile card (fields + buttons) only before search — no scroll needed.
+
+**Other fixes:**
+- Em-dash removed from helper text ("All fields are optional — fill in what you know" → "All fields are optional. Fill in what you know").
+- Em-dash removed from GPA hint ("4.0 scale — 80% ≈ 3.2" → "4.0 scale: 80% is ~3.2").
+- Caret span decorators removed from the three number inputs (Budget, GPA, IELTS) — carets imply a dropdown, which number inputs are not.
+- Duplicate `::-webkit-outer-spin-button` CSS block removed (was already covered by `::-webkit-inner-spin-button` rule above it).
+- Dead `.recommendation-info-label` and dead divider-band rules removed from `@media (max-width: 1180px)` and `@media (max-width: 760px)` blocks.
+
+---
+
+### 177. Recommendation page — icon polish and number input spinner removal
+
+**Files changed:** `RecommendationPage.jsx`, `index.css`
+
+Four targeted fixes after visual review of the Phosphor icon swap from entry #176.
+
+- **Spinner arrows removed**: Added `::-webkit-inner-spin-button` and `::-webkit-outer-spin-button` CSS rules to suppress browser-native increment/decrement arrows on the budget, GPA, and IELTS number inputs. The `appearance: textfield` rule already covered Firefox; webkit pseudo-elements were missing.
+- **Budget field icon**: `Wallet` → `CurrencyDollar` — a dollar-sign-in-circle is more semantically direct for a yearly budget amount field than a wallet.
+- **GPA icon**: `Certificate` → `Medal` — `Certificate` (document + circular seal) and `BookOpen` (IELTS) appeared visually similar at 24px. `Medal` is a circular medallion with ribbon — completely distinct shape, clearly represents academic achievement/score.
+- **Results section header**: `Student size={28}` → `Sparkle size={24}` — `Student` was used at both 40px (card header tile) and 28px (results header), creating two instances of the same icon at inconsistent sizes. `Sparkle` at 24px matches the field icon scale and fits the "matched programs" context. CSS `.recommendation-results-icon` updated from 28px to 24px.
+
+---
+
+### 176. Recommendation page — replaced all PNG sticker icons with Phosphor SVG icons
+
+**Files changed:** `RecommendationPage.jsx`, `index.css`
+**Assets deleted:** `src/assets/recommendation/` (10 PNG files removed)
+
+Replaced 10 PNG bitmap icons with Phosphor SVG icons to comply with the project rule (SVG icons only, no PNGs in UI). All PNGs were already being used as flat monochrome icons — the dark mode `filter: brightness(0) invert(1)` hack confirmed this. Phosphor SVGs use `currentColor` natively so dark mode works with zero extra CSS.
+
+**Icon mapping:**
+- `about.png` (info label) → `Info` | `about.png` (Clear button, was semantically wrong) → `ArrowCounterClockwise`
+- `gpa.png` → `Certificate`
+- `gratuadeHat.png` (filename typo) → `GraduationCap`
+- `ielts.png` → `BookOpen`
+- `recommendation.png` → `Sparkle`
+- `search.png` → `MagnifyingGlass`
+- `student.png` → `Student`
+- `translate.png` → `Translate`
+- `wallet.png` → `Wallet`
+- `world.png` → `GlobeHemisphereWest`
+
+**CSS changes in `index.css`:**
+- All `img` selectors inside recommendation-specific rules updated to `svg`
+- `object-fit: contain` removed from SVG rules (not applicable to inline SVG)
+- Deleted the entire `filter: brightness(0) invert(1); opacity: 0.85` dark mode hack block — no longer needed
+- Dark mode empty-state opacity rule kept, selector updated to `svg`
+
+**Bonus fix:** `aboutIcon` was incorrectly used on the Clear/Reset button. Replaced with `ArrowCounterClockwise` — semantically correct.
+
+---
+
 ### 175. Content tightening — Red Flag Guide and About page
 
 **Files changed:** `RedFlagGuidePage.jsx`, `AboutPage.jsx`

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { ArrowsLeftRight } from '@phosphor-icons/react'
 import { useAppShell } from '../context/AppShellContext'
 import { convertCurrency } from '../utils/currency'
 import { formatDate, isDeadlinePassed } from '../utils/date'
@@ -15,7 +16,12 @@ function CompareTable({ rows }) {
   const { currency: displayCurrency, toggleCurrency } = useAppShell()
 
   if (!rows.length) {
-    return <p className="empty-state">Select two programs to compare them side by side.</p>
+    return (
+      <div className="hub-pre-result">
+        <ArrowsLeftRight size={56} aria-hidden="true" />
+        <p>Select two programs above to compare them side by side.</p>
+      </div>
+    )
   }
 
   const [left, right] = rows

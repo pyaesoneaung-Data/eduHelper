@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
+import { ArrowCounterClockwise, ArrowsLeftRight } from '@phosphor-icons/react'
 import { getProgramDetail, getPrograms, getUniversities } from '../api/api'
 import CompareTable from '../components/CompareTable'
-import FormSection from '../components/FormSection'
 import PageState from '../components/PageState'
 import { useAppShell } from '../context/AppShellContext'
 
@@ -142,34 +142,35 @@ function CompareProgramsPage() {
     <div className="page-stack compare-page">
       <div className="section-heading compare-page-heading">
         <h2>{t('nav.compare', 'Compare')}</h2>
-        <p>Select two programs to compare tuition, living costs, GPA and IELTS requirements, and deadlines side by side.</p>
+        <p>Pick any two programs to compare costs, requirements, and deadlines side by side.</p>
       </div>
 
       <form className="page-stack compare-form" onSubmit={handleSubmit}>
-        <FormSection
-          title="Comparison inputs"
-          description="Choose any two programs from the list. All costs, requirements, and deadlines are pulled from the live database."
-        >
-          {programSelect('first')}
-          {programSelect('second')}
-        </FormSection>
+        <div className="panel">
+          <div className="form-grid">
+            {programSelect('first')}
+            {programSelect('second')}
+          </div>
 
-        <div className="action-row compare-actions">
-          <button className="primary-button compare-primary-button" type="submit" disabled={loading}>
-            {loading ? 'Loading comparison...' : 'Compare programs'}
-          </button>
-          <button
-            type="button"
-            className="secondary-button compare-secondary-button"
-            onClick={() => {
-              setProgramIds({ first: '', second: '' })
-              setRows([])
-              setError('')
-              sessionStorage.removeItem(SESSION_KEY)
-            }}
-          >
-            Clear
-          </button>
+          <div className="action-row compare-actions">
+            <button className="primary-button compare-primary-button" type="submit" disabled={loading}>
+              <ArrowsLeftRight size={18} aria-hidden="true" />
+              {loading ? 'Loading...' : 'Compare programs'}
+            </button>
+            <button
+              type="button"
+              className="secondary-button compare-secondary-button"
+              onClick={() => {
+                setProgramIds({ first: '', second: '' })
+                setRows([])
+                setError('')
+                sessionStorage.removeItem(SESSION_KEY)
+              }}
+            >
+              <ArrowCounterClockwise size={18} aria-hidden="true" />
+              Clear
+            </button>
+          </div>
         </div>
       </form>
 

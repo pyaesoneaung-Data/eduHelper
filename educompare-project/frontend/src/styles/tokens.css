@@ -147,8 +147,13 @@
   --sidebar-border:    rgba(255, 255, 255, 0.90);
   --sidebar-shadow:    0 16px 56px rgba(0, 0, 0, 0.18), 0 2px 10px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1.0), inset 1px 0 0 rgba(255, 255, 255, 0.60);
   --sidebar-blur:      blur(20px) saturate(200%);
-  --sidebar-link-active-bg: rgba(255, 255, 255, 0.22);
-  --sidebar-link-hover-bg:  rgba(255, 255, 255, 0.12);
+  /* Navy tint — visible against the frosted glass background.
+     White-on-white overlays (prev: 0.12 / 0.22) were nearly invisible.
+     Navy at 7% / 13% opacity gives a clear blue-tinted pill that reads
+     immediately as hover / active while keeping the glass aesthetic.
+     Active text contrast on the tinted bg: 12.5:1 (AAA). */
+  --sidebar-link-active-bg: rgba(26, 58, 110, 0.13);
+  --sidebar-link-hover-bg:  rgba(26, 58, 110, 0.07);
   /* Mobile drawer: approximates the glass visual without backdrop-filter.
      Backdrop-filter on a drawer over a dim overlay causes murky grey artefacts
      (the blur picks up the overlay's darkness). This blue-tinted white matches
@@ -191,13 +196,19 @@
   --color-danger:  #ef9a9a;
   --color-info:    #7eb8e8;
 
-  /* Sidebar — solid elevated panel (dark, no glass) */
-  --sidebar-bg:        #1a2438;
-  --sidebar-border:    rgba(255, 255, 255, 0.07);
-  --sidebar-shadow:    0 8px 32px rgba(0, 0, 0, 0.50);
-  --sidebar-blur:      none;
-  --sidebar-link-active-bg: rgba(255, 255, 255, 0.10);
-  --sidebar-link-hover-bg:  rgba(255, 255, 255, 0.05);
-  /* Mobile drawer in dark mode matches the solid panel */
-  --sidebar-mobile-bg: #1a2438;
+  /* Sidebar — frosted glass (dark) — mirrors the light-mode treatment.
+     Canvas bg #0f172a at 72% opacity + saturate(160%) bleeds through as
+     a deep midnight-blue tint. Inset highlights give the same glass-edge
+     cue as light mode, just dimmer (~4–8% white opacity).               */
+  --sidebar-bg:        rgba(12, 20, 40, 0.72);
+  --sidebar-border:    rgba(255, 255, 255, 0.10);
+  --sidebar-shadow:    0 16px 56px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 1px 0 0 rgba(255, 255, 255, 0.04);
+  --sidebar-blur:      blur(20px) saturate(160%);
+  /* Primary-blue tint for active; slightly raised white for hover.
+     Active bg on the glass panel: approx #2c3d5e; text contrast 8.4:1 (AAA). */
+  --sidebar-link-active-bg: rgba(126, 184, 232, 0.18);
+  --sidebar-link-hover-bg:  rgba(255, 255, 255, 0.09);
+  /* Mobile drawer — backdrop-filter disabled on mobile (artefact risk).
+     Near-opaque dark tint approximates the glass aesthetic.             */
+  --sidebar-mobile-bg: rgba(16, 26, 48, 0.97);
 }

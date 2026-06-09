@@ -4,16 +4,18 @@ import PageState from '../components/PageState'
 import { useAppShell } from '../context/AppShellContext'
 import { convertCurrency } from '../utils/currency'
 import ResultCard from '../components/ResultCard'
-import aboutIcon from '../assets/recommendation/about.png'
-import gpaIcon from '../assets/recommendation/gpa.png'
-import graduateHatIcon from '../assets/recommendation/gratuadeHat.png'
-import ieltsIcon from '../assets/recommendation/ielts.png'
-import recommendationIcon from '../assets/recommendation/recommendation.png'
-import searchIcon from '../assets/recommendation/search.png'
-import studentIcon from '../assets/recommendation/student.png'
-import translateIcon from '../assets/recommendation/translate.png'
-import walletIcon from '../assets/recommendation/wallet.png'
-import worldIcon from '../assets/recommendation/world.png'
+import {
+  ArrowCounterClockwise,
+  BookOpen,
+  CurrencyDollar,
+  GlobeHemisphereWest,
+  GraduationCap,
+  MagnifyingGlass,
+  Medal,
+  Sparkle,
+  Student,
+  Translate,
+} from '@phosphor-icons/react'
 
 function formatBudgetPreview(rawValue, isUSD, countryId) {
   const amount = Number(rawValue)
@@ -170,11 +172,11 @@ function RecommendationPage() {
         <section className="recommendation-profile-card">
           <div className="recommendation-card-header">
             <span className="recommendation-icon-tile" aria-hidden="true">
-              <img src={studentIcon} alt="" />
+              <Student size={40} />
             </span>
             <div>
-              <h2>Student Profile</h2>
-              <p>All fields are optional — fill in what you know. More inputs give more accurate results.</p>
+              <h3>Student Profile</h3>
+              <p>All fields are optional. Fill in what you know, more inputs give better results.</p>
             </div>
           </div>
 
@@ -184,8 +186,12 @@ function RecommendationPage() {
                 Country
               </span>
               <span className="recommendation-control">
-                <img src={worldIcon} alt="" className="recommendation-control-icon" />
-                <select name="country_id" value={formData.country_id} onChange={handleChange}>
+                <GlobeHemisphereWest size={24} className="recommendation-control-icon" aria-hidden="true" />
+                <select
+                  name="country_id"
+                  value={formData.country_id}
+                  onChange={handleChange}
+                >
                   <option value="">All countries</option>
                   {countries.map((country) => (
                     <option key={country.country_id} value={country.country_id}>
@@ -193,7 +199,6 @@ function RecommendationPage() {
                     </option>
                   ))}
                 </select>
-                <span className="recommendation-control-caret" aria-hidden="true" />
               </span>
             </label>
 
@@ -202,14 +207,17 @@ function RecommendationPage() {
                 Degree level
               </span>
               <span className="recommendation-control">
-                <img src={graduateHatIcon} alt="" className="recommendation-control-icon" />
-                <select name="degree_level" value={formData.degree_level} onChange={handleChange}>
+                <GraduationCap size={24} className="recommendation-control-icon" aria-hidden="true" />
+                <select
+                  name="degree_level"
+                  value={formData.degree_level}
+                  onChange={handleChange}
+                >
                   <option value="">All degree levels</option>
                   {degreeOptions.map((option) => (
                     <option key={option} value={option}>{option}</option>
                   ))}
                 </select>
-                <span className="recommendation-control-caret" aria-hidden="true" />
               </span>
             </label>
 
@@ -218,48 +226,20 @@ function RecommendationPage() {
                 Language
               </span>
               <span className="recommendation-control">
-                <img src={translateIcon} alt="" className="recommendation-control-icon" />
-                <select name="instruction_language" value={formData.instruction_language} onChange={handleChange}>
+                <Translate size={24} className="recommendation-control-icon" aria-hidden="true" />
+                <select
+                  name="instruction_language"
+                  value={formData.instruction_language}
+                  onChange={handleChange}
+                >
                   <option value="">All languages</option>
                   {languageOptions.map((option) => (
                     <option key={option} value={option}>{option}</option>
                   ))}
                 </select>
-                <span className="recommendation-control-caret" aria-hidden="true" />
               </span>
             </label>
 
-            <div className="recommendation-info-label">
-              <img src={recommendationIcon} alt="" />
-              <span>Programs</span>
-            </div>
-          </div>
-
-          <div className="recommendation-divider-band">
-            <span className="recommendation-divider-icon recommendation-divider-icon-send" aria-hidden="true" />
-            <div className="recommendation-divider" />
-            <div className="action-row recommendation-action-row">
-              <button className="primary-button recommendation-submit-button" type="submit" disabled={loading}>
-                <img src={recommendationIcon} alt="" />
-                {loading ? 'Loading recommendations...' : 'Get recommendations'}
-              </button>
-              <button
-                type="button"
-                className="secondary-button recommendation-clear-button"
-                disabled={loading}
-                onClick={() => {
-                  setFormData({ country_id: '', degree_level: '', instruction_language: '', max_budget: '', user_gpa: '', user_ielts: '' })
-                  setResults([])
-                  setHasSearched(false)
-                  setError('')
-                  sessionStorage.removeItem(SESSION_KEY)
-                }}
-              >
-                <img src={aboutIcon} alt="" />
-                Clear
-              </button>
-            </div>
-            <span className="recommendation-divider-icon recommendation-divider-icon-pin" aria-hidden="true" />
           </div>
 
           <div className="recommendation-field-row">
@@ -268,7 +248,7 @@ function RecommendationPage() {
                 Maximum yearly budget{budgetCurrencyLabel ? <span className="label-unit"> ({budgetCurrencyLabel})</span> : null}
               </span>
               <span className="recommendation-control">
-                <img src={walletIcon} alt="" className="recommendation-control-icon" />
+                <CurrencyDollar size={24} className="recommendation-control-icon" aria-hidden="true" />
                 <input
                   type="number"
                   name="max_budget"
@@ -280,7 +260,6 @@ function RecommendationPage() {
                   autoCapitalize="off"
                   spellCheck={false}
                 />
-                <span className="recommendation-control-caret" aria-hidden="true" />
               </span>
               {formData.max_budget ? (
                 <div className="budget-hints">
@@ -297,7 +276,7 @@ function RecommendationPage() {
                 GPA
               </span>
               <span className="recommendation-control">
-                <img src={gpaIcon} alt="" className="recommendation-control-icon" />
+                <Medal size={24} className="recommendation-control-icon" aria-hidden="true" />
                 <input
                   type="number"
                   step="0.01"
@@ -310,11 +289,10 @@ function RecommendationPage() {
                   autoCapitalize="off"
                   spellCheck={false}
                 />
-                <span className="recommendation-control-caret" aria-hidden="true" />
               </span>
               {formData.user_gpa ? (
                 <p className="muted-text recommendation-helper-text">
-                  4.0 scale — 80% ≈ 3.2, 70% ≈ 2.8, 60% ≈ 2.0
+                  4.0 scale: 80% is ~3.2, 70% is ~2.8, 60% is ~2.0
                 </p>
               ) : <span className="recommendation-helper-reserve" />}
             </label>
@@ -324,7 +302,7 @@ function RecommendationPage() {
                 IELTS
               </span>
               <span className="recommendation-control">
-                <img src={ieltsIcon} alt="" className="recommendation-control-icon" />
+                <BookOpen size={24} className="recommendation-control-icon" aria-hidden="true" />
                 <input
                   type="number"
                   step="0.5"
@@ -337,15 +315,31 @@ function RecommendationPage() {
                   autoCapitalize="off"
                   spellCheck={false}
                 />
-                <span className="recommendation-control-caret" aria-hidden="true" />
               </span>
               <span className="recommendation-helper-reserve" />
             </label>
+          </div>
 
-            <div className="recommendation-info-label">
-              <img src={aboutIcon} alt="" />
-              <span>Program’s requirement</span>
-            </div>
+          <div className="recommendation-action-row">
+            <button className="primary-button recommendation-submit-button" type="submit" disabled={loading}>
+              <Sparkle size={20} aria-hidden="true" />
+              {loading ? 'Loading...' : 'Get recommendations'}
+            </button>
+            <button
+              type="button"
+              className="secondary-button recommendation-clear-button"
+              disabled={loading}
+              onClick={() => {
+                setFormData({ country_id: '', degree_level: '', instruction_language: '', max_budget: '', user_gpa: '', user_ielts: '' })
+                setResults([])
+                setHasSearched(false)
+                setError('')
+                sessionStorage.removeItem(SESSION_KEY)
+              }}
+            >
+              <ArrowCounterClockwise size={20} aria-hidden="true" />
+              Clear
+            </button>
           </div>
         </section>
       </form>
@@ -353,16 +347,18 @@ function RecommendationPage() {
       <PageState error={error} />
 
       <section className="results-block recommendation-results">
-        <div className="recommendation-results-header">
-          <span className="recommendation-results-icon" aria-hidden="true">
-            <img src={studentIcon} alt="" />
-          </span>
-          <div>
-            <h2>{t('pages.recommendationResults', 'Recommendation results')}</h2>
+        {hasSearched && !loading && (
+          <div className="recommendation-results-header">
+            <span className="recommendation-results-icon" aria-hidden="true">
+              <Sparkle size={24} />
+            </span>
+            <div>
+              <h3>{t('pages.recommendationResults', 'Recommendation results')}</h3>
+            </div>
           </div>
-        </div>
+        )}
 
-        {results.length ? (
+        {results.length > 0 ? (
           <>
             <p className="muted-text">
               Showing {results.length} program{results.length === 1 ? '' : 's'} matching your profile.{' '}
@@ -377,15 +373,15 @@ function RecommendationPage() {
               ))}
             </div>
           </>
-        ) : hasSearched ? (
+        ) : hasSearched && !loading ? (
           <div className="recommendation-empty-state">
-            <img src={searchIcon} alt="" />
+            <MagnifyingGlass size={128} aria-hidden="true" />
             <p>No programs matched your criteria. Try broadening your filters.</p>
           </div>
         ) : (
-          <div className="recommendation-empty-state">
-            <img src={searchIcon} alt="" />
-            <p>Your personalized program matches will appear here</p>
+          <div className="hub-pre-result" aria-live="polite">
+            <MagnifyingGlass size={56} aria-hidden="true" />
+            <p>{loading ? 'Finding matching programs...' : 'Fill in your profile above to see matching programs.'}</p>
           </div>
         )}
       </section>

@@ -12,8 +12,8 @@ import {
   CaretLeft,
 } from '@phosphor-icons/react'
 import { useAppShell } from '../context/AppShellContext'
-import logoLight from '../assets/logo/logo_nexa_light.png'
-import logoDark from '../assets/logo/logo_nexa_dark.png'
+import logoLightMark from '../assets/logo/logo_light_without_text.svg'
+import logoDarkMark from '../assets/logo/logo_dark_without_text.svg'
 import IconImage from './IconImage'
 
 const navConfig = [
@@ -80,7 +80,7 @@ const footerLinks = [
 
 function Sidebar() {
   const { closeSidebar, isSidebarCollapsed, toggleSidebarCollapsed, theme, t } = useAppShell()
-  const logoSrc = theme === 'dark' ? logoDark : logoLight
+  const logoMark = theme === 'dark' ? logoDarkMark : logoLightMark
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -137,7 +137,8 @@ function Sidebar() {
   return (
     <div className="sidebar-panel">
       <Link to="/" className="sidebar-brand" onClick={closeSidebar} aria-label="Go to home page">
-        <IconImage src={logoSrc} className="sidebar-logo sidebar-logo-nexa" alt="NexA Education logo" />
+        <IconImage src={logoMark} className="sidebar-logo" alt="UniMatch logo" />
+        <span className="sidebar-brand-name">UniMatch</span>
       </Link>
 
       <nav className="sidebar-nav" aria-label="Primary navigation">
@@ -148,18 +149,21 @@ function Sidebar() {
             const active = isLinkActive(item.to, item.end)
             const Icon = item.icon
             return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                title={itemLabel}
-                aria-label={itemLabel}
-                onClick={closeSidebar}
-                className={() => getLinkClass(item.to, item.end)}
-              >
-                <Icon className="sidebar-link-icon" weight={active ? 'fill' : 'regular'} aria-hidden="true" />
-                <span className="sidebar-link-label">{itemLabel}</span>
-              </NavLink>
+              <div key={item.to} className="sidebar-link-wrap">
+                <NavLink
+                  to={item.to}
+                  end={item.end}
+                  title={itemLabel}
+                  aria-label={itemLabel}
+                  onClick={closeSidebar}
+                  className={() => getLinkClass(item.to, item.end)}
+                >
+                  <Icon className="sidebar-link-icon" weight={active ? 'fill' : 'regular'} aria-hidden="true" />
+                  <span className="sidebar-link-label">{itemLabel}</span>
+                </NavLink>
+                {/* Tooltip shown only in collapsed mode — CSS controls visibility */}
+                <span className="sidebar-link-tooltip" aria-hidden="true">{itemLabel}</span>
+              </div>
             )
           }
 
@@ -234,17 +238,19 @@ function Sidebar() {
           const Icon = link.icon
           const linkLabel = t(link.labelKey, link.label)
           return (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              title={linkLabel}
-              aria-label={linkLabel}
-              onClick={closeSidebar}
-              className={() => getLinkClass(link.to, false)}
-            >
-              <Icon className="sidebar-link-icon" weight={active ? 'fill' : 'regular'} aria-hidden="true" />
-              <span className="sidebar-link-label">{linkLabel}</span>
-            </NavLink>
+            <div key={link.to} className="sidebar-link-wrap">
+              <NavLink
+                to={link.to}
+                title={linkLabel}
+                aria-label={linkLabel}
+                onClick={closeSidebar}
+                className={() => getLinkClass(link.to, false)}
+              >
+                <Icon className="sidebar-link-icon" weight={active ? 'fill' : 'regular'} aria-hidden="true" />
+                <span className="sidebar-link-label">{linkLabel}</span>
+              </NavLink>
+              <span className="sidebar-link-tooltip" aria-hidden="true">{linkLabel}</span>
+            </div>
           )
         })}
         <button
