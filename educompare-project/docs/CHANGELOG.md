@@ -5,6 +5,18 @@ All changes made after receiving this project from the original developer.
 
 ---
 
+### 207. Fix dark mode logo flash: apply theme before React hydration
+
+**Date:** 2026-06-10
+
+**Files changed:** `frontend/index.html`
+
+- When a user had dark mode stored in localStorage, the initial page paint used light-mode sidebar styles (CSS `[data-theme='dark']` rules not yet active) while React rendered with the near-white dark logo (`fill="#F0F0F0"`). Result: near-white logo on white/translucent sidebar was invisible for the brief window before `useEffect` set `document.documentElement.dataset.theme`.
+- Added a small blocking inline `<script>` at the top of `<body>` that reads `localStorage.getItem('unimatch-theme')` and sets `document.documentElement.dataset.theme` synchronously, before React renders. This eliminates the flash so dark sidebar CSS is active from the first paint.
+- Script is wrapped in try/catch to silently handle environments where localStorage is unavailable (e.g. private browsing with storage blocked).
+
+---
+
 ### 206. About page: replace expiring LinkedIn CDN avatars with local assets
 
 **Date:** 2026-06-09
